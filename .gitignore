@@ -1,0 +1,23 @@
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+*.docx
+/documentation
+a.drawio - diagrams.net.html
+*.zip
+Transaction Tagging Request JSONS Sample.json
+TransactionFormats.json
+Procfile
+.env.example
+/a.drawio - diagrams.net_files
+/.vscode
+/.history
