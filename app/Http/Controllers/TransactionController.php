@@ -201,6 +201,11 @@ class TransactionController extends Controller
               );
             }
           )
+          ->when(function ($query) {
+            return request("document_id") === 4 && request("payment_type") === "partial";
+          }, function ($query) {
+            $query->latest('created_at');
+          })
           ->whereIn("department_details", $department)
           ->select([
             "id",
@@ -1549,15 +1554,14 @@ class TransactionController extends Controller
               'referrence_no' => data_get($fields, 'document.reference.no'),
               'category_id' => data_get($fields, 'document.category.id'),
               'category' => data_get($fields, 'document.category.name'),
-            ]);
-
+            ], ['timestamps' => false]);
+            
             // $currentTransaction->remarks = $currentTransaction->receipt->remarks;
 
             // $currentTransaction->column_name = $currentTransaction->receipt->column_name;
 
             // Save the updated transaction
-
-            $currentTransaction->save();
+            // $currentTransaction->save();
 
             return $this->resultResponse("update", "Transaction", []);
         }
