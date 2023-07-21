@@ -201,11 +201,11 @@ class TransactionController extends Controller
               );
             }
           )
-          ->when(function ($query) {
-            return request("document_id") === 4 && request("payment_type") === "partial";
-          }, function ($query) {
-            $query->latest('created_at');
-          })
+          // ->when(function ($query) {
+          //   return request("document_id") === 4 && request("payment_type") === "partial";
+          // }, function ($query) {
+          //   $query->latest('created_at');
+          // })
           ->whereIn("department_details", $department)
           ->select([
             "id",
@@ -1539,23 +1539,47 @@ class TransactionController extends Controller
             //     'remarks' => $fields['document']['remarks'],
             // ]);
 
+            if ($currentTransaction->status == 'tag-return') {
+              $currentTransaction->update([
+                'document_date' => data_get($fields, 'document.date'),
+                'remarks' => data_get($fields, 'document.remarks'),
+                // 'company_id' => data_get($fields, 'document.company.id'),
+                'company' => data_get($fields, 'document.company.name'),
+                'department_id' => data_get($fields, 'document.department.id'),
+                'department' => data_get($fields, 'document.department.name'),
+                'location_id' => data_get($fields, 'document.location.id'),
+                'location' => data_get($fields, 'document.location.name'),
+                'referrence_id' => data_get($fields, 'document.reference.id'),
+                'referrence_type' => data_get($fields, 'document.reference.type'),
+                'referrence_no' => data_get($fields, 'document.reference.no'),
+                'category_id' => data_get($fields, 'document.category.id'),
+                'category' => data_get($fields, 'document.category.name'),
+                'status' => 'Pending',
+                'state' => 'pending'
+              ], ['timestamps' => false]);
 
-            $currentTransaction->update([
-              'document_date' => data_get($fields, 'document.date'),
-              'remarks' => data_get($fields, 'document.remarks'),
-              // 'company_id' => data_get($fields, 'document.company.id'),
-              'company' => data_get($fields, 'document.company.name'),
-              'department_id' => data_get($fields, 'document.department.id'),
-              'department' => data_get($fields, 'document.department.name'),
-              'location_id' => data_get($fields, 'document.location.id'),
-              'location' => data_get($fields, 'document.location.name'),
-              'referrence_id' => data_get($fields, 'document.reference.id'),
-              'referrence_type' => data_get($fields, 'document.reference.type'),
-              'referrence_no' => data_get($fields, 'document.reference.no'),
-              'category_id' => data_get($fields, 'document.category.id'),
-              'category' => data_get($fields, 'document.category.name'),
-            ], ['timestamps' => false]);
-            
+              return $this->resultResponse("update", "Transaction", []);
+
+            } else {
+
+              $currentTransaction->update([
+                'document_date' => data_get($fields, 'document.date'),
+                'remarks' => data_get($fields, 'document.remarks'),
+                // 'company_id' => data_get($fields, 'document.company.id'),
+                'company' => data_get($fields, 'document.company.name'),
+                'department_id' => data_get($fields, 'document.department.id'),
+                'department' => data_get($fields, 'document.department.name'),
+                'location_id' => data_get($fields, 'document.location.id'),
+                'location' => data_get($fields, 'document.location.name'),
+                'referrence_id' => data_get($fields, 'document.reference.id'),
+                'referrence_type' => data_get($fields, 'document.reference.type'),
+                'referrence_no' => data_get($fields, 'document.reference.no'),
+                'category_id' => data_get($fields, 'document.category.id'),
+                'category' => data_get($fields, 'document.category.name'),
+              ], ['timestamps' => false]);
+
+              return $this->resultResponse("update", "Transaction", []);
+            }
             // $currentTransaction->remarks = $currentTransaction->receipt->remarks;
 
             // $currentTransaction->column_name = $currentTransaction->receipt->column_name;
@@ -1563,7 +1587,7 @@ class TransactionController extends Controller
             // Save the updated transaction
             // $currentTransaction->save();
 
-            return $this->resultResponse("update", "Transaction", []);
+            // return $this->resultResponse("update", "Transaction", []);
         }
 
 
