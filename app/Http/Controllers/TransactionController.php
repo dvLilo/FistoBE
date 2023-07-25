@@ -201,11 +201,11 @@ class TransactionController extends Controller
               );
             }
           )
-          ->when(function ($query) {
-            return request("document_id") === 4 && request("payment_type") === "partial";
-          }, function ($query) {
-            $query->latest('created_at');
-          })
+          // ->when(function ($query) {
+          //   return request("document_id") === 4 && request("payment_type") === "partial";
+          // }, function ($query) {
+          //   $query->latest('created_at');
+          // })
           ->whereIn("department_details", $department)
           ->select([
             "id",
@@ -993,20 +993,6 @@ class TransactionController extends Controller
 
           //---------------------------------------------------------------------------------------------------
 
-          //if the PO's is unique
-
-          // $currentRequestids = POBatch::where('po_no', last($fields["po_group"])["no"])->pluck('request_id');
-
-          // $ids = [];
-         
-          // for ($i = 0; $i < count($currentRequestids); $i++) {
-          //   $ids [] = $currentRequestids[$i];
-          // }
-
-          // Transaction::where('request_id', end($ids))->update([
-          //   'is_not_editable' => true
-          // ]);
-
           //If the PO's is not unique and consider different condition
           $existTransaction = Transaction::where('company_id', $fields["document"]["company"]["id"])
             // ->where('company_id', $fields["document"]["company"]["id"])
@@ -1022,11 +1008,18 @@ class TransactionController extends Controller
             for ($i = 0; $i < count($currentRequestids); $i++) {
               $ids [] = $currentRequestids[$i];
             }
-            //enable new transaction
-            Transaction::where('request_id', end($ids))->update([
-              'is_not_editable' => true
-            ]);
+            
+            // Transaction::where('request_id', '=', end($ids))
+            // ->update([
+            //   'is_not_editable' => true
+            // ]);
 
+            //enable new transaction
+            Transaction::where('request_id', '=', end($ids))
+            ->update([
+                'is_not_editable' => true,
+                'updated_at' => DB::raw('updated_at')
+            ]);
           }
 
           if (gettype($getAndValidatePOBalance) == "object") {
@@ -1531,19 +1524,11 @@ class TransactionController extends Controller
 
         // $result = POBatch::with('request')->where('request_id', $currentTransaction->request_id)->get();
         // $isNotEditable = $result[0]['request']['is_not_editable'];
-      
+
         if ($currentTransaction->is_not_editable == 1) {
-            // $currentTransaction->receipt()->create($currentTransaction->toArray());
-
-            // $currentTransaction->receipt->update([
-            //     'remarks' => $fields['document']['remarks'],
-            // ]);
-
-
-            $currentTransaction->update([
+          $updateData = [
               'document_date' => data_get($fields, 'document.date'),
               'remarks' => data_get($fields, 'document.remarks'),
-              // 'company_id' => data_get($fields, 'document.company.id'),
               'company' => data_get($fields, 'document.company.name'),
               'department_id' => data_get($fields, 'document.department.id'),
               'department' => data_get($fields, 'document.department.name'),
@@ -1554,19 +1539,18 @@ class TransactionController extends Controller
               'referrence_no' => data_get($fields, 'document.reference.no'),
               'category_id' => data_get($fields, 'document.category.id'),
               'category' => data_get($fields, 'document.category.name'),
-            ], ['timestamps' => false]);
-            
-            // $currentTransaction->remarks = $currentTransaction->receipt->remarks;
-
-            // $currentTransaction->column_name = $currentTransaction->receipt->column_name;
-
-            // Save the updated transaction
-            // $currentTransaction->save();
-
-            return $this->resultResponse("update", "Transaction", []);
+          ];
+      
+          if ($currentTransaction->status == 'tag-return') {
+              $updateData['status'] = 'Pending';
+              $updateData['state'] = 'pending';
+          }
+      
+          $currentTransaction->update($updateData, ['timestamps' => false]);
+      
+          return $this->resultResponse("update", "Transaction", []);
         }
-
-
+      
         $fields["po_group"] = GenericMethod::ValidateIfPOExists(
           $fields["po_group"],
           $fields["document"]["company"]["id"],

@@ -1220,7 +1220,6 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
-        "batch_request_id" => 0,
         "is_not_editable" => false
       ]);
     } elseif ($fields["document"]["id"] == 5) { //Contractor's Billing
