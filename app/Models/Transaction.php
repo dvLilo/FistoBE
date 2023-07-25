@@ -111,6 +111,8 @@ class Transaction extends Model
     "is_not_editable",
   ];
 
+  public $timestamps = ['created_at'];
+
   protected $attributes = [
     "status" => "Pending",
     "state" => "pending",
