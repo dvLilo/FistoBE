@@ -1271,13 +1271,43 @@ class GenericMethod
     } elseif ($fields["document"]["id"] == 3) { //PRM Multiple
       if (isset($fields["transaction"])) {
         $transaction_id = $fields["transaction"]["no"];
+        $request_id = $fields["transaction"]["request_id"];
         $is_transacted = Tagging::where("transaction_id", $transaction_id)
           ->whereNotIn("status", ["tag-return", "tag-void"])
           ->exists();
+
+        
         if ($is_transacted) {
           return "On Going Transaction";
         }
+
+        // $transaction_status = Tagging::where("transaction_id", $transaction_id)->where('request_id', $request_id)
+        // ->latest()
+        // ->get('status')
+        // ->first();
+
+        // if ($transaction_status != null && $transaction_status->status != "tag-return") {
+        //   return "On Going Transaction";
+        // }
+
       }
+
+
+      // if (isset($fields["transaction"])) {
+      //   $transaction_id = $fields["transaction"]["no"];
+      //   // Check for ongoing transaction
+      //   $is_transacted = Tagging::where("transaction_id", $transaction_id)->first();
+
+      //   $status = ['tag-return', 'tag-void'];
+
+      //   if ($is_transacted) {
+      //       if (!in_array($is_transacted->status, $status)) {
+      //           return "On Going Transaction"; // Return a string indicating ongoing transaction
+      //       }
+      //   } else {
+      //       return; // Return the transaction_id as a string
+      //   }
+      // }
 
       $category = $fields["document"]["category"]["name"];
       $prm_group = $fields["prm_group"];
@@ -1397,7 +1427,8 @@ class GenericMethod
               "remarks" => $fields["document"]["remarks"],
               "document_type" => $fields["document"]["name"],
               "po_total_amount" => $po_total_amount,
-              "request_id" => $temporary_request_id ? $temporary_request_id : null,
+              // "request_id" => $temporary_request_id ? $temporary_request_id : null,
+              "request_id" => isset($temporary_request_id) ? $temporary_request_id : null,
 
               "date_requested" => $date_requested,
               "status" => "Pending",
@@ -3322,7 +3353,8 @@ class GenericMethod
         $query->where("id", "<>", $id);
       })
       ->get();
-
+    
+      
     if (count($transactions) > 0) {
       return GenericMethod::resultLaravelFormat(
         [
@@ -3333,6 +3365,8 @@ class GenericMethod
           "document.utility.location.id",
           "document.utility.category.id",
           "document.utility.receipt_no",
+          "document.supplier.id",
+          "document.utility.account_no.no"
         ],
         [
           ["from has already been taken."],
@@ -3342,9 +3376,46 @@ class GenericMethod
           ["Utility Location has already been taken."],
           ["Utility Category has already been taken."],
           ["SOA Number has already been taken."],
+          ["Supplier has already been taken."],
+          ["Account Number has already been taken."]
         ]
       );
     }
+
+    if ($receipt_no) {
+      $receiptNo = Transaction::where('utilities_receipt_no', $receipt_no)
+      ->where('supplier_id', $supplier_id)
+      ->when($id, function ($query, $id) {
+        $query->where("id", "<>", $id);
+      })
+      ->count();
+
+      if ($receiptNo > 0) {
+        return GenericMethod::resultLaravelFormat(
+          [
+            // "document.from",
+            // "document.to",
+            // "document.company.id",
+            // "document.department.id",
+            // "document.utility.location.id",
+            // "document.utility.category.id",
+            "document.utility.receipt_no",
+            "document.supplier.id",
+          ],
+          [
+            // ["from has already been taken."],
+            // ["to has already been taken."],
+            // ["Company has already been taken."],
+            // ["Department has already been taken."],
+            // ["Utility Location has already been taken."],
+            // ["Utility Category has already been taken."],
+            ["SOA Number has already been taken."],
+            ["Supplier has already been taken."]
+          ]
+        );
+      }
+    }
+
   }
 
   public static function validateSOANumber($receipt_no, $supplier_id, $id = 0) 
@@ -3362,6 +3433,91 @@ class GenericMethod
     }
     
   }
+
+  // public static function validatePayroll(
+  //   $payroll_from,
+  //   $payroll_to,
+  //   $company_id,
+  //   $department_id,
+  //   $location_id,
+  //   $supplier_id,
+  //   $payroll_client,
+  //   $payroll_type,
+  //   $payroll_category,
+  //   $payroll_control_no,
+  //   $id = 0
+  // ) {
+    
+  //   $duplicate_client = [];
+  //   foreach ($payroll_client as $specific_client) {
+  //     $client_id = $specific_client["id"];
+  //     $client_name = $specific_client["name"];
+  //     $transactions = DB::table("transactions")
+  //       ->leftJoin("transaction_client", "transactions.request_id", "=", "transaction_client.request_id")
+  //       ->select("client_name")
+  //       ->where("company_id", $company_id)
+  //       ->where("department_id", $department_id)
+  //       ->where("location_id", $location_id)
+  //       ->where("supplier_id", $supplier_id)
+  //       ->where("payroll_category", "$payroll_category")
+  //       ->where("payroll_type", $payroll_type)
+  //       ->where("client_name", $client_name)
+  //       ->where("state", "!=", "void")
+  //       ->when($id, function ($query, $id) {
+  //         $query->where("transactions.id", "<>", $id);
+  //       })
+  //       ->where(function ($query) use ($payroll_from, $payroll_to) {
+  //         $query
+  //           ->where(function ($query) use ($payroll_from, $payroll_to) {
+  //             $query
+  //               ->where(function ($query1) use ($payroll_from) {
+  //                 $query1->where("payroll_from", "<=", $payroll_from)->where("payroll_to", ">=", $payroll_from);
+  //               })
+  //               ->orWhere(function ($query2) use ($payroll_to) {
+  //                 $query2->where("payroll_from", "<=", $payroll_to)->where("payroll_to", ">=", $payroll_to);
+  //               });
+  //           })
+  //           ->orWhere(function ($query) use ($payroll_from, $payroll_to) {
+  //             $query->where(function ($query1) use ($payroll_from, $payroll_to) {
+  //               $query1->where("payroll_from", ">=", $payroll_from)->where("payroll_to", "<=", $payroll_to);
+  //             });
+  //           });
+  //       })
+  //       ->count();
+
+  //     if ($transactions > 0) {
+  //       array_push($duplicate_client, $client_name);
+  //     }
+  //   }
+
+  //   $duplicate_clients = GenericMethod::addAnd($duplicate_client);
+  //   if (!empty($duplicate_client)) {
+  //     return GenericMethod::resultLaravelFormat(
+  //       [
+  //         "document.payroll.type",
+  //         "document.payroll.clients",
+  //         "document.payroll.category",
+  //         "document.from",
+  //         "document.to",
+  //         "document.company.id",
+  //         "document.department.id",
+  //         "document.location.id",
+  //         "document.supplier.id"
+  //       ],
+  //       [
+  //         ["Payroll type has already been taken."],
+  //         ["Payroll client has already been taken."],
+  //         ["Payroll category has already been taken."],
+  //         ["From has already been taken."],
+  //         ["To date has already been taken."],
+  //         ["Company has already been taken."],
+  //         ["Department has already been taken."],
+  //         ["Location has already been taken."],
+  //         ["Supplier has already been taken."]
+  //       ]
+  //     );
+  //   }
+  // }
 
   public static function validatePayroll(
     $payroll_from,
@@ -3384,8 +3540,8 @@ class GenericMethod
         ->leftJoin("transaction_client", "transactions.request_id", "=", "transaction_client.request_id")
         ->select("client_name")
         ->where("company_id", $company_id)
-        ->where("department_id", $department_id)
-        ->where("location_id", $location_id)
+        // ->where("department_id", $department_id)
+        // ->where("location_id", $location_id)
         ->where("supplier_id", $supplier_id)
         ->where("payroll_category", "$payroll_category")
         ->where("payroll_type", $payroll_type)
@@ -3418,8 +3574,8 @@ class GenericMethod
           $controlNoTransactions = DB::table("transactions")
             ->select("payroll_control_no")
             ->where("company_id", $company_id)
-            ->where("department_id", $department_id)
-            ->where("location_id", $location_id)
+            // ->where("department_id", $department_id)
+            // ->where("location_id", $location_id)
             ->where("supplier_id", $supplier_id)
             ->where("payroll_category", "$payroll_category")
             ->where("payroll_type", $payroll_type)
@@ -3469,8 +3625,8 @@ class GenericMethod
             "document.from",
             "document.to",
             "document.company.id",
-            "document.department.id",
-            "document.location.id",
+            // "document.department.id",
+            // "document.location.id",
             "document.supplier.id",
             "document.payroll.control_no",
           ],
@@ -3481,8 +3637,8 @@ class GenericMethod
             ["From has already been taken."],
             ["To date has already been taken."],
             ["Company has already been taken."],
-            ["Department has already been taken."],
-            ["Location has already been taken."],
+            // ["Department has already been taken."],
+            // ["Location has already been taken."],
             ["Supplier has already been taken."],
             ["Payroll control number has already been taken."],
           ]
@@ -3500,8 +3656,8 @@ class GenericMethod
           "document.from",
           "document.to",
           "document.company.id",
-          "document.department.id",
-          "document.location.id",
+          // "document.department.id",
+          // "document.location.id",
           "document.supplier.id",
         ],
         [
@@ -3511,15 +3667,16 @@ class GenericMethod
           ["From has already been taken."],
           ["To date has already been taken."],
           ["Company has already been taken."],
-          ["Department has already been taken."],
-          ["Location has already been taken."],
+          // ["Department has already been taken."],
+          // ["Location has already been taken."],
           ["Supplier has already been taken."],
         ]
       );
-    } else {
+    }else {
       return;
     }
   }
+
 
   public static function validateAutoDebit($company_id, $supplier_id, $document_date, $id = 0)
   {

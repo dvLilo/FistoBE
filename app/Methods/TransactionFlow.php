@@ -1,41 +1,43 @@
 <?php
 namespace App\Methods;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+use App\Models\Gas;
 
 // For Pagination with Collection
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
-
-use App\Models\Transaction;
+use App\Models\File;
 use App\Models\User;
-use App\Models\Tagging;
-use App\Models\Gas;
-use App\Models\Filing;
-use App\Models\Associate;
-use App\Models\Specialist;
+use App\Models\Audit;
+
+use App\Models\Clear;
 use App\Models\Match;
-use App\Models\ReturnVoucher;
-use App\Models\Approver;
-use App\Models\ChequeCreation;
-use App\Models\ChequeInfo;
-use App\Models\ChequeReleased;
-use App\Models\ChequeClearing;
+use App\Models\Filing;
 use App\Models\Reason;
+use App\Models\POBatch;
+use App\Models\Release;
+use App\Models\Reverse;
+use App\Models\Tagging;
+use App\Models\Approver;
 use App\Models\Transmit;
 use App\Models\Treasury;
+use App\Models\Associate;
+use App\Models\ChequeInfo;
+use App\Models\Specialist;
+use App\Models\Transaction;
 use App\Models\RequestorLogs;
+use App\Models\ReturnVoucher;
 use App\Methods\GenericMethod;
-use App\Models\Audit;
-use App\Models\Release;
-use App\Models\File;
-use App\Models\Reverse;
-use App\Models\Clear;
-use Carbon\Carbon;
-
+use App\Models\ChequeClearing;
+use App\Models\ChequeCreation;
+use App\Models\ChequeReleased;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
+
+use Illuminate\Validation\ValidationException;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class TransactionFlow{
 
 
@@ -186,8 +188,42 @@ class TransactionFlow{
                 $status= 'tag-hold';
             }else if($subprocess == 'return'){
                 $status= 'tag-return';
+
+                // $document_type = Transaction::where('transaction_id', $transaction->transaction_id)->first();
+                
+                // if ($document_type && $document_type->document_type === 'PRM Multiple') {
+                //     Transaction::where('transaction_id', $transaction_id)->where('status', 'tag-receive')->update([
+                //         'status' => $status,
+                //         'state' => $subprocess
+                //     ]);
+                // }
+                
             }else if($subprocess == 'void'){
                 $status= 'tag-void';
+
+                // $test = Transaction::with('po_details')
+                // ->where("id", $id)
+                // ->where("state", "!=", "void")
+                // ->first();
+
+                // if (!$test) {
+                //     return response('not found');
+                // } else {
+                //     if ($test->document_id == 4 &&  $test->payment_type == 'Partial') {
+              
+                //       if ($test) {
+                //           $poNos = $test->po_details->pluck('po_no');
+                //       }
+              
+                //       $currentRequestIds = POBatch::whereIn('po_no', $poNos)->pluck('request_id')->toArray();
+              
+              
+                //       Transaction::where('request_id', end($currentRequestIds)-1)->update([
+                //         'is_not_editable' => false
+                //       ]);
+                //     }
+                // }
+
             }else if($subprocess == 'tag'){
                 $status= 'tag-tag';
             }else if(in_array($subprocess,['unhold','unreturn'])){

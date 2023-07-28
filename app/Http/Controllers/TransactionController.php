@@ -891,7 +891,7 @@ class TransactionController extends Controller
           $fields["document"]["payroll"]["clients"],
           $fields["document"]["payroll"]["type"],
           $fields["document"]["payroll"]["category"]["name"],
-          data_get($fields, "document.payroll.control_no")
+          $fields["document"]["payroll"]["control_no"]
         );
 
         if (isset($duplicatePayroll)) {
@@ -1331,6 +1331,8 @@ class TransactionController extends Controller
           $changes
         );
 
+        // return $transaction;
+
         if ($transaction == "Nothing Has Changed") {
           return $this->resultResponse("nothing-has-changed", "Transaction", []);
         } elseif ($transaction == "On Going Transaction") {
@@ -1360,6 +1362,7 @@ class TransactionController extends Controller
         if (isset($duplicateUtilities)) {
           return $this->resultResponse("invalid", "", $duplicateUtilities);
         }
+
         $changes = GenericMethod::getTransactionChanges($request_id, $request, $id);
 
         $transaction = GenericMethod::updateTransaction(
@@ -1388,7 +1391,7 @@ class TransactionController extends Controller
           $fields["document"]["payroll"]["clients"],
           $fields["document"]["payroll"]["type"],
           $fields["document"]["payroll"]["category"]["name"],
-          data_get($fields, "document.payroll.control_no"),
+          $fields["document"]["payroll"]["control_no"],
           $id
         );
 
