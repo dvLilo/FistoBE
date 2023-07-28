@@ -73,7 +73,15 @@ class TransactionPostRequest extends FormRequest
                 'required_if:document.id,6',
                 // Rule::unique('transactions', 'utilities_receipt_no')            
                 // ->where(function ($query) {
-                //     $query->where('supplier_id', $this->input('document.supplier.id'))->where('utilities_receipt_no', $this->input('document.utility.receipt_no'));
+                //     $query->where('supplier_id', $this->input('document.supplier.id'))->where('utilities_receipt_no', $this->input('document.utility.receipt_no'))
+                //     ->ignore($this->input('transaction.no'));
+                // })
+
+                // Rule::unique('transactions', 'utilities_receipt_no')
+                // ->where(function ($query) {
+                //     $query->where('supplier_id', $this->input('document.supplier.id'))
+                //         ->where('utilities_receipt_no', $this->input('document.utility.receipt_no'))
+                //         ->where('transaction_id', '!=', $this->input('transaction.no'));
                 // })
             ]
             , "document.utility.consumption" => 'nullable'
@@ -94,8 +102,16 @@ class TransactionPostRequest extends FormRequest
             , "document.payroll.type" => 'required_if:document.id,7'
             , "document.payroll.category.id" => 'required_if:document.id,7'
             , "document.payroll.category.name" => 'required_if:document.id,7',
-            "document.payroll.control_no" => 'nullable'
-            
+            "document.payroll.control_no" => [
+                'nullable',
+                // Rule::unique('transactions', 'payroll_control_no')->where(function ($query) {
+                //     $query->where('supplier_id', request()->input('document.supplier.id'))
+                //     // ->where('company_id', request()->input('document.company.id'))
+                //     // ->where('department_id', request()->input('document.department.id'))
+                //     ->where("state", "!=", "void")
+                //     ->where('transaction_id', '!=', request()->input('transaction.no'));
+                // })
+            ]
             
             , "document.reference.id" => 'required_if:document.id,4'
             , "document.reference.no" => 'required_if:document.id,4'
@@ -200,7 +216,7 @@ class TransactionPostRequest extends FormRequest
             ,"autoDebit_group.*.no_of_days"=>'No of days'
             ,"autoDebit_group.*.principal_amount"=>'Principal amount'
             ,"autoDebit_group.*.interest_due"=>'Interest due'
-            ,"autoDebit_group.*.cwt"=>'Computed witholding tax'
+            ,"autoDebit_group.*.cwt"=>'Computed witholding tax',
         ];
     }
     
@@ -215,7 +231,8 @@ class TransactionPostRequest extends FormRequest
             'min' => ':attribute amount may not be greater than :min.',
             'max' => ':attribute amount may not be greater than :max.',
             // "document.amount.numeric"=>"Document amount must be numeric"
-            'document.utility.receipt_no.required_if' => 'SOA/Reference Number field is required when document type is ' . ($document ? $document : '')
+            'document.utility.receipt_no.required_if' => 'SOA/Reference Number field is required when document type is ' . ($document ? $document : ''),
+            'document.payroll.control_no.unique' => 'Payroll control number has already been taken.'
         ];
     }
 }
