@@ -52,18 +52,42 @@ class TransactionFlow
     $reason_id = isset($request["reason"]["id"]) ? $request["reason"]["id"] : null;
     $date_now = Carbon::now("Asia/Manila")->format("Y-m-d");
 
+    // $transaction = Transaction::select(
+    //   "transaction_id",
+    //   "tag_no",
+    //   "voucher_no",
+    //   "voucher_month",
+    //   "users_id",
+    //   "remarks",
+    //   "document_amount",
+    //   "referrence_amount",
+    //   "distributed_id",
+    //   "approver_id",
+    //   "request_id"
+    // )->find($id);
+
     $transaction = Transaction::select(
       "transaction_id",
       "tag_no",
       "voucher_no",
+      "voucher_month",
       "users_id",
       "remarks",
       "document_amount",
       "referrence_amount",
       "distributed_id",
       "approver_id",
-      "request_id"
+      "request_id",
+      "document_type",
+      "document_id",
+      "category",
+      "state",
+      "total_gross",
+      "document_amount",
+      "payment_type"
     )->find($id);
+
+    // $transaction = Transaction::find($id);
 
     $request_id = $transaction->request_id;
     $transaction_id = $transaction->transaction_id;
@@ -96,7 +120,10 @@ class TransactionFlow
     $previous_voucher_month = $previous_voucher_transaction["transaction_voucher"]->isEmpty()
       ? null
       : $previous_voucher_transaction["voucher_month"];
-    // $previous_approver = array("id"=>$previous_voucher_transaction['transaction_voucher']->first()['approver_id'],"name"=>$previous_voucher_transaction['transaction_voucher']->first()['approver_name']);
+    // $previous_approver = [
+    //   "id" => $previous_voucher_transaction["transaction_voucher"]->first()["approver_id"],
+    //   "name" => $previous_voucher_transaction["transaction_voucher"]->first()["approver_name"],
+    // ];
 
     $previous_approver = [];
 
@@ -125,7 +152,7 @@ class TransactionFlow
     $cheque_account_title = $previous_cheque_transaction["transaction_cheque"]->isEmpty()
       ? null
       : $previous_cheque_transaction["transaction_cheque"]->first()["account_title"];
-    // $voucher_account_title = $previous_voucher_transaction['transaction_voucher']->first()['account_title'];
+    // $voucher_account_title = $previous_voucher_transaction["transaction_voucher"]->first()["account_title"];
 
     $voucher_account_title = null;
 
@@ -161,22 +188,31 @@ class TransactionFlow
     // $withholding_tax = GenericMethod::with_previous_transaction($request['tax']['withholding_tax'],$previous_withholding_tax);
     // $net_amount = GenericMethod::with_previous_transaction($request['tax']['net_amount'],$previous_net_amount);
     $receipt_type = GenericMethod::with_previous_transaction($request["receipt_type"], $previous_receipt_type);
-    // $voucher_no = GenericMethod::with_previous_transaction($request['voucher']['no'],$previous_voucher_no);
-    $voucher_no = null;
+    // $voucher_no = GenericMethod::with_previous_transaction($request["voucher"]["no"], $previous_voucher_no);
+    // $voucher_no = null;
 
-    if (isset($request["voucher"]["no"]) && !is_null($previous_voucher_no)) {
-      $voucher_no = GenericMethod::with_previous_transaction($request["voucher"]["no"], $previous_voucher_no);
-    }
-    // $voucher_month = GenericMethod::with_previous_transaction($request['voucher']['month'],$previous_voucher_month);
-    $voucher_month = null;
+    // if (isset($request["voucher"]["no"]) && !is_null($previous_voucher_no)) {
+    //   $voucher_no = GenericMethod::with_previous_transaction($request["voucher"]["no"], $previous_voucher_no);
+    // } else {
+    //   $voucher_no = data_get($request, "voucher.no");
+    // }
 
-    if (
-      isset($request["voucher"]["month"]) &&
-      !is_null($request["voucher"]["month"]) &&
-      !is_null($previous_voucher_month)
-    ) {
-      $voucher_month = GenericMethod::with_previous_transaction($request["voucher"]["month"], $previous_voucher_month);
-    }
+    $voucher_no = data_get($request, "voucher.no", $transaction->voucher_no);
+
+    // $voucher_month = GenericMethod::with_previous_transaction($request["voucher"]["month"], $previous_voucher_month);
+    // $voucher_month = null;
+
+    // if (
+    //   isset($request["voucher"]["month"]) &&
+    //   !is_null($request["voucher"]["month"]) &&
+    //   !is_null($previous_voucher_month)
+    // ) {
+    //   $voucher_month = GenericMethod::with_previous_transaction($request["voucher"]["month"], $previous_voucher_month);
+    // } else {
+    //   $voucher_month = data_get($request, "voucher.month");
+    // }
+
+    $voucher_month = data_get($request, "voucher.month", $transaction->voucher_month);
     $voucher_account_titles = GenericMethod::with_previous_transaction($accounts, $voucher_account_title);
     $approver = GenericMethod::with_previous_transaction($request["approver"], $previous_approver);
     $distributed = GenericMethod::with_previous_transaction($request["distributed_to"], $previous_distributed);
@@ -255,29 +291,61 @@ class TransactionFlow
         //         'state' => $subprocess
         //     ]);
         // }
+
+        // if ($transaction->document_id == 3) {
+        //   Tagging::where("request_id", $transaction->request_id)->delete();
+        // }
       } elseif ($subprocess == "void") {
         $status = "tag-void";
 
-        // $test = Transaction::with("po_details")
-        //   ->where("id", $id)
-        //   ->where("state", "!=", "void")
-        //   ->first();
+        // if ($transaction->document_id == 4 && $transaction->payment_type == "Partial") {
+        //   $poNos = $transaction->po_details()->pluck("po_no");
 
-        // if (!$test) {
-        //   return response("not found");
-        // } else {
-        //   if ($test->document_id == 4 && $test->payment_type == "Partial") {
-        //     if ($test) {
-        //       $poNos = $test->po_details->pluck("po_no");
-        //     }
+        //   $currentRequestIds = POBatch::whereIn("po_no", $poNos)
+        //     ->pluck("request_id")
+        //     ->toArray();
 
-        //     $currentRequestIds = POBatch::whereIn("po_no", $poNos)
-        //       ->pluck("request_id")
-        //       ->toArray();
+        //   Transaction::where("request_id", end($currentRequestIds) - 1)->update([
+        //     "is_not_editable" => false,
+        //   ]);
+        // } elseif ($transaction->document_id == 3) {
+        //   $test = Transaction::find($id);
+        //   $test->state = $subprocess;
+        //   $test->save();
 
-        //     Transaction::where("request_id", end($currentRequestIds) - 1)->update([
-        //       "is_not_editable" => false,
-        //     ]);
+        //   switch ($transaction->category) {
+        //     case "rental":
+        //       $gross_amount = Transaction::where("transaction_id", $test->transaction_id)
+        //         ->where("state", "!=", "void")
+        //         ->sum("gross_amount");
+
+        //       Transaction::where("transaction_id", $test->transaction_id)
+        //         ->where("state", "!=", "void")
+        //         ->update([
+        //           "total_gross" => $gross_amount,
+        //           "document_amount" => $gross_amount,
+        //         ]);
+
+        //       break;
+
+        //     case "leasing":
+        //       $transactionData = Transaction::where("transaction_id", $transaction->transaction_id)
+        //         ->where("state", "!=", "void")
+        //         ->selectRaw(
+        //           "SUM(principal) as principal_amount, SUM(interest) as interest_amount, SUM(cwt) as cwt_amount"
+        //         )
+        //         ->first();
+
+        //       $document_amount =
+        //         $transactionData->principal_amount + $transactionData->interest_amount - $transactionData->cwt_amount;
+
+        //       Transaction::where("transaction_id", $transaction->transaction_id)
+        //         ->where("state", "!=", "void")
+        //         ->update([
+        //           "document_amount" => $document_amount,
+        //         ]);
+
+        //       break;
         //   }
         // }
       } elseif ($subprocess == "tag") {
@@ -355,6 +423,27 @@ class TransactionFlow
         $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
         $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
 
+        // switch ($transaction->document_id) {
+        //   case 3:
+        //     if ($debit_amount != $credit_amount) {
+        //       return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+        //     }
+        //     if ($transaction->net_amount != $debit_amount) {
+        //       return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+        //     }
+
+        //     break;
+
+        //   default:
+        //     if ($debit_amount != $credit_amount) {
+        //       return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+        //     }
+
+        //     if ($document_amount != $debit_amount) {
+        //       return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+        //     }
+        // }
+
         if ($debit_amount != $credit_amount) {
           return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
         }
@@ -376,6 +465,7 @@ class TransactionFlow
         $approver,
         $account_titles
       );
+
       GenericMethod::updateTransactionStatus(
         $id,
         $transaction_id,

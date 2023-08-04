@@ -1020,6 +1020,7 @@ class TransactionResource extends JsonResource
         case "unofficial store leasing":
         case "leasing":
           $prm_fields = Transaction::where("transaction_id", $this->transaction_id)
+            ->where("state", "!=", "void")
             ->select([
               "status",
               "amortization",
@@ -1033,6 +1034,7 @@ class TransactionResource extends JsonResource
           break;
         case "loans":
           $prm_fields = Transaction::where("transaction_id", $this->transaction_id)
+            ->where("state", "!=", "void")
             ->select(["status", "principal", "interest", "cwt", "net_amount as net_of_amount", "cheque_date"])
             ->get();
           break;

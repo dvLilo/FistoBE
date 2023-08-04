@@ -201,11 +201,6 @@ class TransactionController extends Controller
               );
             }
           )
-          // ->when(function ($query) {
-          //   return request("document_id") === 4 && request("payment_type") === "partial";
-          // }, function ($query) {
-          //   $query->latest('created_at');
-          // })
           ->whereIn("department_details", $department)
           ->select([
             "id",
@@ -691,7 +686,7 @@ class TransactionController extends Controller
   {
     $fields = $request->validated();
     $date_requested = date("Y-m-d H:i:s");
-    $transaction_id = GenericMethod::getTransactionID(Auth::user()->department[0]['name']);
+    $transaction_id = GenericMethod::getTransactionID(Auth::user()->department[0]["name"]);
     $request_id = GenericMethod::getRequestID();
 
     switch ($fields["document"]["id"]) {
@@ -826,7 +821,6 @@ class TransactionController extends Controller
         break;
 
       case 6: //Utilities
-        
         $duplicateUtilities = GenericMethod::validateTransactionByDateRange(
           $fields["document"]["from"],
           $fields["document"]["to"],
@@ -911,7 +905,6 @@ class TransactionController extends Controller
         break;
 
       case 4: //Receipt
-      
         $isFull = strtoupper($fields["document"]["payment_type"]) === "FULL";
         $isQty = $fields["document"]["reference"]["type"] === "DR Qty";
 
@@ -920,7 +913,8 @@ class TransactionController extends Controller
           return $this->resultResponse("invalid", "", $errorMessage);
         }
 
-        if (!$isQty && $isFull) {//Full
+        if (!$isQty && $isFull) {
+          //Full
           $duplicateRef = GenericMethod::validateReferenceNo($fields);
 
           if (isset($duplicateRef)) {
@@ -970,7 +964,8 @@ class TransactionController extends Controller
           }
         }
 
-        if (!$isQty && !$isFull) { //Partial
+        if (!$isQty && !$isFull) {
+          //Partial
 
           $duplicateRef = GenericMethod::validateReferenceNo($fields);
 
@@ -994,31 +989,29 @@ class TransactionController extends Controller
           //---------------------------------------------------------------------------------------------------
 
           //If the PO's is not unique and consider different condition
-          $existTransaction = Transaction::where('company_id', $fields["document"]["company"]["id"])
+          $existTransaction = Transaction::where("company_id", $fields["document"]["company"]["id"])
             // ->where('company_id', $fields["document"]["company"]["id"])
             // ->where('supplier_id', $fields["document"]["supplier"]["id"])
             ->exists();
 
           if ($existTransaction) {
-            
-            $currentRequestids = POBatch::where('po_no', last($fields["po_group"])["no"])->pluck('request_id');
+            $currentRequestids = POBatch::where("po_no", last($fields["po_group"])["no"])->pluck("request_id");
 
             $ids = [];
-           
+
             for ($i = 0; $i < count($currentRequestids); $i++) {
-              $ids [] = $currentRequestids[$i];
+              $ids[] = $currentRequestids[$i];
             }
-            
+
             // Transaction::where('request_id', '=', end($ids))
             // ->update([
             //   'is_not_editable' => true
             // ]);
 
             //enable new transaction
-            Transaction::where('request_id', '=', end($ids))
-            ->update([
-                'is_not_editable' => true,
-                'updated_at' => DB::raw('updated_at')
+            Transaction::where("request_id", "=", end($ids))->update([
+              "is_not_editable" => true,
+              "updated_at" => DB::raw("updated_at"),
             ]);
           }
 
@@ -1026,7 +1019,8 @@ class TransactionController extends Controller
             return $this->resultResponse("invalid", "", $getAndValidatePOBalance);
           }
 
-          if (gettype($getAndValidatePOBalance) == "array") { //for new po
+          if (gettype($getAndValidatePOBalance) == "array") {
+            //for new po
             //Additional PO Validation
             $new_po = $getAndValidatePOBalance["new_po_group"];
             $po_total_amount = $getAndValidatePOBalance["po_total_amount"];
@@ -1040,7 +1034,7 @@ class TransactionController extends Controller
               $fields,
               $balance_with_additional_total_po_amount
             );
-            
+
             $request_id = $transaction->id;
 
             GenericMethod::insertPO(
@@ -1050,24 +1044,25 @@ class TransactionController extends Controller
               strtoupper($fields["document"]["payment_type"])
             );
 
-            POBatch::where('request_id', $request_id)->where('po_no', reset($fields["po_group"])["no"])->update([
-              'is_modifiable' => true
-            ]);
+            POBatch::where("request_id", $request_id)
+              ->where("po_no", reset($fields["po_group"])["no"])
+              ->update([
+                "is_modifiable" => true,
+              ]);
 
-            $isAdd = POBatch::where('request_id', $request_id)->get();
+            $isAdd = POBatch::where("request_id", $request_id)->get();
 
             foreach ($isAdd as $record) {
               if ($record->is_add == true && $record->is_editable == true) {
-                  $record->update([
-                      'is_modifiable' => true
-                  ]);
+                $record->update([
+                  "is_modifiable" => true,
+                ]);
               }
             }
 
             if (isset($transaction->transaction_id)) {
               return $this->resultResponse("save", "Transaction", []);
             }
-
           }
 
           $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
@@ -1108,7 +1103,7 @@ class TransactionController extends Controller
           // ]);
 
           // $currentPO = POBatch::where('po_no', last($fields["po_group"])["no"])->pluck('request_id');
-          
+
           // if ($currentPO) {
           //   POBatch::where('request_id', reset($currentPO))->update([
           //     'is_modifiable' => true
@@ -1125,10 +1120,10 @@ class TransactionController extends Controller
           //   }
           // }
 
-          POBatch::where('request_id', $request_id)->where('is_add', false)
-            ->where('is_editable', true)
-            ->update(['is_modifiable' => true]);
-
+          POBatch::where("request_id", $request_id)
+            ->where("is_add", false)
+            ->where("is_editable", true)
+            ->update(["is_modifiable" => true]);
 
           if (isset($transaction->transaction_id)) {
             return $this->resultResponse("save", "Transaction", []);
@@ -1161,7 +1156,6 @@ class TransactionController extends Controller
 
     return $this->resultResponse("not-exist", "Document number", []);
   }
-
 
   public function update(TransactionPostRequest $request, $id)
   {
@@ -1358,7 +1352,7 @@ class TransactionController extends Controller
           data_get($fields, "document.utility.receipt_no"),
           $id
         );
-        
+
         if (isset($duplicateUtilities)) {
           return $this->resultResponse("invalid", "", $duplicateUtilities);
         }
@@ -1446,8 +1440,6 @@ class TransactionController extends Controller
         break;
 
       case 4: //Receipt
-
-
         // $row = Transaction::find($id);
         // $row->receipt()->create($row->toArray());
 
@@ -1458,7 +1450,6 @@ class TransactionController extends Controller
 
         // Transaction::where('id', $id)->update($row->receipt->toArray());
         // return;
-        
 
         //-------------------------------------------------------------------
 
@@ -1522,7 +1513,6 @@ class TransactionController extends Controller
           }
         }
 
-
         $currentTransaction = Transaction::findOrFail($id);
 
         // $result = POBatch::with('request')->where('request_id', $currentTransaction->request_id)->get();
@@ -1530,30 +1520,30 @@ class TransactionController extends Controller
 
         if ($currentTransaction->is_not_editable == 1) {
           $updateData = [
-              'document_date' => data_get($fields, 'document.date'),
-              'remarks' => data_get($fields, 'document.remarks'),
-              'company' => data_get($fields, 'document.company.name'),
-              'department_id' => data_get($fields, 'document.department.id'),
-              'department' => data_get($fields, 'document.department.name'),
-              'location_id' => data_get($fields, 'document.location.id'),
-              'location' => data_get($fields, 'document.location.name'),
-              'referrence_id' => data_get($fields, 'document.reference.id'),
-              'referrence_type' => data_get($fields, 'document.reference.type'),
-              'referrence_no' => data_get($fields, 'document.reference.no'),
-              'category_id' => data_get($fields, 'document.category.id'),
-              'category' => data_get($fields, 'document.category.name'),
+            "document_date" => data_get($fields, "document.date"),
+            "remarks" => data_get($fields, "document.remarks"),
+            "company" => data_get($fields, "document.company.name"),
+            "department_id" => data_get($fields, "document.department.id"),
+            "department" => data_get($fields, "document.department.name"),
+            "location_id" => data_get($fields, "document.location.id"),
+            "location" => data_get($fields, "document.location.name"),
+            "referrence_id" => data_get($fields, "document.reference.id"),
+            "referrence_type" => data_get($fields, "document.reference.type"),
+            "referrence_no" => data_get($fields, "document.reference.no"),
+            "category_id" => data_get($fields, "document.category.id"),
+            "category" => data_get($fields, "document.category.name"),
           ];
-      
-          if ($currentTransaction->status == 'tag-return') {
-              $updateData['status'] = 'Pending';
-              $updateData['state'] = 'pending';
+
+          if ($currentTransaction->status == "tag-return") {
+            $updateData["status"] = "Pending";
+            $updateData["state"] = "pending";
           }
-      
-          $currentTransaction->update($updateData, ['timestamps' => false]);
-      
+
+          $currentTransaction->update($updateData, ["timestamps" => false]);
+
           return $this->resultResponse("update", "Transaction", []);
         }
-      
+
         $fields["po_group"] = GenericMethod::ValidateIfPOExists(
           $fields["po_group"],
           $fields["document"]["company"]["id"],
@@ -1764,12 +1754,13 @@ class TransactionController extends Controller
     return $this->resultResponse("success-no-content", "", []);
   }
 
-  public function validateSOANumber(Request $request) {
-
+  public function validateSOANumber(Request $request)
+  {
     $transaction_id = $request->transaction_id;
 
     $existSOA = Transaction::where(function ($query) use ($request) {
-      $query->where(function ($query) use ($request) {
+      $query
+        ->where(function ($query) use ($request) {
           $query
             ->where(function ($query) use ($request) {
               $query->where("utilities_from", "<", $request->from)->where("utilities_to", ">", $request->from);
@@ -1784,19 +1775,22 @@ class TransactionController extends Controller
           });
         });
     })
-    ->where('utilities_receipt_no', $request->utilities_receipt_no)
-    ->where('supplier_id', $request->supplier_id)
-    ->where('company_id', $request->company_id)
-    ->where('state', '!=', 'void')
-    ->when(isset($transaction_id), function ($query) use ($transaction_id) {
-      $query->where("id", "<>", $transaction_id);
-    })
-    ->count();
+      ->where("utilities_receipt_no", $request->utilities_receipt_no)
+      ->where("supplier_id", $request->supplier_id)
+      ->where("company_id", $request->company_id)
+      ->where("state", "!=", "void")
+      ->when(isset($transaction_id), function ($query) use ($transaction_id) {
+        $query->where("id", "<>", $transaction_id);
+      })
+      ->count();
 
     if ($existSOA > 0) {
-      return $this->resultResponse("invalid", "", GenericMethod::resultLaravelFormat("document.utility.receipt_no", ["SOA/Reference number already exist."]));
+      return $this->resultResponse(
+        "invalid",
+        "",
+        GenericMethod::resultLaravelFormat("document.utility.receipt_no", ["SOA/Reference number already exist."])
+      );
     }
-
   }
 
   public function validatePCFName(Request $request)
@@ -1818,42 +1812,108 @@ class TransactionController extends Controller
 
   public function voidTransaction(Request $request, $id)
   {
-    
     // $transaction = Transaction::with('po_details')->where("id", $id)
     //   ->where("state", "!=", "void")
     //   ->first();
 
-    $transaction = Transaction::with('po_details')
-    ->where("id", $id)
-    ->where("state", "!=", "void")
-    ->first();
+    $transaction = Transaction::with("po_details")
+      ->where("id", $id)
+      ->where("state", "!=", "void")
+      ->first();
 
     $date_requested = date("Y-m-d H:i:s");
     $status = "void";
-
 
     //Make not editable the previous transaction of latest transaction.
     if (!$transaction) {
       return $this->resultResponse("not-found", "Transaction", []);
     } else {
-      if ($transaction->document_id == 4 &&  $transaction->payment_type == 'Partial') {
-
+      if ($transaction->document_id == 4 && $transaction->payment_type == "Partial") {
         if ($transaction) {
-            $poNos = $transaction->po_details->pluck('po_no');
+          $poNos = $transaction->po_details->pluck("po_no");
         }
 
-        $currentRequestIds = POBatch::whereIn('po_no', $poNos)->pluck('request_id')->toArray();
+        $currentRequestIds = POBatch::whereIn("po_no", $poNos)
+          ->pluck("request_id")
+          ->toArray();
 
-
-        Transaction::where('request_id', end($currentRequestIds)-1)->update([
-          'is_not_editable' => false
+        Transaction::where("request_id", end($currentRequestIds) - 1)->update([
+          "is_not_editable" => false,
         ]);
 
         // POBatch::where('request_id', end($currentRequestIds)-1)->update([
         //   'is_modifiable' => true
         // ]);
-
       }
+
+      // elseif ($transaction->document_id == 3) {
+      //   $transaction->update([
+      //     "state" => $status,
+      //   ]);
+
+      //   switch ($transaction->category) {
+      //     case "additional rental":
+      //     case "lounge rental":
+      //     case "stall a rental":
+      //     case "stall b rental":
+      //     case "stall c rental":
+      //     case "stall d rental":
+      //     case "cusa rental":
+      //     case "dorm rental":
+      //     case "rental":
+      //       $gross_amount = Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->sum(DB::raw("gross_amount"));
+
+      //       Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->update([
+      //           "total_gross" => $gross_amount,
+      //           "document_amount" => $gross_amount,
+      //         ]);
+      //       break;
+
+      //     case "official store leasing":
+      //     case "unofficial store leasing":
+      //     case "leasing":
+      //       $transactionData = Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->selectRaw(
+      //           "SUM(principal) as principal_amount, SUM(interest) as interest_amount, SUM(cwt) as cwt_amount"
+      //         )
+      //         ->first();
+
+      //       $document_amount =
+      //         $transactionData->principal_amount + $transactionData->interest_amount - $transactionData->cwt_amount;
+
+      //       Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->update([
+      //           "document_amount" => $document_amount,
+      //         ]);
+
+      //       break;
+
+      //     case "loans":
+      //       $transactionData = Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->selectRaw(
+      //           "SUM(principal) as principal_amount, SUM(interest) as interest_amount, SUM(cwt) as cwt_amount"
+      //         )
+      //         ->first();
+
+      //       $document_amount =
+      //         $transactionData->principal_amount + $transactionData->interest_amount - $transactionData->cwt_amount;
+
+      //       Transaction::where("transaction_id", $transaction->transaction_id)
+      //         ->where("state", "!=", "void")
+      //         ->update([
+      //           "document_amount" => $document_amount,
+      //         ]);
+
+      //       break;
+      //   }
+      // }
     }
 
     if (!isset($transaction)) {

@@ -109,9 +109,10 @@ class Transaction extends Model
     "dst",
     "principal",
     "is_not_editable",
+    "voucher_no",
   ];
 
-  public $timestamps = ['created_at'];
+  public $timestamps = ["created_at"];
 
   protected $attributes = [
     "status" => "Pending",
@@ -357,7 +358,8 @@ class Transaction extends Model
       ->limit(1);
   }
 
-  public function receipt() {
-    return $this->hasOne(Receipt::class, 'transactions_id', 'id');
+  public function receipt()
+  {
+    return $this->hasOne(Receipt::class, "transactions_id", "id");
   }
 }

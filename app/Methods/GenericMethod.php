@@ -2205,8 +2205,8 @@ class GenericMethod
     $approver_name,
     $transaction_type = "cheque"
   ) {
-    $voucher_no = isset($voucher_no) ? $voucher_no : null;
-    $voucher_month = isset($voucher_month) ? $voucher_month : null;
+    // $voucher_no = isset($voucher_no) ? $voucher_no : null;
+    // $voucher_month = isset($voucher_month) ? $voucher_month : null;
 
     if (
       in_array($status, ["reverse-receive-approver", "reverse-receive-requestor", "reverse-approve", "reverse-return"])
@@ -3221,10 +3221,10 @@ class GenericMethod
         $query->where("id", "<>", $id);
       })
       ->where("state", "!=", "void")
-      ->exists();
+      ->count();
 
-    if ($transaction) {
-      return GenericMethod::resultResponse("voucher-no-exist", "Voucher number already exist.", []);
+    if ($transaction > 0) {
+      return GenericMethod::resultResponse("voucher-no-exist", "", []);
     }
     return GenericMethod::resultResponse("success-no-content", "", []);
   }
@@ -3399,6 +3399,7 @@ class GenericMethod
     if ($receipt_no) {
       $receiptNo = Transaction::where("utilities_receipt_no", $receipt_no)
         ->where("supplier_id", $supplier_id)
+        ->where("state", "!=", "void")
         ->when($id, function ($query, $id) {
           $query->where("id", "<>", $id);
         })
@@ -4412,7 +4413,7 @@ class GenericMethod
         break;
 
       case "voucher-no-exist":
-        throw new FistoLaravelException("Voucher number already exist..", 422, null, $data);
+        throw new FistoLaravelException("Voucher number already exist.", 422, null, $data);
         break;
 
       case "cheque-no-exist":
