@@ -28,7 +28,6 @@ class TransactionResource extends JsonResource
    */
   public function toArray($request)
   {
-
     $document = [];
     $tag = null;
     $voucher = null;
@@ -540,7 +539,7 @@ class TransactionResource extends JsonResource
               "id" => $this->payroll_category_id,
               "name" => $this->payroll_category,
             ],
-            "control_no" => $this->payroll_control_no
+            "control_no" => $this->payroll_control_no,
           ],
         ];
         break;
@@ -1006,6 +1005,7 @@ class TransactionResource extends JsonResource
         case "lounge rental":
         case "rental":
           $prm_fields = Transaction::where("transaction_id", $this->transaction_id)
+            ->where("state", "!=", "void")
             ->select([
               "status",
               "period_covered",
