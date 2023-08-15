@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Transaction extends Model
 {
@@ -110,6 +111,8 @@ class Transaction extends Model
     "principal",
     "is_not_editable",
     "voucher_no",
+    "is_for_releasing",
+    "is_for_voucher_audit",
   ];
 
   public $timestamps = ["created_at"];
@@ -358,8 +361,67 @@ class Transaction extends Model
       ->limit(1);
   }
 
-  public function receipt()
+  // public function receipt()
+  // {
+  //   return $this->hasOne(Receipt::class, "transactions_id", "id");
+  // }
+
+  public function audit()
   {
-    return $this->hasOne(Receipt::class, "transactions_id", "id");
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->with([
+        "auditedBy" => function ($query) {
+          // $query->select(["id", "first_name", "last_name", "middle_name"]); // Add other columns you want
+          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+        },
+      ])
+      ->where("type", "cheque")
+      // ->select([
+      //   "transaction_id",
+      //   "date_received",
+      //   "status",
+      //   "reason_id",
+      //   "remarks",
+      //   "user_id as audited_by",
+      //   "date_audited",
+      // ])
+      ->latest()
+      ->limit(1);
+  }
+
+  public function auditVoucher()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->with([
+        "auditedBy" => function ($query) {
+          // $query->select(["id", "first_name", "last_name", "middle_name"]); // Add other columns you want
+          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+        },
+      ])
+      ->where("type", "voucher")
+      ->where("status", "inspect-inspect")
+      // ->select([
+      //   "transaction_id",
+      //   "date_received",
+      //   "status",
+      //   "reason_id",
+      //   "remarks",
+      //   "user_id as audited_by",
+      //   "date_audited",
+      // ])
+      ->latest()
+      ->limit(1);
+  }
+
+  public function executive()
+  {
+    return $this->hasOne(Executive::class, "transaction_id")
+      ->with([
+        "executiveSignedBy" => function ($query) {
+          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+        },
+      ])
+      ->latest()
+      ->limit(1);
   }
 }

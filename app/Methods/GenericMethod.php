@@ -17,6 +17,7 @@ use App\Models\Approver;
 use App\Models\Transfer;
 use App\Models\Treasury;
 use App\Models\Associate;
+use App\Models\Executive;
 use App\Models\DebitBatch;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
@@ -30,11 +31,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\VoucherAccountTitle;
 use App\Models\ClearingAccountTitle;
+
 use App\Models\UserDocumentCategory;
-
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Auth;
 use App\Exceptions\FistoLaravelException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -262,6 +263,11 @@ class GenericMethod
     } elseif ($process == "audit") {
       $model = new Audit();
       $field = "";
+    } elseif ($process == "executive") {
+      // $model = new Executive();
+      $field = "";
+    } elseif ($process == "inspect") {
+      $field = "";
     }
 
     $status = $process . "-" . $process;
@@ -414,28 +420,87 @@ class GenericMethod
     ]);
   }
 
+  // public function auditCheque(
+  //   $transaction_id,
+  //   $date_received,
+  //   $status,
+  //   $reason_id,
+  //   $remarks,
+  //   $user_id = null,
+  //   $date_audit = null,
+  //   $type = null
+  // ) {
+  //   Audit::updateOrCreate(
+  //     ["transaction_id" => $transaction_id],
+  //     [
+  //       "type" => $type,
+  //       "date_received" => $date_received,
+  //       "status" => $status,
+  //       "reason_id" => $reason_id,
+  //       "remarks" => $remarks,
+  //       "user_id" => $user_id,
+  //       "date_audited" => $date_audit,
+  //     ]
+  //   );
+  // }
+
   public function auditCheque(
     $transaction_id,
-    $request_id,
     $date_received,
     $status,
     $reason_id,
     $remarks,
-    $transaction_no,
-    $user_id,
-    $date_audit
+    $user_id = null,
+    $date_audit = null,
+    $type = null
   ) {
-    Audit::Create([
-      "transaction_id" => $transaction_id,
-      "request_id" => $request_id,
-      "date_received" => $date_received,
-      "status" => $status,
-      "reason_id" => $reason_id,
-      "remarks" => $remarks,
-      "transaction_no" => $transaction_no,
-      "user_id" => $user_id,
-      "date_audit" => $date_audit,
-    ]);
+    if ($type === "voucher") {
+      // Always insert with "inspect-inspect" status and type "voucher"
+      Audit::create([
+        "transaction_id" => $transaction_id,
+        "type" => "voucher",
+        "status" => $status,
+        "date_received" => $date_received,
+        "reason_id" => $reason_id,
+        "remarks" => $remarks,
+        "user_id" => $user_id,
+        "date_audited" => $date_audit,
+      ]);
+    } else {
+      // Insert with the provided status and type "cheque"
+      Audit::create([
+        "transaction_id" => $transaction_id,
+        "type" => "cheque",
+        "status" => $status,
+        "date_received" => $date_received,
+        "reason_id" => $reason_id,
+        "remarks" => $remarks,
+        "user_id" => $user_id,
+        "date_audited" => $date_audit,
+      ]);
+    }
+  }
+
+  public function executiveSign(
+    $transaction_id,
+    $date_received,
+    $status,
+    $reason_id,
+    $remarks,
+    $user_id = null,
+    $date_signed = null
+  ) {
+    Executive::updateOrCreate(
+      ["transaction_id" => $transaction_id],
+      [
+        "date_received" => $date_received,
+        "status" => $status,
+        "reason_id" => $reason_id,
+        "remarks" => $remarks,
+        "user_id" => $user_id,
+        "date_signed" => $date_signed,
+      ]
+    );
   }
 
   public static function chequeTransaction(
@@ -1039,6 +1104,7 @@ class GenericMethod
 
     if ($fields["document"]["id"] == 6) {
       //Utilities
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -1094,6 +1160,7 @@ class GenericMethod
       ]);
     } elseif ($fields["document"]["id"] == 8) {
       //PCF
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -1138,6 +1205,7 @@ class GenericMethod
       ]);
     } elseif ($fields["document"]["id"] == 7) {
       //Payrol
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -1185,6 +1253,7 @@ class GenericMethod
       ]);
     } elseif ($fields["document"]["id"] == 4) {
       // Receipt
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -1238,6 +1307,7 @@ class GenericMethod
       ]);
     } elseif ($fields["document"]["id"] == 5) {
       //Contractor's Billing
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -1285,6 +1355,7 @@ class GenericMethod
       ]);
     } elseif ($fields["document"]["id"] == 3) {
       //PRM Multiple
+
       if (isset($fields["transaction"])) {
         $transaction_id = $fields["transaction"]["no"];
         $request_id = $fields["transaction"]["request_id"];
@@ -1295,32 +1366,7 @@ class GenericMethod
         if ($is_transacted) {
           return "On Going Transaction";
         }
-
-        // $transaction_status = Tagging::where("transaction_id", $transaction_id)->where('request_id', $request_id)
-        // ->latest()
-        // ->get('status')
-        // ->first();
-
-        // if ($transaction_status != null && $transaction_status->status != "tag-return") {
-        //   return "On Going Transaction";
-        // }
       }
-
-      // if (isset($fields["transaction"])) {
-      //   $transaction_id = $fields["transaction"]["no"];
-      //   // Check for ongoing transaction
-      //   $is_transacted = Tagging::where("transaction_id", $transaction_id)->first();
-
-      //   $status = ['tag-return', 'tag-void'];
-
-      //   if ($is_transacted) {
-      //       if (!in_array($is_transacted->status, $status)) {
-      //           return "On Going Transaction"; // Return a string indicating ongoing transaction
-      //       }
-      //   } else {
-      //       return; // Return the transaction_id as a string
-      //   }
-      // }
 
       $category = $fields["document"]["category"]["name"];
       $prm_group = $fields["prm_group"];
@@ -1675,6 +1721,7 @@ class GenericMethod
       }
     } elseif ($fields["document"]["id"] == 9) {
       //Auto Debit
+
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
         // "users_id" => $fields["requestor"]["id"],
@@ -3552,8 +3599,8 @@ class GenericMethod
         ->leftJoin("transaction_client", "transactions.request_id", "=", "transaction_client.request_id")
         ->select("client_name")
         ->where("company_id", $company_id)
-        // ->where("department_id", $department_id)
-        // ->where("location_id", $location_id)
+        ->where("department_id", $department_id)
+        ->where("location_id", $location_id)
         ->where("supplier_id", $supplier_id)
         ->where("payroll_category", "$payroll_category")
         ->where("payroll_type", $payroll_type)
@@ -3586,8 +3633,8 @@ class GenericMethod
         $controlNoTransactions = DB::table("transactions")
           ->select("payroll_control_no")
           ->where("company_id", $company_id)
-          // ->where("department_id", $department_id)
-          // ->where("location_id", $location_id)
+          ->where("department_id", $department_id)
+          ->where("location_id", $location_id)
           ->where("supplier_id", $supplier_id)
           ->where("payroll_category", "$payroll_category")
           ->where("payroll_type", $payroll_type)
@@ -3637,8 +3684,8 @@ class GenericMethod
             "document.from",
             "document.to",
             "document.company.id",
-            // "document.department.id",
-            // "document.location.id",
+            "document.department.id",
+            "document.location.id",
             "document.supplier.id",
             "document.payroll.control_no",
           ],
@@ -3649,8 +3696,8 @@ class GenericMethod
             ["From has already been taken."],
             ["To date has already been taken."],
             ["Company has already been taken."],
-            // ["Department has already been taken."],
-            // ["Location has already been taken."],
+            ["Department has already been taken."],
+            ["Location has already been taken."],
             ["Supplier has already been taken."],
             ["Payroll control number has already been taken."],
           ]
@@ -3668,8 +3715,8 @@ class GenericMethod
           "document.from",
           "document.to",
           "document.company.id",
-          // "document.department.id",
-          // "document.location.id",
+          "document.department.id",
+          "document.location.id",
           "document.supplier.id",
         ],
         [
@@ -3679,8 +3726,8 @@ class GenericMethod
           ["From has already been taken."],
           ["To date has already been taken."],
           ["Company has already been taken."],
-          // ["Department has already been taken."],
-          // ["Location has already been taken."],
+          ["Department has already been taken."],
+          ["Location has already been taken."],
           ["Supplier has already been taken."],
         ]
       );
