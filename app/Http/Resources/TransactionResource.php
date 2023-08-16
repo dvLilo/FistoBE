@@ -1150,32 +1150,12 @@ class TransactionResource extends JsonResource
     $transaction_result["approve"] = $approve;
     $transaction_result["transmit"] = $transmit;
     $transaction_result["cheque"] = $cheque_description;
-    // $transaction_result["audit"] = [
-    //   "transaction_id" => $this->audit ? $this->audit->transaction_id : null,
-    //   "date_received" => $this->audit ? $this->audit->date_received : null,
-    //   "status" => $this->audit ? $this->audit->status : null,
-    //   "reason_id" => $this->audit ? $this->audit->reason_id : null,
-    //   "remarks" => $this->audit ? $this->audit->remarks : null,
-    //   "audit_by" => [
-    //     "id" => $this->audit ? optional($this->audit->auditedBy)->id : null,
-    //     "name" => $this->audit ? optional($this->audit->auditedBy)->name : null,
-    //   ],
-    //   "date_audited" => $this->audit ? $this->audit->date_audited : null,
-    // ];
-    // $transaction_result["executive"] = [
-    //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-    //   "date_received" => $this->executive ? $this->executive->date_received : null,
-    //   "status" => $this->executive ? $this->executive->status : null,
-    //   "reason_id" => $this->executive ? $this->executive->reason_id : null,
-    //   "remarks" => $this->executive ? $this->executive->remarks : null,
-    //   "signed_by" => [
-    //     "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-    //     "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-    //   ],
-    //   "date_signed" => $this->executive ? $this->executive->date_signed : null,
-    // ];
 
-    if (array_filter($auditValues, fn($value) => $value !== null) === []) {
+    if (
+      array_filter($auditValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
       $transaction_result["audit"] = [];
     } else {
       $transaction_result["audit"] = [
@@ -1207,9 +1187,9 @@ class TransactionResource extends JsonResource
     //   $transaction_result["audit"] = [];
     // } else {
     //   $transaction_result["audit"] = [
-    //     "transaction_id" => $this->audit ? $this->audit->transaction_id : null,
-    //     "date_received" => $this->audit ? $this->audit->date_received : null,
-    //     "status" => $this->audit ? $this->audit->status : null,
+    //     "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
+    //     "date_received" => $latestAudit ? $latestAudit->date_received : null,
+    //     "status" => $latestAudit ? $latestAudit->status : null,
     //     "reason_id" => $this->audit ? $this->audit->reason_id : null,
     //     "remarks" => $this->audit ? $this->audit->remarks : null,
     //     "audit_by" => [
