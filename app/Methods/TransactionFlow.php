@@ -632,22 +632,18 @@ class TransactionFlow
       } elseif ($subprocess == "transmit") {
         $status = "transmit-transmit";
 
-        // if ($transaction->document_id === 8) {
-        //   $status = "inspect-voucher";
-        //   $transaction->update([
-        //     "is_for_voucher_audit" => true,
-        //   ]);
-        // }
+        if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit == null) {
+          $status = "inspect-voucher";
+          $transaction->update([
+            "is_for_voucher_audit" => true,
+          ]);
+        }
 
-        if ($transaction->document_id === 8) {
-          if (!$transaction->is_for_voucher_audit) {
-            $status = "transmit-transmit";
-          } else {
-            $status = "inspect-voucher";
-            $transaction->update([
-              "is_for_voucher_audit" => true,
-            ]);
-          }
+        if ($transaction->document_id === 8 && $transaction->status == "transmit-receive") {
+          $status = "transmit-transmit";
+          $transaction->update([
+            "is_for_voucher_audit" => false,
+          ]);
         }
       }
       if (!isset($status)) {

@@ -42,7 +42,11 @@ class TransactionIndex extends JsonResource
       $this->auditVoucher ? $this->auditVoucher->date_audited : null,
     ];
 
-    if (array_filter($auditValues, fn($value) => $value !== null) === []) {
+    if (
+      array_filter($auditValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
       $auditData = [];
     } else {
       $auditData = [
