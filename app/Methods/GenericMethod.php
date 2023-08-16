@@ -466,6 +466,19 @@ class GenericMethod
         "user_id" => $user_id,
         "date_audited" => $date_audit,
       ]);
+
+      // if ($status === "inspect-inspect") {
+      //   Audit::create([
+      //     "transaction_id" => $transaction_id,
+      //     "type" => "voucher",
+      //     "status" => $status,
+      //     "date_received" => $date_received,
+      //     "reason_id" => $reason_id,
+      //     "remarks" => $remarks,
+      //     "user_id" => $user_id,
+      //     "date_audited" => $date_audit,
+      //   ]);
+      // }
     } else {
       // Insert with the provided status and type "cheque"
       Audit::create([
