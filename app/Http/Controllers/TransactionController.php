@@ -816,52 +816,192 @@ class TransactionController extends Controller
 
     switch ($fields["document"]["id"]) {
       case 1: //PAD
-        GenericMethod::documentNoValidation($request["document"]["no"]);
+        switch ($request->input("document.payment_type")) {
+          case "partial":
+            $fields["po_group"] = GenericMethod::ValidateIfPOExists(
+              $fields["po_group"],
+              $fields["document"]["company"]["id"]
+            );
 
-        if (empty($fields["po_group"])) {
-          $errorMessage = GenericMethod::resultLaravelFormat("po_group", ["PO group required"]);
+            $getAndValidatePOBalance = GenericMethod::getAndValidatePOBalance(
+              $fields,
+              $fields["document"]["company"]["id"],
+              last($fields["po_group"])["no"],
+              $fields["document"]["amount"],
+              $fields["po_group"]
+            );
 
-          return $this->resultResponse("invalid", "", $errorMessage);
-        }
+            //---------------------------------------------------------------------------------------------------
 
-        $duplicatePO = GenericMethod::validatePOFull($fields["document"]["company"]["id"], $fields["po_group"]);
+            //If the PO's is not unique and consider different condition
+            $existTransaction = Transaction::where("company_id", $fields["document"]["company"]["id"])
+              // ->where('company_id', $fields["document"]["company"]["id"])
+              // ->where('supplier_id', $fields["document"]["supplier"]["id"])
+              ->exists();
 
-        if (isset($duplicatePO)) {
-          return $this->resultResponse("invalid", "", $duplicatePO);
-        }
+            if ($existTransaction) {
+              $currentRequestids = POBatch::where("po_no", last($fields["po_group"])["no"])->pluck("request_id");
 
-        $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
+              $ids = [];
 
-        $errorMessage = GenericMethod::validateWith1PesoDifference(
-          "po_group.amount",
-          "Document",
-          $fields["document"]["amount"],
-          $po_total_amount
-        );
+              for ($i = 0; $i < count($currentRequestids); $i++) {
+                $ids[] = $currentRequestids[$i];
+              }
 
-        if (!empty($errorMessage)) {
-          return GenericMethod::resultResponse("invalid", "", $errorMessage);
-        }
+              // Transaction::where('request_id', '=', end($ids))
+              // ->update([
+              //   'is_not_editable' => true
+              // ]);
 
-        $transaction = GenericMethod::insertTransaction(
-          $transaction_id,
-          $po_total_amount,
-          $request_id,
-          $date_requested,
-          $fields
-        );
+              //enable new transaction
+              Transaction::where("request_id", "=", end($ids))->update([
+                "is_not_editable" => true,
+                "updated_at" => DB::raw("updated_at"),
+              ]);
+            }
 
-        $request_id = $transaction->id;
+            if (gettype($getAndValidatePOBalance) == "object") {
+              return $this->resultResponse("invalid", "", $getAndValidatePOBalance);
+            }
 
-        GenericMethod::insertPO(
-          $request_id,
-          $fields["po_group"],
-          $po_total_amount,
-          strtoupper($fields["document"]["payment_type"])
-        );
+            if (gettype($getAndValidatePOBalance) == "array") {
+              //for new po
+              //Additional PO Validation
+              $new_po = $getAndValidatePOBalance["new_po_group"];
+              $po_total_amount = $getAndValidatePOBalance["po_total_amount"];
+              $balance_with_additional_total_po_amount = $getAndValidatePOBalance["balance"];
 
-        if (isset($transaction->transaction_id)) {
-          return $this->resultResponse("save", "Transaction", []);
+              $transaction = GenericMethod::insertTransaction(
+                $transaction_id,
+                $po_total_amount,
+                $request_id,
+                $date_requested,
+                $fields,
+                $balance_with_additional_total_po_amount
+              );
+
+              $request_id = $transaction->id;
+
+              GenericMethod::insertPO(
+                $request_id,
+                $fields["po_group"],
+                $po_total_amount,
+                strtoupper($fields["document"]["payment_type"])
+              );
+
+              POBatch::where("request_id", $request_id)
+                ->where("po_no", reset($fields["po_group"])["no"])
+                ->update([
+                  "is_modifiable" => true,
+                ]);
+
+              $isAdd = POBatch::where("request_id", $request_id)->get();
+
+              foreach ($isAdd as $record) {
+                if ($record->is_add == true && $record->is_editable == true) {
+                  $record->update([
+                    "is_modifiable" => true,
+                  ]);
+                }
+              }
+
+              if (isset($transaction->transaction_id)) {
+                return $this->resultResponse("save", "Transaction", []);
+              }
+            }
+
+            $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
+            $balance_po_ref_amount = $po_total_amount - $fields["document"]["amount"];
+
+            if ($po_total_amount < $fields["document"]["amount"]) {
+              $amountValdiation = GenericMethod::resultLaravelFormat("document.reference.no", [
+                "Insufficient PO balance.",
+              ]);
+
+              return $this->resultResponse("invalid", "", $amountValdiation);
+            }
+
+            if (isset($getAndValidatePOBalance)) {
+              $balance_po_ref_amount = $getAndValidatePOBalance;
+            }
+
+            $transaction = GenericMethod::insertTransaction(
+              $transaction_id,
+              $po_total_amount,
+              $request_id,
+              $date_requested,
+              $fields,
+              $balance_po_ref_amount
+            );
+
+            $request_id = $transaction->id;
+
+            GenericMethod::insertPO(
+              $request_id,
+              $fields["po_group"],
+              $po_total_amount,
+              strtoupper($fields["document"]["payment_type"])
+            );
+
+            POBatch::where("request_id", $request_id)
+              ->where("is_add", false)
+              ->where("is_editable", true)
+              ->update(["is_modifiable" => true]);
+
+            if (isset($transaction->transaction_id)) {
+              return $this->resultResponse("save", "Transaction", []);
+            }
+            break;
+
+          default:
+            GenericMethod::documentNoValidation($request["document"]["no"]);
+
+            if (empty($fields["po_group"])) {
+              $errorMessage = GenericMethod::resultLaravelFormat("po_group", ["PO group required"]);
+
+              return $this->resultResponse("invalid", "", $errorMessage);
+            }
+
+            $duplicatePO = GenericMethod::validatePOFull($fields["document"]["company"]["id"], $fields["po_group"]);
+
+            if (isset($duplicatePO)) {
+              return $this->resultResponse("invalid", "", $duplicatePO);
+            }
+
+            $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
+
+            $errorMessage = GenericMethod::validateWith1PesoDifference(
+              "po_group.amount",
+              "Document",
+              $fields["document"]["amount"],
+              $po_total_amount
+            );
+
+            if (!empty($errorMessage)) {
+              return GenericMethod::resultResponse("invalid", "", $errorMessage);
+            }
+
+            $transaction = GenericMethod::insertTransaction(
+              $transaction_id,
+              $po_total_amount,
+              $request_id,
+              $date_requested,
+              $fields
+            );
+
+            $request_id = $transaction->id;
+
+            GenericMethod::insertPO(
+              $request_id,
+              $fields["po_group"],
+              $po_total_amount,
+              strtoupper($fields["document"]["payment_type"])
+            );
+
+            if (isset($transaction->transaction_id)) {
+              return $this->resultResponse("save", "Transaction", []);
+            }
+            break;
         }
 
         break;
