@@ -135,7 +135,7 @@ class TransactionIndex extends JsonResource
               "state" => $this->status,
               "users" => $this->users,
               "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
-              "audit" => $auditData,
+              // "audit" => $auditData,
               // "executive" => [
               //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
               //   "date_received" => $this->executive ? $this->executive->date_received : null,
@@ -180,7 +180,7 @@ class TransactionIndex extends JsonResource
         "state" => $this->status,
         "users" => $this->users,
         "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
-        "audit" => $auditData,
+        // "audit" => $auditData,
         // "executive" => [
         //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
         //   "date_received" => $this->executive ? $this->executive->date_received : null,

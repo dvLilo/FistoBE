@@ -1151,37 +1151,38 @@ class TransactionResource extends JsonResource
     $transaction_result["transmit"] = $transmit;
     $transaction_result["cheque"] = $cheque_description;
 
-    if (
-      array_filter($auditValues, function ($value) {
-        return $value !== null;
-      }) === []
-    ) {
-      $transaction_result["audit"] = [];
-    } else {
-      $transaction_result["audit"] = [
-        "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
-        "date_received" => $latestAudit ? $latestAudit->date_received : null,
-        "status" => $latestAudit ? $latestAudit->status : null,
-        "reason_id" => $this->audit ? $this->audit->reason_id : null,
-        "remarks" => $this->audit ? $this->audit->remarks : null,
-        "audit_by" => [
-          "voucher" => $this->auditVoucher
-            ? [
-              "id" => optional($this->auditVoucher->auditedBy)->id,
-              "name" => optional($this->auditVoucher->auditedBy)->name,
-              "date_audit" => $this->auditVoucher->date_audited,
-            ]
-            : [],
-          "cheque" => $this->audit
-            ? [
-              "id" => optional($this->audit->auditedBy)->id,
-              "name" => optional($this->audit->auditedBy)->name,
-              "date_audit" => $this->audit->date_audited,
-            ]
-            : [],
-        ],
-      ];
-    }
+    //remove in response
+    // if (
+    //   array_filter($auditValues, function ($value) {
+    //     return $value !== null;
+    //   }) === []
+    // ) {
+    //   $transaction_result["audit"] = [];
+    // } else {
+    //   $transaction_result["audit"] = [
+    //     "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
+    //     "date_received" => $latestAudit ? $latestAudit->date_received : null,
+    //     "status" => $latestAudit ? $latestAudit->status : null,
+    //     "reason_id" => $this->audit ? $this->audit->reason_id : null,
+    //     "remarks" => $this->audit ? $this->audit->remarks : null,
+    //     "audit_by" => [
+    //       "voucher" => $this->auditVoucher
+    //         ? [
+    //           "id" => optional($this->auditVoucher->auditedBy)->id,
+    //           "name" => optional($this->auditVoucher->auditedBy)->name,
+    //           "date_audit" => $this->auditVoucher->date_audited,
+    //         ]
+    //         : [],
+    //       "cheque" => $this->audit
+    //         ? [
+    //           "id" => optional($this->audit->auditedBy)->id,
+    //           "name" => optional($this->audit->auditedBy)->name,
+    //           "date_audit" => $this->audit->date_audited,
+    //         ]
+    //         : [],
+    //     ],
+    //   ];
+    // }
 
     // if (array_filter($auditValues, fn($value) => $value !== null) === []) {
     //   $transaction_result["audit"] = [];
