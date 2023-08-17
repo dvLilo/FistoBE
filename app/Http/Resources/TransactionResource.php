@@ -1211,26 +1211,27 @@ class TransactionResource extends JsonResource
     //   ];
     // }
 
-    if (
-      array_filter($executiveValues, function ($value) {
-        return $value !== null;
-      }) === []
-    ) {
-      $transaction_result["executive"] = [];
-    } else {
-      $transaction_result["executive"] = [
-        "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-        "date_received" => $this->executive ? $this->executive->date_received : null,
-        "status" => $this->executive ? $this->executive->status : null,
-        "reason_id" => $this->executive ? $this->executive->reason_id : null,
-        "remarks" => $this->executive ? $this->executive->remarks : null,
-        "signed_by" => [
-          "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-          "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-        ],
-        "date_signed" => $this->executive ? $this->executive->date_signed : null,
-      ];
-    }
+    //remove in response
+    // if (
+    //   array_filter($executiveValues, function ($value) {
+    //     return $value !== null;
+    //   }) === []
+    // ) {
+    //   $transaction_result["executive"] = [];
+    // } else {
+    //   $transaction_result["executive"] = [
+    //     "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
+    //     "date_received" => $this->executive ? $this->executive->date_received : null,
+    //     "status" => $this->executive ? $this->executive->status : null,
+    //     "reason_id" => $this->executive ? $this->executive->reason_id : null,
+    //     "remarks" => $this->executive ? $this->executive->remarks : null,
+    //     "signed_by" => [
+    //       "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
+    //       "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
+    //     ],
+    //     "date_signed" => $this->executive ? $this->executive->date_signed : null,
+    //   ];
+    // }
 
     $transaction_result["release"] = $release_description;
     $transaction_result["file"] = $file_description;
