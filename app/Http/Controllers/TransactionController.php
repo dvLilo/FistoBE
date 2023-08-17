@@ -647,20 +647,28 @@ class TransactionController extends Controller
       ->when(in_array($role, $audit_window), function ($query) use ($status) {
         $query
           ->when(
-            strtolower($status) == "audit-receive",
+            strtolower($status) == "audit-audit",
             function ($query) {
-              $query->whereIn("status", ["audit-receive", "audit-unhold", "audit-unreturn", "inspect-receive"]);
+              $query->whereIn("status", ["audit-audit", "inspect-inspect"]);
             },
             function ($query) use ($status) {
               $query->when(
-                strtolower($status) == "pending",
+                strtolower($status) == "audit-receive",
                 function ($query) {
-                  $query->whereIn("status", ["cheque-cheque", "transmit-transmit"])->where(function ($query) {
-                    $query->whereIn("is_for_voucher_audit", [true, false])->orWhereNull("is_for_voucher_audit");
-                  });
+                  $query->whereIn("status", ["audit-receive", "audit-unhold", "audit-unreturn", "inspect-receive"]);
                 },
                 function ($query) use ($status) {
-                  $query->where("status", preg_replace("/\s+/", "", $status));
+                  $query->when(
+                    strtolower($status) == "pending",
+                    function ($query) {
+                      $query->whereIn("status", ["cheque-cheque", "transmit-transmit"])->where(function ($query) {
+                        $query->whereIn("is_for_voucher_audit", [true, false])->orWhereNull("is_for_voucher_audit");
+                      });
+                    },
+                    function ($query) use ($status) {
+                      $query->where("status", preg_replace("/\s+/", "", $status));
+                    }
+                  );
                 }
               );
             }
