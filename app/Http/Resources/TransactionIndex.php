@@ -136,18 +136,18 @@ class TransactionIndex extends JsonResource
               "users" => $this->users,
               "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
               "audit" => $auditData,
-              "executive" => [
-                "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-                "date_received" => $this->executive ? $this->executive->date_received : null,
-                "status" => $this->executive ? $this->executive->status : null,
-                "reason_id" => $this->executive ? $this->executive->reason_id : null,
-                "remarks" => $this->executive ? $this->executive->remarks : null,
-                "signed_by" => [
-                  "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-                  "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-                ],
-                "date_signed" => $this->executive ? $this->executive->date_signed : null,
-              ],
+              // "executive" => [
+              //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
+              //   "date_received" => $this->executive ? $this->executive->date_received : null,
+              //   "status" => $this->executive ? $this->executive->status : null,
+              //   "reason_id" => $this->executive ? $this->executive->reason_id : null,
+              //   "remarks" => $this->executive ? $this->executive->remarks : null,
+              //   "signed_by" => [
+              //     "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
+              //     "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
+              //   ],
+              //   "date_signed" => $this->executive ? $this->executive->date_signed : null,
+              // ],
             ];
           }
         }
@@ -181,18 +181,18 @@ class TransactionIndex extends JsonResource
         "users" => $this->users,
         "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
         "audit" => $auditData,
-        "executive" => [
-          "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-          "date_received" => $this->executive ? $this->executive->date_received : null,
-          "status" => $this->executive ? $this->executive->status : null,
-          "reason_id" => $this->executive ? $this->executive->reason_id : null,
-          "remarks" => $this->executive ? $this->executive->remarks : null,
-          "signed_by" => [
-            "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-            "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-          ],
-          "date_signed" => $this->executive ? $this->executive->date_signed : null,
-        ],
+        // "executive" => [
+        //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
+        //   "date_received" => $this->executive ? $this->executive->date_received : null,
+        //   "status" => $this->executive ? $this->executive->status : null,
+        //   "reason_id" => $this->executive ? $this->executive->reason_id : null,
+        //   "remarks" => $this->executive ? $this->executive->remarks : null,
+        //   "signed_by" => [
+        //     "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
+        //     "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
+        //   ],
+        //   "date_signed" => $this->executive ? $this->executive->date_signed : null,
+        // ],
       ];
     }
 
