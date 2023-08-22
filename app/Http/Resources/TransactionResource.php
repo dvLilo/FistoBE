@@ -1152,37 +1152,37 @@ class TransactionResource extends JsonResource
     $transaction_result["cheque"] = $cheque_description;
 
     //remove in response
-    // if (
-    //   array_filter($auditValues, function ($value) {
-    //     return $value !== null;
-    //   }) === []
-    // ) {
-    //   $transaction_result["audit"] = [];
-    // } else {
-    //   $transaction_result["audit"] = [
-    //     "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
-    //     "date_received" => $latestAudit ? $latestAudit->date_received : null,
-    //     "status" => $latestAudit ? $latestAudit->status : null,
-    //     "reason_id" => $this->audit ? $this->audit->reason_id : null,
-    //     "remarks" => $this->audit ? $this->audit->remarks : null,
-    //     "audit_by" => [
-    //       "voucher" => $this->auditVoucher
-    //         ? [
-    //           "id" => optional($this->auditVoucher->auditedBy)->id,
-    //           "name" => optional($this->auditVoucher->auditedBy)->name,
-    //           "date_audit" => $this->auditVoucher->date_audited,
-    //         ]
-    //         : [],
-    //       "cheque" => $this->audit
-    //         ? [
-    //           "id" => optional($this->audit->auditedBy)->id,
-    //           "name" => optional($this->audit->auditedBy)->name,
-    //           "date_audit" => $this->audit->date_audited,
-    //         ]
-    //         : [],
-    //     ],
-    //   ];
-    // }
+    if (
+      array_filter($auditValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
+      $transaction_result["audit"] = [];
+    } else {
+      $transaction_result["audit"] = [
+        "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
+        "date_received" => $latestAudit ? $latestAudit->date_received : null,
+        "status" => $latestAudit ? $latestAudit->status : null,
+        "reason_id" => $this->audit ? $this->audit->reason_id : null,
+        "remarks" => $this->audit ? $this->audit->remarks : null,
+        "audit_by" => [
+          "voucher" => $this->auditVoucher
+            ? [
+              "id" => optional($this->auditVoucher->auditedBy)->id,
+              "name" => optional($this->auditVoucher->auditedBy)->name,
+              "date_audit" => $this->auditVoucher->date_audited,
+            ]
+            : [],
+          "cheque" => $this->audit
+            ? [
+              "id" => optional($this->audit->auditedBy)->id,
+              "name" => optional($this->audit->auditedBy)->name,
+              "date_audit" => $this->audit->date_audited,
+            ]
+            : [],
+        ],
+      ];
+    }
 
     // if (array_filter($auditValues, fn($value) => $value !== null) === []) {
     //   $transaction_result["audit"] = [];
@@ -1213,26 +1213,26 @@ class TransactionResource extends JsonResource
     // }
 
     //remove in response
-    // if (
-    //   array_filter($executiveValues, function ($value) {
-    //     return $value !== null;
-    //   }) === []
-    // ) {
-    //   $transaction_result["executive"] = [];
-    // } else {
-    //   $transaction_result["executive"] = [
-    //     "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-    //     "date_received" => $this->executive ? $this->executive->date_received : null,
-    //     "status" => $this->executive ? $this->executive->status : null,
-    //     "reason_id" => $this->executive ? $this->executive->reason_id : null,
-    //     "remarks" => $this->executive ? $this->executive->remarks : null,
-    //     "signed_by" => [
-    //       "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-    //       "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-    //     ],
-    //     "date_signed" => $this->executive ? $this->executive->date_signed : null,
-    //   ];
-    // }
+    if (
+      array_filter($executiveValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
+      $transaction_result["executive"] = [];
+    } else {
+      $transaction_result["executive"] = [
+        "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
+        "date_received" => $this->executive ? $this->executive->date_received : null,
+        "status" => $this->executive ? $this->executive->status : null,
+        "reason_id" => $this->executive ? $this->executive->reason_id : null,
+        "remarks" => $this->executive ? $this->executive->remarks : null,
+        "signed_by" => [
+          "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
+          "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
+        ],
+        "date_signed" => $this->executive ? $this->executive->date_signed : null,
+      ];
+    }
 
     $transaction_result["release"] = $release_description;
     $transaction_result["file"] = $file_description;
