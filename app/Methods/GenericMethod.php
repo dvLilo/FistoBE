@@ -277,6 +277,38 @@ class GenericMethod
       return $status;
     }
 
+    // $is_audited = Audit::where("transaction_id", $transaction->id)
+    //   ->where(function ($query) {
+    //     $query->where("status", "audit-audit");
+    //   })
+    //   ->orWhere(function ($query) use ($process) {
+    //     $query->where("status", "inspect-inspect");
+    //     if ($process == "audit") {
+    //       $query->where("transaction_id", 0); // Add a condition that will never be true
+    //     }
+    //   })
+    //   ->exists();
+
+    // if ($is_audited) {
+    //   return $status;
+    // }
+
+    $is_audited = Audit::where("transaction_id", $transaction->id)
+      ->where("status", "audit-audit")
+      ->exists();
+
+    if ($process == "audit" and $is_audited) {
+      return $status;
+    }
+
+    $is_inspected = Audit::where("transaction_id", $transaction->id)
+      ->where("status", "inspect-inspect")
+      ->exists();
+
+    if ($process == "inspect" and $is_inspected) {
+      return $status;
+    }
+
     if (!$transaction["$field"]) {
       $status = $process . "-receive";
     }
@@ -4308,7 +4340,16 @@ class GenericMethod
       case "transmit":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
+      case "inspect":
+        return GenericMethod::result(200, "Transaction has been saved.", []);
+        break;
+      case "audit":
+        return GenericMethod::result(200, "Transaction has been saved.", []);
+        break;
       case "cheque":
+        return GenericMethod::result(200, "Transaction has been saved.", []);
+        break;
+      case "executive":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
       case "release":

@@ -731,8 +731,8 @@ class TransactionFlow
       } elseif ($subprocess == "cheque") {
         if (
           $transaction->document_id === 8 &&
-          $transaction->status == "cheque-receive" &&
-          $transaction->is_for_voucher_audit == null
+          $transaction->status == "cheque-receive"
+          // && $transaction->is_for_voucher_audit == null
         ) {
           $transaction->update([
             "is_for_voucher_audit" => false,
@@ -1034,7 +1034,7 @@ class TransactionFlow
         }
 
         if ($transaction->is_for_voucher_audit == true) {
-          $voucher->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, $type);
+          $voucher->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "voucher");
         }
       } elseif ($subprocess == "inspect") {
         $status = "inspect-inspect";
@@ -1125,6 +1125,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
+
       if ($subprocess == "executive sign") {
         $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
       } else {
