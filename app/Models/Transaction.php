@@ -371,20 +371,11 @@ class Transaction extends Model
     return $this->hasOne(Audit::class, "transaction_id")
       ->with([
         "auditedBy" => function ($query) {
-          // $query->select(["id", "first_name", "last_name", "middle_name"]); // Add other columns you want
           $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
         },
       ])
       ->where("type", "cheque")
-      // ->select([
-      //   "transaction_id",
-      //   "date_received",
-      //   "status",
-      //   "reason_id",
-      //   "remarks",
-      //   "user_id as audited_by",
-      //   "date_audited",
-      // ])
+      ->whereIn("status", ["audit-audit", "audit-receive"])
       ->latest()
       ->limit(1);
   }
@@ -394,21 +385,11 @@ class Transaction extends Model
     return $this->hasOne(Audit::class, "transaction_id")
       ->with([
         "auditedBy" => function ($query) {
-          // $query->select(["id", "first_name", "last_name", "middle_name"]); // Add other columns you want
           $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
         },
       ])
       ->where("type", "voucher")
-      ->where("status", "inspect-inspect")
-      // ->select([
-      //   "transaction_id",
-      //   "date_received",
-      //   "status",
-      //   "reason_id",
-      //   "remarks",
-      //   "user_id as audited_by",
-      //   "date_audited",
-      // ])
+      ->whereIn("status", ["inspect-inspect", "inspect-receive"])
       ->latest()
       ->limit(1);
   }
@@ -421,6 +402,7 @@ class Transaction extends Model
           $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
         },
       ])
+      ->whereIn("status", ["executive-sign", "executive-receive"])
       ->latest()
       ->limit(1);
   }
