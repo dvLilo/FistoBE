@@ -778,6 +778,9 @@ class GenericMethod
           $query->where("cheque_no", $cheque_no);
         })
         ->where("id", "<>", $id)
+        // ->when($id, function ($query, $id) {
+        //   $query->where("id", "<>", $id);
+        // })
         ->exists();
 
       if ($transaction) {
@@ -4349,7 +4352,7 @@ class GenericMethod
       case "cheque":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
-      case "executive":
+      case "executive sign":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
       case "release":
@@ -4518,7 +4521,7 @@ class GenericMethod
         break;
 
       case "cheque-no-exist":
-        throw new FistoLaravelException("Cheque number already exist..", 422, null, $data);
+        throw new FistoLaravelException("Cheque number already exist.", 422, null, $data);
         break;
 
       case "success-no-content":

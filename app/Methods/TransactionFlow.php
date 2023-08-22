@@ -652,27 +652,48 @@ class TransactionFlow
         //   ]);
         // }
 
-        if (
-          $transaction->document_id === 8 &&
-          $transaction->status === "transmit-receive" &&
-          $transaction->is_for_voucher_audit === null
-        ) {
-          // Case 1: Update for voucher inspection
-          // $status = "inspect-voucher";
-          $transaction->update([
-            "is_for_voucher_audit" => true,
-          ]);
-        }
+        // if (
+        //   $transaction->document_id === 8 &&
+        //   $transaction->status === "transmit-receive" &&
+        //   $transaction->is_for_voucher_audit === null
+        // ) {
+        //   // Case 1: Update for voucher inspection
+        //   // $status = "inspect-voucher";
+        //   $transaction->update([
+        //     "is_for_voucher_audit" => true,
+        //   ]);
+        // }
 
-        if (
-          $transaction->document_id === 8 &&
-          $transaction->status === "transmit-receive" &&
-          $transaction->is_for_voucher_audit == false
-        ) {
-          // Case 2: Update for transmission status
-          $status = "transmit-transmit";
+        // if (
+        //   $transaction->document_id === 8 &&
+        //   $transaction->status === "transmit-receive" &&
+        //   $transaction->is_for_voucher_audit == false
+        // ) {
+        //   // Case 2: Update for transmission status
+        //   $status = "transmit-transmit";
+        //   $transaction->update([
+        //     "is_for_voucher_audit" => null,
+        //     "is_for_releasing" => false,
+        //   ]);
+        // }
+
+        if ($transaction->document_id === 8) {
+          if ($transaction->status === "transmit-receive" && $transaction->is_for_voucher_audit === null) {
+            // Case 1: Update for voucher inspection
+            $transaction->update([
+              "is_for_voucher_audit" => true,
+            ]);
+          } elseif ($transaction->status === "transmit-receive" && $transaction->is_for_voucher_audit == false) {
+            // Case 2: Update for transmission status
+            $transaction->update([
+              "is_for_voucher_audit" => null,
+              "is_for_releasing" => false,
+            ]);
+            // $status = "transmit-transmit"; // Is this line necessary? It's commented out.
+          }
+        } else {
           $transaction->update([
-            "is_for_voucher_audit" => null,
+            "is_for_releasing" => false,
           ]);
         }
       }
@@ -729,6 +750,7 @@ class TransactionFlow
       } elseif ($subprocess == "void") {
         $status = "cheque-void";
       } elseif ($subprocess == "cheque") {
+        $status = "cheque-cheque";
         if (
           $transaction->document_id === 8 &&
           $transaction->status == "cheque-receive"
@@ -738,11 +760,17 @@ class TransactionFlow
             "is_for_voucher_audit" => false,
           ]);
         }
+
+        if ($transaction->is_for_releasing == false && $transaction->status == "cheque-receive") {
+          $transaction->update([
+            "is_for_releasing" => null,
+          ]);
+        }
+
         $not_valid = GenericMethod::validateCheque($id, $cheques);
         if ($not_valid) {
           return GenericMethod::resultResponse("cheque-no-exist", "Cheque_no number already exist.", []);
         }
-        $status = "cheque-cheque";
       } elseif ($subprocess == "release") {
         if ($transaction->is_for_releasing == 0) {
           return response()->json(
@@ -966,6 +994,9 @@ class TransactionFlow
         //     "is_for_voucher_audit" => false,
         //   ]);
         // }
+        $transaction->update([
+          "is_for_voucher_audit" => null,
+        ]);
 
         $audit->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
@@ -1116,6 +1147,9 @@ class TransactionFlow
             "is_for_voucher_audit" => null,
           ]);
         }
+        // $transaction->update([
+        //   "is_for_voucher_audit" => null,
+        // ]);
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         $status = GenericMethod::getStatus($process, $transaction);
       }
