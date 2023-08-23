@@ -925,6 +925,7 @@ class TransactionFlow
       // $model = new Audit;
 
       $audit = new GenericMethod();
+      $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       // $transaction = Transaction::find($id);
 
       if ($subprocess == "receive") {
@@ -998,7 +999,7 @@ class TransactionFlow
           "is_for_voucher_audit" => null,
         ]);
 
-        $audit->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
+        $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         // if ($transaction->document_id === 8 && $transaction->status == "inspect-return") {
         //   $process = "inspect";
@@ -1056,7 +1057,7 @@ class TransactionFlow
       );
     } elseif ($process == "inspect") {
       $voucher = new GenericMethod();
-
+      $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       if ($subprocess == "receive") {
         $status = "inspect-receive";
         if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit == true) {
@@ -1077,7 +1078,7 @@ class TransactionFlow
         $transaction->update([
           "is_for_voucher_audit" => false,
         ]);
-        $voucher->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, $type);
+        $voucher->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, $type);
       } elseif ($subprocess == "return") {
         $status = "inspect-return";
 
@@ -1123,10 +1124,13 @@ class TransactionFlow
       // $model = new Audit;
 
       $executive = new GenericMethod();
+      $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       // $transaction = Transaction::find($id);
 
       if ($subprocess == "receive") {
         $status = "executive-receive";
+
+        $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks);
       } elseif ($subprocess == "hold") {
         $status = "executive-hold";
       } elseif ($subprocess == "return") {
@@ -1150,6 +1154,7 @@ class TransactionFlow
         // $transaction->update([
         //   "is_for_voucher_audit" => null,
         // ]);
+        $executive->executiveSign($id, null, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         $status = GenericMethod::getStatus($process, $transaction);
       }
@@ -1160,11 +1165,11 @@ class TransactionFlow
 
       $state = $subprocess;
 
-      if ($subprocess == "executive sign") {
-        $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
-      } else {
-        $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks);
-      }
+      // if ($subprocess == "executive sign") {
+      //   $executive->executiveSign($id, null, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
+      // } else {
+      //   $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks);
+      // }
 
       GenericMethod::updateTransactionStatus(
         $id,

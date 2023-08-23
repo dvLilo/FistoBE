@@ -16,7 +16,7 @@ class CreateExecutivesTable extends Migration
     Schema::create("executives", function (Blueprint $table) {
       $table->id();
       $table->foreignId("transaction_id")->constrained("transactions");
-      $table->date("date_received");
+      $table->timestamp("date_received")->nullable();
       $table->string("status");
       $table
         ->foreignId("reason_id")
@@ -27,7 +27,7 @@ class CreateExecutivesTable extends Migration
         ->foreignId("user_id")
         ->nullable()
         ->constrained("users");
-      $table->date("date_signed")->nullable();
+      $table->timestamp("date_signed")->nullable();
       $table->timestamps();
     });
   }
