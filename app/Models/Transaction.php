@@ -366,30 +366,83 @@ class Transaction extends Model
   //   return $this->hasOne(Receipt::class, "transactions_id", "id");
   // }
 
-  public function audit()
+  public function receiveVoucher()
   {
     return $this->hasOne(Audit::class, "transaction_id")
-      ->with([
-        "auditedBy" => function ($query) {
-          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
-        },
-      ])
-      ->where("type", "cheque")
-      ->whereIn("status", ["audit-audit", "audit-receive"])
-      ->latest()
-      ->limit(1);
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "status", "date_received"])
+      ->where("type", "voucher")
+      ->where("status", "inspect-receive")
+      ->latest();
   }
 
   public function auditVoucher()
   {
     return $this->hasOne(Audit::class, "transaction_id")
-      ->with([
-        "auditedBy" => function ($query) {
-          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
-        },
-      ])
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "status", "date_audited"])
       ->where("type", "voucher")
-      ->whereIn("status", ["inspect-inspect", "inspect-receive"])
+      ->where("status", "inspect-inspect")
+      ->latest();
+  }
+
+  public function receive()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "status", "date_received"])
+      ->where("type", "cheque")
+      ->where("status", "audit-receive")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function audit()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "status", "date_audited"])
+      ->where("type", "cheque")
+      ->where("status", "audit-audit")
+      ->latest()
+      ->limit(1);
+  }
+
+  // public function auditVoucher()
+  // {
+  //   return $this->hasOne(Audit::class, "transaction_id")
+  //     ->with([
+  //       "auditedBy" => function ($query) {
+  //         $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+  //       },
+  //     ])
+  //     ->where("type", "voucher")
+  //     ->whereIn("status", ["inspect-inspect", "inspect-receive"])
+  //     ->latest()
+  //     ->limit(1);
+  // }
+
+  public function receiveExecutive()
+  {
+    return $this->hasOne(Executive::class, "transaction_id")
+      ->select(["transaction_id", "status", "date_received"])
+      ->where("status", "executive-receive")
       ->latest()
       ->limit(1);
   }
@@ -397,12 +450,13 @@ class Transaction extends Model
   public function executive()
   {
     return $this->hasOne(Executive::class, "transaction_id")
-      ->with([
-        "executiveSignedBy" => function ($query) {
-          $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
-        },
-      ])
-      ->whereIn("status", ["executive-sign", "executive-receive"])
+      // ->with([
+      //   "executiveSignedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "status", "date_signed"])
+      ->where("status", "executive-sign")
       ->latest()
       ->limit(1);
   }

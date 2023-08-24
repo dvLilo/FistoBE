@@ -535,9 +535,10 @@ class GenericMethod
     $user_id = null,
     $date_signed = null
   ) {
-    Executive::updateOrCreate(
-      ["transaction_id" => $transaction_id],
+    Executive::create(
+      // ["transaction_id" => $transaction_id],
       [
+        "transaction_id" => $transaction_id,
         "date_received" => $date_received,
         "status" => $status,
         "reason_id" => $reason_id,

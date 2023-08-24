@@ -17,7 +17,7 @@ class CreateAuditsTable extends Migration
       $table->id();
       $table->foreignId("transaction_id")->constrained("transactions");
       $table->string("type")->nullable();
-      $table->date("date_received");
+      $table->timestamp("date_received")->nullable();
       $table->string("status");
       $table
         ->foreignId("reason_id")
@@ -28,7 +28,7 @@ class CreateAuditsTable extends Migration
         ->foreignId("user_id")
         ->nullable()
         ->constrained("users");
-      $table->date("date_audited")->nullable();
+      $table->timestamp("date_audited")->nullable();
       $table->timestamps();
     });
   }
