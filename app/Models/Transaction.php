@@ -113,6 +113,7 @@ class Transaction extends Model
     "voucher_no",
     "is_for_releasing",
     "is_for_voucher_audit",
+    "is_for_cheque_audit",
   ];
 
   public $timestamps = ["created_at"];
@@ -374,7 +375,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "date_received"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("type", "voucher")
       ->where("status", "inspect-receive")
       ->latest();
@@ -388,7 +389,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "date_audited"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("type", "voucher")
       ->where("status", "inspect-inspect")
       ->latest();
@@ -402,7 +403,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "date_received"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("type", "cheque")
       ->where("status", "audit-receive")
       ->latest()
@@ -417,7 +418,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "date_audited"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("type", "cheque")
       ->where("status", "audit-audit")
       ->latest()
@@ -441,7 +442,7 @@ class Transaction extends Model
   public function receiveExecutive()
   {
     return $this->hasOne(Executive::class, "transaction_id")
-      ->select(["transaction_id", "status", "date_received"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("status", "executive-receive")
       ->latest()
       ->limit(1);
@@ -455,7 +456,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "date_signed"])
+      ->select(["transaction_id", "status", "created_at"])
       ->where("status", "executive-sign")
       ->latest()
       ->limit(1);

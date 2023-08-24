@@ -1239,8 +1239,8 @@ class TransactionResource extends JsonResource
     }
 
     $inspectValues = [
-      "date_received" => $receive ? ($receive->date_received ?: null) : null,
-      "date_inspected" => $inspect ? ($inspect->date_audited ?: null) : null,
+      "date_received" => $receive ? ($receive->created_at ?: null) : null,
+      "date_inspected" => $inspect ? ($inspect->created_at ?: null) : null,
       "status" => $status,
     ];
 
@@ -1299,8 +1299,8 @@ class TransactionResource extends JsonResource
     }
 
     $auditValues = [
-      "date_received" => $receiveCheque ? ($receiveCheque->date_received ?: null) : null,
-      "date_audited" => $auditCheque ? ($auditCheque->date_audited ?: null) : null,
+      "date_received" => $receiveCheque ? ($receiveCheque->created_at ?: null) : null,
+      "date_audited" => $auditCheque ? ($auditCheque->created_at ?: null) : null,
       "status" => $statusAudit,
     ];
 
@@ -1357,8 +1357,8 @@ class TransactionResource extends JsonResource
     }
 
     $executiveValues = [
-      "date_received" => $receiveExecutive ? ($receiveExecutive->date_received ?: null) : null,
-      "date_signed" => $executiveSign ? ($executiveSign->date_signed ?: null) : null,
+      "date_received" => $receiveExecutive ? ($receiveExecutive->created_at ?: null) : null,
+      "date_signed" => $executiveSign ? ($executiveSign->created_at ?: null) : null,
       "status" => $statusExecutive,
     ];
 
