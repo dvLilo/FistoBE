@@ -465,6 +465,12 @@ class TransactionFlow
             "is_for_voucher_audit" => null,
           ]);
         }
+
+        if ($transaction->status == "cheque-return") {
+          $transaction->update([
+            "is_for_releasing" => null,
+          ]);
+        }
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         $status = GenericMethod::getStatus($process, $transaction);
       }
@@ -693,7 +699,8 @@ class TransactionFlow
           }
         } else {
           $transaction->update([
-            "is_for_releasing" => false,
+            // "is_for_releasing" => false,
+            "is_for_releasing" => null,
           ]);
         }
       }
@@ -751,19 +758,30 @@ class TransactionFlow
         $status = "cheque-void";
       } elseif ($subprocess == "cheque") {
         $status = "cheque-cheque";
-        if (
-          $transaction->document_id === 8 &&
-          $transaction->status == "cheque-receive"
-          // && $transaction->is_for_voucher_audit == null
-        ) {
-          $transaction->update([
-            "is_for_voucher_audit" => false,
-          ]);
-        }
+        // if (
+        //   $transaction->document_id === 8 &&
+        //   $transaction->status == "cheque-receive"
+        //   // && $transaction->is_for_voucher_audit == null
+        // ) {
+        //   $transaction->update([
+        //     // "is_for_voucher_audit" => false,
+        //     "is_for_voucher_audit" => null,
+        //   ]);
+        // }
 
-        if ($transaction->is_for_releasing == false && $transaction->status == "cheque-receive") {
+        // if ($transaction->is_for_releasing == false && $transaction->status == "cheque-receive") {
+        //   $transaction->update([
+        //     "is_for_releasing" => null,
+        //   ]);
+        // }
+
+        if ($transaction->is_for_releasing == true) {
           $transaction->update([
-            "is_for_releasing" => null,
+            "is_for_releasing" => true,
+          ]);
+        } else {
+          $transaction->update([
+            "is_for_releasing" => false,
           ]);
         }
 
@@ -771,6 +789,10 @@ class TransactionFlow
         if ($not_valid) {
           return GenericMethod::resultResponse("cheque-no-exist", "Cheque_no number already exist.", []);
         }
+
+        // $transaction->update([
+        //   "is_for_cheque_audit" => true,
+        // ]);
       } elseif ($subprocess == "release") {
         if ($transaction->is_for_releasing == 0) {
           return response()->json(
@@ -926,6 +948,7 @@ class TransactionFlow
 
       $audit = new GenericMethod();
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
+      $type = "cheque";
       // $transaction = Transaction::find($id);
 
       if ($subprocess == "receive") {
@@ -943,9 +966,9 @@ class TransactionFlow
         //   $audit->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "cheque");
         // }
 
-        if ($transaction->is_for_voucher_audit == false) {
-          $audit->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "cheque");
-        }
+        // if ($transaction->is_for_voucher_audit == false) {
+        //   $audit->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "cheque");
+        // }
       } elseif ($subprocess == "hold") {
         $status = "audit-hold";
       } elseif ($subprocess == "return") {
@@ -999,7 +1022,7 @@ class TransactionFlow
           "is_for_voucher_audit" => null,
         ]);
 
-        $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
+        // $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         // if ($transaction->document_id === 8 && $transaction->status == "inspect-return") {
         //   $process = "inspect";
@@ -1027,6 +1050,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
+      $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
 
       // if ($state == "inspect" && $transaction->is_for_voucher_audit == true) {
       //   if ($type === "voucher") {
@@ -1058,16 +1082,16 @@ class TransactionFlow
     } elseif ($process == "inspect") {
       $voucher = new GenericMethod();
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
+      $type = "voucher";
       if ($subprocess == "receive") {
         $status = "inspect-receive";
-        if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit == true) {
-          $status = "inspect-receive";
-          $type = "voucher";
-        }
+        // if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit == true) {
+        //   $status = "inspect-receive";
+        // }
 
-        if ($transaction->is_for_voucher_audit == true) {
-          $voucher->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "voucher");
-        }
+        // if ($transaction->is_for_voucher_audit == true) {
+        //   $voucher->auditCheque($id, $date_now, $status, $reason_id, $reason_remarks, null, null, "voucher");
+        // }
       } elseif ($subprocess == "inspect") {
         $status = "inspect-inspect";
 
@@ -1078,7 +1102,7 @@ class TransactionFlow
         $transaction->update([
           "is_for_voucher_audit" => false,
         ]);
-        $voucher->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, $type);
+        // $voucher->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, $type);
       } elseif ($subprocess == "return") {
         $status = "inspect-return";
 
@@ -1102,6 +1126,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
+      $voucher->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
 
       GenericMethod::updateTransactionStatus(
         $id,

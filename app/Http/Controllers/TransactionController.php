@@ -650,7 +650,17 @@ class TransactionController extends Controller
               $query->when(
                 strtolower($status) == "pending",
                 function ($query) {
-                  $query->whereIn("status", ["cheque-cheque", "transmit-transmit"])->whereNull("is_for_releasing");
+                  $query
+                    ->whereIn("status", ["cheque-cheque", "transmit-transmit"])
+                    // ->whereNull("is_for_releasing")
+                    // ->where("is_for_voucher_audit", false);
+                    ->where(function ($query) {
+                      // $query->where("is_for_cheque_audit", true);
+                      $query->where("is_for_releasing", "!=", true);
+                    });
+                  // ->where(function ($query) {
+                  //   $query->whereNull("is_for_releasing")->where("is_for_voucher_audit", false);
+                  // });
                   // ->where(function ($query) {
                   //   $query->where("is_for_voucher_audit", false)->orWhereNull("is_for_voucher_audit");
                   // });
@@ -813,7 +823,7 @@ class TransactionController extends Controller
     switch ($fields["document"]["id"]) {
       case 1: //PAD
         switch ($request->input("document.payment_type")) {
-          case "partial":
+          case "Partial":
             $fields["po_group"] = GenericMethod::ValidateIfPOExists(
               $fields["po_group"],
               $fields["document"]["company"]["id"]
@@ -826,8 +836,6 @@ class TransactionController extends Controller
               $fields["document"]["amount"],
               $fields["po_group"]
             );
-
-            //---------------------------------------------------------------------------------------------------
 
             //If the PO's is not unique and consider different condition
             $existTransaction = Transaction::where("company_id", $fields["document"]["company"]["id"])
@@ -909,13 +917,13 @@ class TransactionController extends Controller
             $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
             $balance_po_ref_amount = $po_total_amount - $fields["document"]["amount"];
 
-            if ($po_total_amount < $fields["document"]["amount"]) {
-              $amountValdiation = GenericMethod::resultLaravelFormat("document.reference.no", [
-                "Insufficient PO balance.",
-              ]);
+            // if ($po_total_amount < $fields["document"]["reference"]["amount"]) {
+            //   $amountValdiation = GenericMethod::resultLaravelFormat("document.reference.no", [
+            //     "Insufficient PO balance.",
+            //   ]);
 
-              return $this->resultResponse("invalid", "", $amountValdiation);
-            }
+            //   return $this->resultResponse("invalid", "", $amountValdiation);
+            // }
 
             if (isset($getAndValidatePOBalance)) {
               $balance_po_ref_amount = $getAndValidatePOBalance;
@@ -947,6 +955,8 @@ class TransactionController extends Controller
             if (isset($transaction->transaction_id)) {
               return $this->resultResponse("save", "Transaction", []);
             }
+
+            //---------------------------------------------------------------------------------------------------
             break;
 
           default:

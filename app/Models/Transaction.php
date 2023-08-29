@@ -113,7 +113,6 @@ class Transaction extends Model
     "voucher_no",
     "is_for_releasing",
     "is_for_voucher_audit",
-    "is_for_cheque_audit",
   ];
 
   public $timestamps = ["created_at"];
@@ -375,9 +374,9 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "created_at"])
+      ->select(["created_at"])
       ->where("type", "voucher")
-      ->where("status", "inspect-receive")
+      ->whereIn("status", ["inspect-receive"])
       ->latest();
   }
 
@@ -389,12 +388,40 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "created_at"])
+      ->select(["created_at"])
       ->where("type", "voucher")
-      ->where("status", "inspect-inspect")
+      ->whereIn("status", ["inspect-inspect"])
       ->latest();
   }
 
+  public function reasonVoucher()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "reason_id", "remarks"])
+      ->where("type", "voucher")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function statusVoucher()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->with([
+        "reason" => function ($query) {
+          $query->select(["reason"]);
+        },
+      ])
+      ->select(["status"])
+      ->where("type", "voucher")
+      ->latest()
+      ->limit(1);
+  }
+  #----------------------------------
   public function receive()
   {
     return $this->hasOne(Audit::class, "transaction_id")
@@ -403,7 +430,7 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "created_at"])
+      ->select(["created_at"])
       ->where("type", "cheque")
       ->where("status", "audit-receive")
       ->latest()
@@ -418,12 +445,42 @@ class Transaction extends Model
       //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
       //   },
       // ])
-      ->select(["transaction_id", "status", "created_at"])
+      ->select(["created_at"])
       ->where("type", "cheque")
       ->where("status", "audit-audit")
       ->latest()
       ->limit(1);
   }
+
+  public function reasonAudit()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "reason_id", "remarks"])
+      ->where("type", "cheque")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function statusAudit()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->with([
+        "reason" => function ($query) {
+          $query->select(["reason"]);
+        },
+      ])
+      ->select(["status"])
+      ->where("type", "cheque")
+      ->latest()
+      ->limit(1);
+  }
+
+  #----------------------------------
 
   // public function auditVoucher()
   // {
@@ -458,6 +515,32 @@ class Transaction extends Model
       // ])
       ->select(["transaction_id", "status", "created_at"])
       ->where("status", "executive-sign")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function reasonExecutive()
+  {
+    return $this->hasOne(Executive::class, "transaction_id")
+      // ->with([
+      //   "auditedBy" => function ($query) {
+      //     $query->select(["id", "first_name", "last_name", DB::raw("CONCAT(first_name, ' ', last_name) AS name")]);
+      //   },
+      // ])
+      ->select(["transaction_id", "reason_id", "remarks"])
+      ->latest()
+      ->limit(1);
+  }
+
+  public function statusExecutive()
+  {
+    return $this->hasOne(Executive::class, "transaction_id")
+      ->with([
+        "reason" => function ($query) {
+          $query->select(["reason"]);
+        },
+      ])
+      ->select(["status"])
       ->latest()
       ->limit(1);
   }
