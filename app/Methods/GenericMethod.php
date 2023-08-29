@@ -1817,6 +1817,53 @@ class GenericMethod
       if ($new_transaction->id) {
         GenericMethod::insert_debit_attachment($request_id, $fields["autoDebit_group"]);
       }
+      // } elseif ($fields["document"]["id"] == 1 && $fields["document"]["payment_type"] == "Partial") {
+      //   $new_transaction = Transaction::create([
+      //     "transaction_id" => $transaction_id,
+      //     // "users_id" => $fields["requestor"]["id"],
+      //     // "id_prefix" => $fields["requestor"]["id_prefix"],
+      //     // "id_no" => $fields["requestor"]["id_no"],
+      //     // "first_name" => $fields["requestor"]["first_name"],
+      //     // "middle_name" => $fields["requestor"]["middle_name"],
+      //     // "last_name" => $fields["requestor"]["last_name"],
+      //     // "suffix" => $fields["requestor"]["suffix"],
+      //     // "department_details" => $fields["requestor"]["department"],
+
+      //     "users_id" => $requestor->id,
+      //     "id_prefix" => $requestor->id_prefix,
+      //     "id_no" => $requestor->id_no,
+      //     "first_name" => $requestor->first_name,
+      //     "middle_name" => $requestor->middle_name,
+      //     "last_name" => $requestor->last_name,
+      //     "suffix" => $requestor->suffix,
+      //     "department_details" => $requestor->department[0]["name"],
+
+      //     "document_id" => $fields["document"]["id"],
+      //     "category_id" => $fields["document"]["category"]["id"],
+      //     "category" => $fields["document"]["category"]["name"],
+      //     "company_id" => $fields["document"]["company"]["id"],
+      //     "company" => $fields["document"]["company"]["name"],
+      //     "department_id" => $fields["document"]["department"]["id"],
+      //     "department" => $fields["document"]["department"]["name"],
+      //     "location_id" => $fields["document"]["location"]["id"],
+      //     "location" => $fields["document"]["location"]["name"],
+      //     "supplier_id" => $fields["document"]["supplier"]["id"],
+      //     "supplier" => $fields["document"]["supplier"]["name"],
+      //     "payment_type" => $fields["document"]["payment_type"],
+      //     "document_no" => $fields["document"]["no"],
+      //     "document_date" => $fields["document"]["date"],
+      //     "document_amount" => $fields["document"]["amount"],
+      //     "remarks" => $fields["document"]["remarks"],
+      //     "document_type" => $fields["document"]["name"],
+
+      //     "po_total_amount" => $po_total_amount,
+      //     "balance_po_ref_amount" => $balance_po_ref_amount,
+      //     "request_id" => $request_id,
+
+      //     "date_requested" => $date_requested,
+      //     "status" => "Pending",
+      //     "is_not_editable" => false,
+      //   ]);
     } else {
       $new_transaction = Transaction::create([
         "transaction_id" => $transaction_id,
