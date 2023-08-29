@@ -565,7 +565,7 @@ class TransactionController extends Controller
                     strtolower($status) == "pending",
                     function ($query) {
                       $query
-                        ->whereIn("status", ["transmit-transmit", "executive-sign", "audit-return"])
+                        ->whereIn("status", ["transmit-transmit", "executive-executive", "audit-return"])
                         ->where(function ($query) {
                           $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
                         });

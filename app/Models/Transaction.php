@@ -514,7 +514,7 @@ class Transaction extends Model
       //   },
       // ])
       ->select(["transaction_id", "status", "created_at"])
-      ->where("status", "executive-sign")
+      ->where("status", "executive-executive")
       ->latest()
       ->limit(1);
   }
