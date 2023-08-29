@@ -1162,8 +1162,8 @@ class TransactionFlow
         $status = "executive-return";
       } elseif ($subprocess == "void") {
         $status = "executive-void";
-      } elseif ($subprocess == "executive sign") {
-        $status = "executive-sign";
+      } elseif ($subprocess == "executive") {
+        $status = "executive-executive";
         $signed_date = $date_now;
         $signed_by = Auth::user()->id;
 
