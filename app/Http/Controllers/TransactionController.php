@@ -552,24 +552,23 @@ class TransactionController extends Controller
           ->when(
             strtolower($status) == "cheque-receive",
             function ($query) {
-              $query->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"]);
+              $query
+                ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
+                ->whereNull("is_for_releasing");
             },
             function ($query) use ($status) {
               $query->when(
                 strtolower($status) == "cheque-cheque",
                 function ($query) {
-                  $query->whereIn("status", ["cheque-cheque", "cheque-reverse"]);
+                  $query->whereIn("status", ["cheque-cheque", "cheque-reverse"])->where("is_for_releasing", false);
                 },
                 function ($query) use ($status) {
                   $query->when(
                     strtolower($status) == "pending",
                     function ($query) {
-                      $query
-                        ->whereIn("status", ["transmit-transmit", "executive-executive", "audit-return"])
-                        ->where(function ($query) {
-                          $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
-                        });
-                      // ->whereNull("is_for_voucher_audit");
+                      $query->whereIn("status", ["transmit-transmit", "audit-return"])->where(function ($query) {
+                        $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
+                      });
                     },
                     function ($query) use ($status) {
                       $query->when(
@@ -596,7 +595,37 @@ class TransactionController extends Controller
                                       $query->whereIn("status", ["release-void"]);
                                     },
                                     function ($query) use ($status) {
-                                      $query->where("status", preg_replace("/\s+/", "", $status));
+                                      $query->when(
+                                        strtolower($status) == "pending-issue",
+                                        function ($query) {
+                                          $query
+                                            ->where("status", "executive-executive")
+                                            ->where("is_for_releasing", true);
+                                        },
+                                        function ($query) use ($status) {
+                                          $query->when(
+                                            strtolower($status) == "issue-receive",
+                                            function ($query) {
+                                              $query
+                                                ->where("status", "cheque-receive")
+                                                ->where("is_for_releasing", true);
+                                            },
+                                            function ($query) use ($status) {
+                                              $query->when(
+                                                strtolower($status) == "issue-issue",
+                                                function ($query) {
+                                                  $query
+                                                    ->where("status", "cheque-cheque")
+                                                    ->where("is_for_releasing", true);
+                                                },
+                                                function ($query) use ($status) {
+                                                  $query->where("status", preg_replace("/\s+/", "", $status));
+                                                }
+                                              );
+                                            }
+                                          );
+                                        }
+                                      );
                                     }
                                   );
                                 }
@@ -657,6 +686,7 @@ class TransactionController extends Controller
                     ->where(function ($query) {
                       // $query->where("is_for_cheque_audit", true);
                       $query->where("is_for_releasing", "!=", true);
+                      // $query->where("is_for_releasing", "!=", false);
                     });
                   // ->where(function ($query) {
                   //   $query->whereNull("is_for_releasing")->where("is_for_voucher_audit", false);

@@ -3935,7 +3935,12 @@ class GenericMethod
       ];
     }
 
-    if (!$fields["document"]["reference"]["allowable"]) {
+    // if (!$fields["document"]["reference"]["allowable"]) {
+    //   if ($balance_po_ref_amount < $reference_amount) {
+    //     return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
+    //   }
+    // }
+    if (isset($fields["document"]["reference"]) && !$fields["document"]["reference"]["allowable"]) {
       if ($balance_po_ref_amount < $reference_amount) {
         return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
       }
@@ -4400,7 +4405,7 @@ class GenericMethod
       case "cheque":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
-      case "executive sign":
+      case "executive":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
       case "release":
