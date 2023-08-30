@@ -637,52 +637,6 @@ class TransactionFlow
         }
       } elseif ($subprocess == "transmit") {
         $status = "transmit-transmit";
-
-        // if (
-        //   $transaction->document_id === 8 &&
-        //   $transaction->status == "transmit-receive" &&
-        //   $transaction->is_for_voucher_audit == false
-        // ) {
-        //   return response("dito ka");
-        //   $status = "transmit-transmit";
-        //   // $transaction->update([
-        //   //   "is_for_voucher_audit" => false,
-        //   // ]);
-        // }
-
-        // if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit == null) {
-        //   return response("wag ka rito");
-        //   $status = "inspect-voucher";
-        //   $transaction->update([
-        //     "is_for_voucher_audit" => true,
-        //   ]);
-        // }
-
-        // if (
-        //   $transaction->document_id === 8 &&
-        //   $transaction->status === "transmit-receive" &&
-        //   $transaction->is_for_voucher_audit === null
-        // ) {
-        //   // Case 1: Update for voucher inspection
-        //   // $status = "inspect-voucher";
-        //   $transaction->update([
-        //     "is_for_voucher_audit" => true,
-        //   ]);
-        // }
-
-        // if (
-        //   $transaction->document_id === 8 &&
-        //   $transaction->status === "transmit-receive" &&
-        //   $transaction->is_for_voucher_audit == false
-        // ) {
-        //   // Case 2: Update for transmission status
-        //   $status = "transmit-transmit";
-        //   $transaction->update([
-        //     "is_for_voucher_audit" => null,
-        //     "is_for_releasing" => false,
-        //   ]);
-        // }
-
         if ($transaction->document_id === 8) {
           if ($transaction->status === "transmit-receive" && $transaction->is_for_voucher_audit === null) {
             // Case 1: Update for voucher inspection
@@ -693,10 +647,14 @@ class TransactionFlow
             // Case 2: Update for transmission status
             $transaction->update([
               "is_for_voucher_audit" => null,
-              "is_for_releasing" => false,
+              // "is_for_releasing" => false,
             ]);
             // $status = "transmit-transmit"; // Is this line necessary? It's commented out.
           }
+        } elseif ($transaction->document_id === 9) {
+          $transaction->update([
+            "is_for_releasing" => false,
+          ]);
         } else {
           $transaction->update([
             // "is_for_releasing" => false,
@@ -1001,6 +959,10 @@ class TransactionFlow
             "is_for_voucher_audit" => null,
           ]);
         }
+
+        // if ($transaction->document_id === 9) {
+
+        // }
       } elseif ($subprocess == "void") {
         $status = "audit-void";
       } elseif ($subprocess == "audit") {
