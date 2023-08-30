@@ -483,62 +483,62 @@ class TransactionFlow
         $document_amount = $transaction["referrence_amount"];
       }
 
-      if (!empty($account_titles)) {
-        $debit_entries_amount = array_filter($account_titles, function ($account_title) {
-          return strtolower($account_title["entry"]) != strtolower("credit");
-        });
+      // if (!empty($account_titles)) {
+      //   $debit_entries_amount = array_filter($account_titles, function ($account_title) {
+      //     return strtolower($account_title["entry"]) != strtolower("credit");
+      //   });
 
-        $credit_entries_amount = array_filter($account_titles, function ($account_title) {
-          return strtolower($account_title["entry"]) != strtolower("debit");
-        });
+      //   $credit_entries_amount = array_filter($account_titles, function ($account_title) {
+      //     return strtolower($account_title["entry"]) != strtolower("debit");
+      //   });
 
-        $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
-        $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
+      //   $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
+      //   $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
 
-        if ($debit_amount != $credit_amount) {
-          return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
-        }
+      //   if ($debit_amount != $credit_amount) {
+      //     return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+      //   }
 
-        if ($document_amount != $debit_amount) {
-          return GenericMethod::resultResponse("not-equal", "Document and account title", []);
-        }
-      }
-
-      // if ($subprocess == "voucher") {
-      //   if (!empty($account_titles)) {
-      //     $debit_entries_amount = array_filter($account_titles, function ($account_title) {
-      //       return strtolower($account_title["entry"]) != strtolower("credit");
-      //     });
-
-      //     $credit_entries_amount = array_filter($account_titles, function ($account_title) {
-      //       return strtolower($account_title["entry"]) != strtolower("debit");
-      //     });
-
-      //     $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
-      //     $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
-
-      //     switch ($transaction->document_id) {
-      //       case 3:
-      //         if ($debit_amount != $credit_amount) {
-      //           return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
-      //         }
-      //         if ($transaction->net_amount != $debit_amount) {
-      //           return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
-      //         }
-
-      //         break;
-
-      //       default:
-      //         if ($debit_amount != $credit_amount) {
-      //           return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
-      //         }
-
-      //         if ($document_amount != $debit_amount) {
-      //           return GenericMethod::resultResponse("not-equal", "Document and account title", []);
-      //         }
-      //     }
+      //   if ($document_amount != $debit_amount) {
+      //     return GenericMethod::resultResponse("not-equal", "Document and account title", []);
       //   }
       // }
+
+      if ($subprocess == "voucher") {
+        if (!empty($account_titles)) {
+          $debit_entries_amount = array_filter($account_titles, function ($account_title) {
+            return strtolower($account_title["entry"]) != strtolower("credit");
+          });
+
+          $credit_entries_amount = array_filter($account_titles, function ($account_title) {
+            return strtolower($account_title["entry"]) != strtolower("debit");
+          });
+
+          $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
+          $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
+
+          switch ($transaction->document_id) {
+            case 3:
+              if ($debit_amount != $credit_amount) {
+                return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+              }
+              if ($transaction->net_amount != $debit_amount) {
+                return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+              }
+
+              break;
+
+            default:
+              if ($debit_amount != $credit_amount) {
+                return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+              }
+
+              if ($document_amount != $debit_amount) {
+                return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+              }
+          }
+        }
+      }
       GenericMethod::voucherTransaction(
         $model,
         $transaction_id,
@@ -841,8 +841,22 @@ class TransactionFlow
         $cheque_amount = array_sum(array_column($cheques, "amount"));
         $cheque_amount = isset($new_cheque_amount) ? $new_cheque_amount : $cheque_amount;
 
-        if ($document_amount != $cheque_amount) {
-          return GenericMethod::resultResponse("not-equal", "Document and cheque", []);
+        // if ($document_amount != $cheque_amount) {
+        //   return GenericMethod::resultResponse("not-equal", "Document and cheque", []);
+        // }
+
+        switch ($transaction->document_id) {
+          case 3:
+            if ($transaction->net_amount != $cheque_amount) {
+              return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+            }
+            break;
+
+          default:
+            if ($document_amount != $cheque_amount) {
+              return GenericMethod::resultResponse("not-equal", "Document and cheque", []);
+            }
+            break;
         }
       }
 
@@ -1340,6 +1354,105 @@ class TransactionFlow
 
       $state = $subprocess;
       GenericMethod::clearTransaction($model, $tag_no, $date_now, $status, $account_titles, $subprocess, $date_cleared);
+      GenericMethod::updateTransactionStatus(
+        $id,
+        $transaction_id,
+        $request_id,
+        $tag_no,
+        $status,
+        $state,
+        $reason_id,
+        $reason_description,
+        $reason_remarks,
+        $voucher_no,
+        $voucher_month,
+        $distributed_id,
+        $distributed_name,
+        $approver_id,
+        $approver_name
+      );
+    } elseif ($process == "issue") {
+      $account_titles = $cheque_account_titles;
+      $cheques = $cheque_cheques;
+      $model = new Treasury();
+      if ($subprocess == "receive") {
+        $status = "issue-receive";
+      } elseif ($subprocess == "issue") {
+        $status = "issue-issue";
+      }
+
+      if (!isset($status)) {
+        return GenericMethod::resultResponse("invalid-access", "", "");
+      }
+
+      $state = $subprocess;
+
+      $document_amount = $transaction["document_amount"];
+      if (!$document_amount) {
+        $document_amount = $transaction["referrence_amount"];
+      }
+
+      if (!empty($cheques)) {
+        $cheque_amount = array_sum(array_column($cheques, "amount"));
+        $cheque_amount = isset($new_cheque_amount) ? $new_cheque_amount : $cheque_amount;
+
+        // if ($document_amount != $cheque_amount) {
+        //   return GenericMethod::resultResponse("not-equal", "Document and cheque", []);
+        // }
+
+        switch ($transaction->document_id) {
+          case 3:
+            if ($transaction->net_amount != $cheque_amount) {
+              return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+            }
+            break;
+
+          default:
+            if ($document_amount != $cheque_amount) {
+              return GenericMethod::resultResponse("not-equal", "Document and cheque", []);
+            }
+            break;
+        }
+      }
+
+      if (!empty($account_titles)) {
+        $debit_entries_amount = array_filter($account_titles, function ($account_title) {
+          if (isset($account_title["transaction_type"])) {
+            return strtolower($account_title["entry"]) != "credit" && $account_title["transaction_type"] == "new";
+          }
+          return strtolower($account_title["entry"]) != "credit";
+        });
+
+        $credit_entries_amount = array_filter($account_titles, function ($account_title) {
+          if (isset($account_title["transaction_type"])) {
+            return strtolower($account_title["entry"]) != "debit" && $account_title["transaction_type"] == "new";
+          }
+          return strtolower($account_title["entry"]) != "debit";
+        });
+
+        $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
+        $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
+
+        if ($debit_amount != $credit_amount) {
+          return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+        }
+
+        if ($cheque_amount != $debit_amount) {
+          return GenericMethod::resultResponse("not-equal", "Cheque and account title", []);
+        }
+      }
+
+      GenericMethod::chequeTransaction(
+        $model,
+        $transaction_id,
+        $tag_no,
+        $reason_remarks,
+        $date_now,
+        $reason_id,
+        $status,
+        $cheques,
+        $account_titles
+      );
       GenericMethod::updateTransactionStatus(
         $id,
         $transaction_id,
