@@ -606,16 +606,14 @@ class TransactionController extends Controller
                                           $query->when(
                                             strtolower($status) == "issue-receive",
                                             function ($query) {
-                                              $query
-                                                ->where("status", "cheque-receive")
-                                                ->where("is_for_releasing", true);
+                                              $query->where("status", "issue-receive")->where("is_for_releasing", true);
                                             },
                                             function ($query) use ($status) {
                                               $query->when(
                                                 strtolower($status) == "issue-issue",
                                                 function ($query) {
                                                   $query
-                                                    ->where("status", "cheque-cheque")
+                                                    ->where("status", "issue-issue")
                                                     ->where("is_for_releasing", true);
                                                 },
                                                 function ($query) use ($status) {
@@ -1466,6 +1464,177 @@ class TransactionController extends Controller
 
     switch ($fields["document"]["id"]) {
       case 1: //PAD
+        // switch ($request->input("document.payment_type")) {
+        //   case "Partial":
+        //     GenericMethod::documentNoValidationUpdate($request["document"]["no"], $id);
+
+        //     if (empty($fields["po_group"])) {
+        //       $errorMessage = GenericMethod::resultLaravelFormat("po_group", ["PO group required"]);
+        //       return $this->resultResponse("invalid", "", $errorMessage);
+        //     }
+
+        //     $currentTransaction = Transaction::findOrFail($id);
+
+        //     if ($currentTransaction->is_not_editable == 1) {
+        //       $updateData = [
+        //         "document_date" => data_get($fields, "document.date"),
+        //         "remarks" => data_get($fields, "document.remarks"),
+        //         "company" => data_get($fields, "document.company.name"),
+        //         "department_id" => data_get($fields, "document.department.id"),
+        //         "department" => data_get($fields, "document.department.name"),
+        //         "location_id" => data_get($fields, "document.location.id"),
+        //         "location" => data_get($fields, "document.location.name"),
+        //         // "referrence_id" => data_get($fields, "document.reference.id"),
+        //         // "referrence_type" => data_get($fields, "document.reference.type"),
+        //         // "referrence_no" => data_get($fields, "document.reference.no"),
+        //         "category_id" => data_get($fields, "document.category.id"),
+        //         "category" => data_get($fields, "document.category.name"),
+        //       ];
+
+        //       if ($currentTransaction->status == "tag-return") {
+        //         $updateData["status"] = "Pending";
+        //         $updateData["state"] = "pending";
+        //       }
+
+        //       $currentTransaction->update($updateData, ["timestamps" => false]);
+
+        //       return $this->resultResponse("update", "Transaction", []);
+        //     }
+
+        //     $fields["po_group"] = GenericMethod::ValidateIfPOExists(
+        //       $fields["po_group"],
+        //       $fields["document"]["company"]["id"],
+        //       $id
+        //     );
+
+        //     $getAndValidatePOBalance = GenericMethod::getAndValidatePOBalance(
+        //       $fields,
+        //       $fields["document"]["company"]["id"],
+        //       last($fields["po_group"])["no"],
+        //       $fields["document"]["amount"],
+        //       $fields["po_group"],
+        //       $id
+        //     );
+
+        //     if (gettype($getAndValidatePOBalance) == "object") {
+        //       return $this->resultResponse("invalid", "", $getAndValidatePOBalance);
+        //     }
+
+        //     if (gettype($getAndValidatePOBalance) == "array") {
+        //       //Additional PO Validation
+        //       $new_po = $getAndValidatePOBalance["new_po_group"];
+        //       $po_total_amount = $getAndValidatePOBalance["po_total_amount"];
+        //       $balance_with_additional_total_po_amount = $getAndValidatePOBalance["balance"];
+
+        //       $changes = GenericMethod::getTransactionChanges($request_id, $request, $id);
+        //       GenericMethod::updatePO(
+        //         $request_id,
+        //         $fields["po_group"],
+        //         $po_total_amount,
+        //         strtoupper($fields["document"]["payment_type"]),
+        //         $id
+        //       );
+
+        //       $transaction = GenericMethod::updateTransaction(
+        //         $id,
+        //         $po_total_amount,
+        //         $request_id,
+        //         $date_requested,
+        //         $request,
+        //         $balance_with_additional_total_po_amount,
+        //         $changes
+        //       );
+        //       if (isset($transaction->transaction_id)) {
+        //         return $this->resultResponse("update", "Transaction", []);
+        //       }
+        //     }
+
+        //     $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
+        //     $balance_po_ref_amount = $po_total_amount - $fields["document"]["amount"];
+
+        //     if (isset($getAndValidatePOBalance)) {
+        //       $balance_po_ref_amount = $getAndValidatePOBalance;
+        //     }
+
+        //     $changes = GenericMethod::getTransactionChanges($request_id, $request, $id);
+        //     GenericMethod::updatePO(
+        //       $request_id,
+        //       $fields["po_group"],
+        //       $po_total_amount,
+        //       strtoupper($fields["document"]["payment_type"]),
+        //       $id
+        //     );
+
+        //     $transaction = GenericMethod::updateTransaction(
+        //       $id,
+        //       $po_total_amount,
+        //       $request_id,
+        //       $date_requested,
+        //       $request,
+        //       $balance_po_ref_amount,
+        //       $changes
+        //     );
+        //     if (isset($transaction->transaction_id)) {
+        //       return $this->resultResponse("update", "Transaction", []);
+        //     }
+        //     break;
+
+        //   default:
+        //     GenericMethod::documentNoValidationUpdate($request["document"]["no"], $id);
+
+        //     if (empty($fields["po_group"])) {
+        //       $errorMessage = GenericMethod::resultLaravelFormat("po_group", ["PO group required"]);
+        //       return $this->resultResponse("invalid", "", $errorMessage);
+        //     }
+
+        //     $duplicatePO = GenericMethod::validatePOFullUpdate(
+        //       $fields["document"]["company"]["id"],
+        //       $fields["po_group"],
+        //       $id
+        //     );
+        //     if (isset($duplicatePO)) {
+        //       return $this->resultResponse("invalid", "", $duplicatePO);
+        //     }
+
+        //     $po_total_amount = GenericMethod::getPOTotalAmount($request_id, $fields["po_group"]);
+
+        //     $errorMessage = GenericMethod::validateWith1PesoDifference(
+        //       "po_group.amount",
+        //       "Document",
+        //       $fields["document"]["amount"],
+        //       $po_total_amount
+        //     );
+        //     if (!empty($errorMessage)) {
+        //       return GenericMethod::resultResponse("invalid", "", $errorMessage);
+        //     }
+
+        //     $changes = GenericMethod::getTransactionChanges($request_id, $request, $id);
+        //     GenericMethod::updatePO(
+        //       $request_id,
+        //       $fields["po_group"],
+        //       $po_total_amount,
+        //       strtoupper($fields["document"]["payment_type"]),
+        //       $id
+        //     );
+
+        //     $transaction = GenericMethod::updateTransaction(
+        //       $id,
+        //       $po_total_amount,
+        //       $request_id,
+        //       $date_requested,
+        //       $request,
+        //       0,
+        //       $changes
+        //     );
+
+        //     if ($transaction == "Nothing Has Changed") {
+        //       return $this->resultResponse("nothing-has-changed", "Transaction", []);
+        //     }
+        //     if (isset($transaction->transaction_id)) {
+        //       return $this->resultResponse("update", "Transaction", []);
+        //     }
+        //     break;
+        // }
         GenericMethod::documentNoValidationUpdate($request["document"]["no"], $id);
 
         if (empty($fields["po_group"])) {
@@ -2293,7 +2462,10 @@ class TransactionController extends Controller
     if (!$transaction) {
       return $this->resultResponse("not-found", "Transaction", []);
     } else {
-      if ($transaction->document_id == 4 && $transaction->payment_type == "Partial") {
+      if (
+        ($transaction->document_id == 4 || $transaction->document_id == 1) &&
+        $transaction->payment_type == "Partial"
+      ) {
         if ($transaction) {
           $poNos = $transaction->po_details->pluck("po_no");
         }
