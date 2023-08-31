@@ -549,7 +549,7 @@ class Transaction extends Model
   {
     return $this->hasOne(Audit::class, "transaction_id")
       ->select(["created_at"])
-      ->where("type", "cheque")
+      ->where("type", "date")
       ->where("status", "issue-receive")
       ->latest()
       ->limit(1);
@@ -559,8 +559,31 @@ class Transaction extends Model
   {
     return $this->hasOne(Audit::class, "transaction_id")
       ->select(["created_at"])
-      ->where("type", "cheque")
+      ->where("type", "date")
       ->where("status", "issue-issue")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function issueStatus()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->with([
+        "reason" => function ($query) {
+          $query->select(["reason"]);
+        },
+      ])
+      ->select(["status"])
+      ->where("type", "date")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function issueReason()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->select(["transaction_id", "reason_id", "remarks"])
+      ->where("type", "date")
       ->latest()
       ->limit(1);
   }

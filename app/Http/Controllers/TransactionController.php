@@ -249,7 +249,7 @@ class TransactionController extends Controller
                 },
                 function ($query) use ($status) {
                   $query->when(
-                    strtolower($status) == "pending-cheque", //remove this
+                    strtolower($status) == "pending-release", //remove this
                     function ($query) use ($status) {
                       // $query->whereIn("status", ["cheque-release"]);
                       $query->whereIn("status", ["cheque-release"])->where("is_for_releasing", "=", true);
@@ -377,7 +377,12 @@ class TransactionController extends Controller
                                   $query->when(
                                     strtolower($status) == "return-return",
                                     function ($query) use ($status) {
-                                      $query->whereIn("status", ["cheque-return", "approve-return", "inspect-return"]);
+                                      $query->whereIn("status", [
+                                        "cheque-return",
+                                        "approve-return",
+                                        "inspect-return",
+                                        "issue-return",
+                                      ]);
                                     },
                                     function ($query) use ($status) {
                                       $query->when(
@@ -556,6 +561,16 @@ class TransactionController extends Controller
                 ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
                 ->whereNull("is_for_releasing");
             },
+            // function ($query) use ($is_auto_debit) {
+            //   $query
+            //     ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
+            //     ->whereNull("is_for_releasing")
+            //     ->orWhere(function ($query) use ($is_auto_debit) {
+            //       $query->when($is_auto_debit, function ($query) {
+            //         $query->where("status", "cheque-receive")->where("is_for_releasing", true);
+            //       });
+            //     });
+            // }
             function ($query) use ($status) {
               $query->when(
                 strtolower($status) == "cheque-cheque",
@@ -701,6 +716,17 @@ class TransactionController extends Controller
                     },
                     function ($query) use ($status) {
                       $query->where("status", preg_replace("/\s+/", "", $status));
+                      // $query->when(
+                      //   strtolower($status) == "audit-audit",
+                      //   function ($query) {
+                      //     $query->whereIn("status", ["audit-audit"])->orWhere(function ($query) {
+                      //       $query->where("document_id", 9)->where("is_for_releasing", true);
+                      //     });
+                      //   },
+                      //   function ($query) use ($status) {
+                      //     $query->where("status", preg_replace("/\s+/", "", $status));
+                      //   }
+                      // );
                     }
                   );
                 }
