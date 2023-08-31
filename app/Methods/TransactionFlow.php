@@ -1147,6 +1147,7 @@ class TransactionFlow
         $status = "executive-executive";
         $signed_date = $date_now;
         $signed_by = Auth::user()->id;
+        $subprocess = "transmit";
 
         $transaction->update([
           "is_for_releasing" => true,
