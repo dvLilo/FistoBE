@@ -1276,6 +1276,35 @@ class TransactionResource extends JsonResource
       }
     }
 
+    //Issue
+
+    $issueReceive = $this->issueReceive;
+    $issueIssue = $this->issueIssue;
+
+    $issueValues = [
+      "date_received" => $issueReceive ? ($issueReceive->created_at ?: null) : null,
+      "date_issued" => $issueIssue ? ($issueIssue->created_at ?: null) : null,
+    ];
+
+    if (
+      array_filter($issueValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
+      $transaction_result["issue"] = [];
+    } else {
+      if ($issueValues) {
+        $transaction_result["issue"] = [
+          "dates" => [
+            "received" => $issueValues["date_received"],
+            "issued" => $issueValues["date_issued"],
+          ],
+        ];
+      } else {
+        $transaction_result["issue"] = [];
+      }
+    }
+
     $transaction_result["release"] = $release_description;
     $transaction_result["file"] = $file_description;
     $transaction_result["reverse"] = $reverse_description;

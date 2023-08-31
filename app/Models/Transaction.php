@@ -544,4 +544,24 @@ class Transaction extends Model
       ->latest()
       ->limit(1);
   }
+
+  public function issueReceive()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->select(["created_at"])
+      ->where("type", "cheque")
+      ->where("status", "issue-receive")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function issueIssue()
+  {
+    return $this->hasOne(Audit::class, "transaction_id")
+      ->select(["created_at"])
+      ->where("type", "cheque")
+      ->where("status", "issue-issue")
+      ->latest()
+      ->limit(1);
+  }
 }
