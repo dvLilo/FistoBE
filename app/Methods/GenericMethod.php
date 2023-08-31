@@ -240,77 +240,133 @@ class GenericMethod
     }
   }
 
+  // public static function getStatus($process, $transaction)
+  // {
+  //   if ($process == "tag") {
+  //     $model = new Tagging();
+  //     $field = "tag_no";
+  //   } elseif ($process == "voucher") {
+  //     $model = new Associate();
+  //     $field = "voucher_no";
+  //   } elseif ($process == "approve") {
+  //     $model = new Approver();
+  //     $field = "distributed_id";
+  //   } elseif ($process == "cheque") {
+  //     $model = new Treasury();
+  //     $field = "cheque_no";
+  //   } elseif ($process == "release") {
+  //     $model = new Tagging();
+  //     $field = "";
+  //   } elseif ($process == "file") {
+  //     $model = new Associate();
+  //     $field = "";
+  //   } elseif ($process == "audit") {
+  //     $model = new Audit();
+  //     $field = "";
+  //   } elseif ($process == "executive") {
+  //     // $model = new Executive();
+  //     $field = "";
+  //   } elseif ($process == "inspect") {
+  //     $field = "";
+  //   } elseif ($process == "issue") {
+  //     $field = "";
+  //   }
+
+  //   $status = $process . "-" . $process;
+
+  //   $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
+  //   if ($process == "cheque" and $is_exists) {
+  //     return $status;
+  //   }
+
+  //   $is_audited = Audit::where("transaction_id", $transaction->id)
+  //     ->where("status", "audit-audit")
+  //     ->exists();
+
+  //   if ($process == "audit" and $is_audited) {
+  //     return $status;
+  //   }
+
+  //   $is_inspected = Audit::where("transaction_id", $transaction->id)
+  //     ->where("status", "inspect-inspect")
+  //     ->exists();
+
+  //   if ($process == "inspect" and $is_inspected) {
+  //     return $status;
+  //   }
+
+  //   $is_issued = Audit::where("transaction_id", $transaction->id)
+  //     ->where("status", "issue-issue")
+  //     ->exists();
+
+  //   if ($process == "issue" and $is_issued) {
+  //     return $status;
+  //   }
+
+  //   if (!$transaction["$field"]) {
+  //     $status = $process . "-receive";
+  //   }
+
+  //   return $status;
+  // }
+
   public static function getStatus($process, $transaction)
   {
-    if ($process == "tag") {
-      $model = new Tagging();
-      $field = "tag_no";
-    } elseif ($process == "voucher") {
-      $model = new Associate();
-      $field = "voucher_no";
-    } elseif ($process == "approve") {
-      $model = new Approver();
-      $field = "distributed_id";
-    } elseif ($process == "cheque") {
-      $model = new Treasury();
-      $field = "cheque_no";
-    } elseif ($process == "release") {
-      $model = new Tagging();
-      $field = "";
-    } elseif ($process == "file") {
-      $model = new Associate();
-      $field = "";
-    } elseif ($process == "audit") {
-      $model = new Audit();
-      $field = "";
-    } elseif ($process == "executive") {
-      // $model = new Executive();
-      $field = "";
-    } elseif ($process == "inspect") {
-      $field = "";
-    }
-
     $status = $process . "-" . $process;
 
-    $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
-    if ($process == "cheque" and $is_exists) {
+    switch ($process) {
+      case "tag":
+        $model = new Tagging();
+        $field = "tag_no";
+        break;
+      case "voucher":
+        $model = new Associate();
+        $field = "voucher_no";
+        break;
+      case "approve":
+        $model = new Approver();
+        $field = "distributed_id";
+        break;
+      case "cheque":
+        $model = new Treasury();
+        $field = "cheque_no";
+        break;
+      case "release":
+        $model = new Tagging();
+        $field = "";
+        break;
+      case "file":
+        $model = new Associate();
+        $field = "";
+        break;
+      case "audit":
+        $model = new Audit();
+        $field = "";
+        break;
+      default:
+        $model = null;
+        $field = "";
+    }
+
+    if ($model && $field) {
+      if (!$transaction->$field) {
+        $status = $process . "-receive";
+      }
+    }
+
+    if ($process == "cheque" && Cheque::where("transaction_id", $transaction["transaction_id"])->exists()) {
       return $status;
     }
 
-    // $is_audited = Audit::where("transaction_id", $transaction->id)
-    //   ->where(function ($query) {
-    //     $query->where("status", "audit-audit");
-    //   })
-    //   ->orWhere(function ($query) use ($process) {
-    //     $query->where("status", "inspect-inspect");
-    //     if ($process == "audit") {
-    //       $query->where("transaction_id", 0); // Add a condition that will never be true
-    //     }
-    //   })
-    //   ->exists();
-
-    // if ($is_audited) {
-    //   return $status;
-    // }
-
-    $is_audited = Audit::where("transaction_id", $transaction->id)
-      ->where("status", "audit-audit")
-      ->exists();
-
-    if ($process == "audit" and $is_audited) {
-      return $status;
-    }
-
-    $is_inspected = Audit::where("transaction_id", $transaction->id)
-      ->where("status", "inspect-inspect")
-      ->exists();
-
-    if ($process == "inspect" and $is_inspected) {
-      return $status;
-    }
-
-    if (!$transaction["$field"]) {
-      $status = $process . "-receive";
+    if (in_array($process, ["audit", "inspect", "issue"])) {
+      $is_status = $process . "-" . $process;
+      if (
+        Audit::where("transaction_id", $transaction->id)
+          ->where("status", $is_status)
+          ->exists()
+      ) {
+        return $status;
+      }
     }
 
     return $status;
@@ -515,7 +571,7 @@ class GenericMethod
       // Insert with the provided status and type "cheque"
       Audit::create([
         "transaction_id" => $transaction_id,
-        "type" => "cheque",
+        "type" => $type,
         "status" => $status,
         "date_received" => $date_received,
         "reason_id" => $reason_id,

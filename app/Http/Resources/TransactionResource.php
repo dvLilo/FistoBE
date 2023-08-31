@@ -1281,9 +1281,22 @@ class TransactionResource extends JsonResource
     $issueReceive = $this->issueReceive;
     $issueIssue = $this->issueIssue;
 
+    $issueReason = $this->issueReason;
+    $issueStatus = null;
+    if ($this->issueStatus) {
+      $issueStatus = $this->issueStatus->status;
+    }
+
     $issueValues = [
       "date_received" => $issueReceive ? ($issueReceive->created_at ?: null) : null,
       "date_issued" => $issueIssue ? ($issueIssue->created_at ?: null) : null,
+      "status" => $issueStatus,
+    ];
+
+    $reasonIssueValues = [
+      "id" => $issueReason ? ($issueReason->reason_id ?: null) : null,
+      "reason" => $issueReason && $issueReason->reason ? $issueReason->reason->reason : null,
+      "remarks" => $issueReason ? ($issueReason->remarks ?: null) : null,
     ];
 
     if (
@@ -1299,7 +1312,18 @@ class TransactionResource extends JsonResource
             "received" => $issueValues["date_received"],
             "issued" => $issueValues["date_issued"],
           ],
+          "status" => $issueValues["status"],
         ];
+
+        if ($reasonIssueValues["id"] !== null || $reasonIssueValues["remarks"] !== null) {
+          $transaction_result["issue"]["reason"] = [
+            "id" => $reasonIssueValues["id"],
+            "reason" => $reasonIssueValues["reason"],
+            "remarks" => $reasonIssueValues["remarks"],
+          ];
+        } else {
+          $transaction_result["issue"]["reason"] = null;
+        }
       } else {
         $transaction_result["issue"] = [];
       }

@@ -466,7 +466,7 @@ class TransactionFlow
           ]);
         }
 
-        if ($transaction->status == "cheque-return") {
+        if ($transaction->status == "cheque-return" || $transaction->status == "issue-return") {
           $transaction->update([
             "is_for_releasing" => null,
           ]);
@@ -995,6 +995,7 @@ class TransactionFlow
         //   ]);
         // }
         if ($transaction->document_id == 9) {
+          // $status = "transmit-transmit";
           $transaction->update([
             "is_for_releasing" => true,
           ]);
@@ -1441,6 +1442,14 @@ class TransactionFlow
             return GenericMethod::resultResponse("not-equal", "Cheque and account title", []);
           }
         }
+      } elseif ($subprocess == "hold") {
+        $status = "issue-hold";
+      } elseif ($subprocess == "return") {
+        $status = "issue-return";
+      } elseif ($subprocess == "void") {
+        $status = "issue-void";
+      } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
+        $status = GenericMethod::getStatus($process, $transaction);
       }
 
       if (!isset($status)) {
@@ -1448,7 +1457,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
-      $issue->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "cheque");
+      $issue->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
 
       GenericMethod::chequeTransaction(
         $model,
