@@ -994,10 +994,15 @@ class TransactionFlow
         //     "is_for_voucher_audit" => false,
         //   ]);
         // }
-        $transaction->update([
-          "is_for_voucher_audit" => null,
-        ]);
-
+        if ($transaction->document_id == 9) {
+          $transaction->update([
+            "is_for_releasing" => true,
+          ]);
+        } else {
+          $transaction->update([
+            "is_for_voucher_audit" => null,
+          ]);
+        }
         // $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, $audit_by, $audit_date, "cheque");
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         // if ($transaction->document_id === 8 && $transaction->status == "inspect-return") {
@@ -1142,6 +1147,7 @@ class TransactionFlow
         $status = "executive-executive";
         $signed_date = $date_now;
         $signed_by = Auth::user()->id;
+        $subprocess = "transmit";
 
         $transaction->update([
           "is_for_releasing" => true,
@@ -1375,6 +1381,7 @@ class TransactionFlow
       $account_titles = $cheque_account_titles;
       $cheques = $cheque_cheques;
       $model = new Treasury();
+      $issue = new GenericMethod();
       if ($subprocess == "receive") {
         $status = "issue-receive";
       } elseif ($subprocess == "issue") {
@@ -1441,6 +1448,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
+      $issue->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "cheque");
 
       GenericMethod::chequeTransaction(
         $model,
