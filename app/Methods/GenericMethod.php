@@ -240,137 +240,137 @@ class GenericMethod
     }
   }
 
-  // public static function getStatus($process, $transaction)
-  // {
-  //   if ($process == "tag") {
-  //     $model = new Tagging();
-  //     $field = "tag_no";
-  //   } elseif ($process == "voucher") {
-  //     $model = new Associate();
-  //     $field = "voucher_no";
-  //   } elseif ($process == "approve") {
-  //     $model = new Approver();
-  //     $field = "distributed_id";
-  //   } elseif ($process == "cheque") {
-  //     $model = new Treasury();
-  //     $field = "cheque_no";
-  //   } elseif ($process == "release") {
-  //     $model = new Tagging();
-  //     $field = "";
-  //   } elseif ($process == "file") {
-  //     $model = new Associate();
-  //     $field = "";
-  //   } elseif ($process == "audit") {
-  //     $model = new Audit();
-  //     $field = "";
-  //   } elseif ($process == "executive") {
-  //     // $model = new Executive();
-  //     $field = "";
-  //   } elseif ($process == "inspect") {
-  //     $field = "";
-  //   } elseif ($process == "issue") {
-  //     $field = "";
-  //   }
-
-  //   $status = $process . "-" . $process;
-
-  //   $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
-  //   if ($process == "cheque" and $is_exists) {
-  //     return $status;
-  //   }
-
-  //   $is_audited = Audit::where("transaction_id", $transaction->id)
-  //     ->where("status", "audit-audit")
-  //     ->exists();
-
-  //   if ($process == "audit" and $is_audited) {
-  //     return $status;
-  //   }
-
-  //   $is_inspected = Audit::where("transaction_id", $transaction->id)
-  //     ->where("status", "inspect-inspect")
-  //     ->exists();
-
-  //   if ($process == "inspect" and $is_inspected) {
-  //     return $status;
-  //   }
-
-  //   $is_issued = Audit::where("transaction_id", $transaction->id)
-  //     ->where("status", "issue-issue")
-  //     ->exists();
-
-  //   if ($process == "issue" and $is_issued) {
-  //     return $status;
-  //   }
-
-  //   if (!$transaction["$field"]) {
-  //     $status = $process . "-receive";
-  //   }
-
-  //   return $status;
-  // }
-
   public static function getStatus($process, $transaction)
   {
+    if ($process == "tag") {
+      $model = new Tagging();
+      $field = "tag_no";
+    } elseif ($process == "voucher") {
+      $model = new Associate();
+      $field = "voucher_no";
+    } elseif ($process == "approve") {
+      $model = new Approver();
+      $field = "distributed_id";
+    } elseif ($process == "cheque") {
+      $model = new Treasury();
+      $field = "cheque_no";
+    } elseif ($process == "release") {
+      $model = new Tagging();
+      $field = "";
+    } elseif ($process == "file") {
+      $model = new Associate();
+      $field = "";
+    } elseif ($process == "audit") {
+      $model = new Audit();
+      $field = "";
+    } elseif ($process == "executive") {
+      // $model = new Executive();
+      $field = "";
+    } elseif ($process == "inspect") {
+      $field = "";
+    } elseif ($process == "issue") {
+      $field = "";
+    }
+
     $status = $process . "-" . $process;
 
-    switch ($process) {
-      case "tag":
-        $model = new Tagging();
-        $field = "tag_no";
-        break;
-      case "voucher":
-        $model = new Associate();
-        $field = "voucher_no";
-        break;
-      case "approve":
-        $model = new Approver();
-        $field = "distributed_id";
-        break;
-      case "cheque":
-        $model = new Treasury();
-        $field = "cheque_no";
-        break;
-      case "release":
-        $model = new Tagging();
-        $field = "";
-        break;
-      case "file":
-        $model = new Associate();
-        $field = "";
-        break;
-      case "audit":
-        $model = new Audit();
-        $field = "";
-        break;
-      default:
-        $model = null;
-        $field = "";
-    }
-
-    if ($model && $field) {
-      if (!$transaction->$field) {
-        $status = $process . "-receive";
-      }
-    }
-
-    if ($process == "cheque" && Cheque::where("transaction_id", $transaction["transaction_id"])->exists()) {
+    $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
+    if ($process == "cheque" and $is_exists) {
       return $status;
     }
 
-    if (in_array($process, ["audit", "inspect", "issue"])) {
-      $is_status = $process . "-" . $process;
-      if (
-        Audit::where("transaction_id", $transaction->id)
-          ->where("status", $is_status)
-          ->exists()
-      ) {
-        return $status;
-      }
+    $is_audited = Audit::where("transaction_id", $transaction->id)
+      ->where("status", "audit-audit")
+      ->exists();
+
+    if ($process == "audit" and $is_audited) {
+      return $status;
+    }
+
+    $is_inspected = Audit::where("transaction_id", $transaction->id)
+      ->where("status", "inspect-inspect")
+      ->exists();
+
+    if ($process == "inspect" and $is_inspected) {
+      return $status;
+    }
+
+    $is_issued = Audit::where("transaction_id", $transaction->id)
+      ->where("status", "issue-issue")
+      ->exists();
+
+    if ($process == "issue" and $is_issued) {
+      return $status;
+    }
+
+    if (!$transaction["$field"]) {
+      $status = $process . "-receive";
     }
 
     return $status;
   }
+
+  // public static function getStatus($process, $transaction)
+  // {
+  //   $status = $process . "-" . $process;
+
+  //   switch ($process) {
+  //     case "tag":
+  //       $model = new Tagging();
+  //       $field = "tag_no";
+  //       break;
+  //     case "voucher":
+  //       $model = new Associate();
+  //       $field = "voucher_no";
+  //       break;
+  //     case "approve":
+  //       $model = new Approver();
+  //       $field = "distributed_id";
+  //       break;
+  //     case "cheque":
+  //       $model = new Treasury();
+  //       $field = "cheque_no";
+  //       break;
+  //     case "release":
+  //       $model = new Tagging();
+  //       $field = "";
+  //       break;
+  //     case "file":
+  //       $model = new Associate();
+  //       $field = "";
+  //       break;
+  //     case "audit":
+  //       $model = new Audit();
+  //       $field = "";
+  //       break;
+  //     default:
+  //       $model = null;
+  //       $field = "";
+  //   }
+
+  //   if ($model && $field) {
+  //     if (!$transaction->$field) {
+  //       $status = $process . "-receive";
+  //     }
+  //   }
+
+  //   if ($process == "cheque" && Cheque::where("transaction_id", $transaction["transaction_id"])->exists()) {
+  //     return $status;
+  //   }
+
+  //   if (in_array($process, ["audit", "inspect", "issue"])) {
+  //     $is_status = $process . "-" . $process;
+  //     if (
+  //       Audit::where("transaction_id", $transaction->id)
+  //         ->where("status", $is_status)
+  //         ->exists()
+  //     ) {
+  //       return $status;
+  //     }
+  //   }
+
+  //   return $status;
+  // }
 
   public static function isTransactionExistInFlow($model, $transaction_id, $status)
   {
@@ -3997,6 +3997,87 @@ class GenericMethod
     $balance = $balance_po_ref_amount - $reference_amount;
     return $balance;
   }
+
+  //-------------------------------------------------
+
+  public static function PADValidatePOBalance($fields, $company_id, $po_no, float $document_amount, $po_group, $id = 0)
+  {
+    $balance_po_ref_amount = Transaction::leftJoin(
+      "p_o_batches",
+      "transactions.request_id",
+      "=",
+      "p_o_batches.request_id"
+    )
+      ->where("transactions.company_id", $company_id)
+      ->when($id, function ($query, $id) {
+        $query->where("transactions.id", "<>", $id);
+      })
+      ->where("transactions.state", "!=", "void")
+      ->where("p_o_batches.po_no", $po_no)
+      ->orderBy("transactions.id", "desc")
+      ->get("balance_po_ref_amount")
+      ->first();
+
+    if (empty($balance_po_ref_amount)) {
+      return;
+    }
+    $balance_po_ref_amount = $balance_po_ref_amount->balance_po_ref_amount;
+
+    if ($balance_po_ref_amount == 0) {
+      if (!$id) {
+        return GenericMethod::resultLaravelFormat("po_group.no", ["PO already exist."]);
+      }
+    }
+    // Additional PO
+    $additional_po_group = [];
+    $po_total_amount = 0;
+
+    foreach ($po_group as $k => $v) {
+      if (
+        !POBatch::leftJoin("transactions", "p_o_batches.request_id", "=", "transactions.request_id")
+          ->where("company_id", "=", $company_id)
+          ->when($id, function ($query, $id) {
+            $query->where("transactions.id", "<>", $id);
+          })
+          ->where("p_o_batches.po_no", "=", $po_group[$k]["no"])
+          ->where("state", "!=", "void")
+          ->exists()
+      ) {
+        $additional_po_group[$k]["no"] = $po_group[$k]["no"];
+        $additional_po_group[$k]["amount"] = $po_group[$k]["amount"];
+        $additional_po_group[$k]["rr_no"] = $po_group[$k]["rr_no"];
+      }
+      $po_total_amount = $po_total_amount + $po_group[$k]["amount"];
+    }
+    $additional_po_group = array_values($additional_po_group);
+
+    if (count($additional_po_group) > 0) {
+      $new_po_total_amount = GenericMethod::getPOTotalAmount($request_id = 0, $additional_po_group);
+      $additional_plust_balance_amount = $new_po_total_amount + $balance_po_ref_amount;
+
+      if ($additional_plust_balance_amount < $document_amount) {
+        return GenericMethod::resultLaravelFormat("document.amount", ["Insufficient PO balance."]);
+      }
+      $balance = GenericMethod::getBalance($new_po_total_amount, $balance_po_ref_amount, $document_amount);
+
+      return [
+        "po_total_amount" => $po_total_amount,
+        "new_po_total_amount" => $new_po_total_amount,
+        "balance" => $balance,
+        "new_po_group" => $additional_po_group,
+      ];
+    }
+
+    // if (!$fields["document"]["reference"]["allowable"]) {
+    //   if ($balance_po_ref_amount < $reference_amount) {
+    //     return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
+    //   }
+    // }
+
+    $balance = $balance_po_ref_amount - $document_amount;
+    return $balance;
+  }
+  //-------------------------------------------------
 
   public static function getBalancePORefAmount($company_id, $reference_no)
   {
