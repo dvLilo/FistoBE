@@ -466,9 +466,14 @@ class TransactionFlow
           ]);
         }
 
-        if ($transaction->status == "cheque-return" || $transaction->status == "issue-return") {
+        if (
+          $transaction->status == "cheque-return" ||
+          $transaction->status == "issue-return" ||
+          $transaction->status == "audit-return"
+        ) {
           $transaction->update([
             "is_for_releasing" => null,
+            "is_for_voucher_audit" => null,
           ]);
         }
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
@@ -654,6 +659,7 @@ class TransactionFlow
         } elseif ($transaction->document_id === 9) {
           $transaction->update([
             "is_for_releasing" => false,
+            "is_for_voucher_audit" => false,
           ]);
         } else {
           $transaction->update([
@@ -995,7 +1001,7 @@ class TransactionFlow
         //   ]);
         // }
         if ($transaction->document_id == 9) {
-          // $status = "transmit-transmit";
+          $status = "transmit-transmit";
           $transaction->update([
             "is_for_releasing" => true,
           ]);
