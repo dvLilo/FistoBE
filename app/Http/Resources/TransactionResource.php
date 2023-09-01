@@ -299,7 +299,16 @@ class TransactionResource extends JsonResource
         $po_details[$key]["previous_balance"] = $previous_balance;
       } else {
       }
-      $po_details->first()->balance = $po_details->pluck("previous_balance")->sum() - $this->referrence_amount;
+      // $po_details->first()->balance = $po_details->pluck("previous_balance")->sum() - $this->referrence_amount;
+      switch ($transaction->document_id) {
+        case 1:
+          $po_details->first()->balance = $po_details->pluck("previous_balance")->sum() - $this->document_amount;
+          break;
+
+        default:
+          $po_details->first()->balance = $po_details->pluck("previous_balance")->sum() - $this->referrence_amount;
+          break;
+      }
     }
     $transaction = $po_transaction->where("request_id", $this->request_id);
 

@@ -252,7 +252,7 @@ class TransactionController extends Controller
                     strtolower($status) == "pending-release", //remove this
                     function ($query) use ($status) {
                       // $query->whereIn("status", ["cheque-release"]);
-                      $query->whereIn("status", ["cheque-release"])->where("is_for_releasing", "=", true);
+                      $query->whereIn("status", ["issue-issue"])->where("is_for_releasing", "=", true);
                     },
                     function ($query) use ($status) {
                       $query->when(
