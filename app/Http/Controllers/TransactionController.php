@@ -229,6 +229,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "status",
             "state",
@@ -325,6 +326,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "status",
             "state",
@@ -444,6 +446,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "status",
             "state",
@@ -539,6 +542,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "approver_id",
             "approver_name",
@@ -684,6 +688,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "status",
             "state",
@@ -764,6 +769,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "approver_id",
             "approver_name",
@@ -814,6 +820,7 @@ class TransactionController extends Controller
             "document_amount",
             "referrence_no",
             "referrence_amount",
+            "net_amount",
 
             "approver_id",
             "approver_name",
@@ -897,7 +904,7 @@ class TransactionController extends Controller
               $fields["document"]["company"]["id"]
             );
 
-            $getAndValidatePOBalance = GenericMethod::PADValidatePOBalance(
+            $getAndValidatePOBalance = GenericMethod::getAndValidatePOBalance(
               $fields,
               $fields["document"]["company"]["id"],
               last($fields["po_group"])["no"],
