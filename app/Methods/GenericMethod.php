@@ -7,10 +7,11 @@ use App\Models\User;
 use App\Models\Audit;
 use App\Models\Cheque;
 // For Pagination with Collection
+use App\Models\Filing;
 use App\Models\Reason;
 use App\Models\POBatch;
-use App\Models\Release;
 
+use App\Models\Release;
 use App\Models\Reverse;
 use App\Models\Tagging;
 use App\Models\Approver;
@@ -30,11 +31,11 @@ use App\Exceptions\FistoException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\VoucherAccountTitle;
+
 use App\Models\ClearingAccountTitle;
-
 use App\Models\UserDocumentCategory;
-use Illuminate\Pagination\Paginator;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use App\Exceptions\FistoLaravelException;
 use Illuminate\Validation\ValidationException;
@@ -270,9 +271,15 @@ class GenericMethod
       $field = "";
     } elseif ($process == "issue") {
       $field = "";
+    } elseif ($process == "debit") {
+      $field = "";
     }
 
     $status = $process . "-" . $process;
+
+    if ($process == "debit") {
+      $status = $process . "-" . "file";
+    }
 
     $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
     if ($process == "cheque" and $is_exists) {
@@ -300,6 +307,14 @@ class GenericMethod
       ->exists();
 
     if ($process == "issue" and $is_issued) {
+      return $status;
+    }
+
+    $is_debited = Filing::where("tag_id", $transaction->id)
+      ->where("status", "debit-file")
+      ->exists();
+
+    if ($process == "debit" and $is_debited) {
       return $status;
     }
 
@@ -4788,4 +4803,33 @@ class GenericMethod
     ]);
   }
   ##########################################################################################################
+
+  public function generateVoucherNo($id)
+  {
+    $existingVoucher = Transaction::whereNotNull("voucher_no")
+      ->where("id", $id)
+      ->first();
+
+    if ($existingVoucher) {
+      return $existingVoucher->voucher_no;
+    }
+
+    $series = 1;
+    $code = "GA";
+    $date = Carbon::now("Asia/Manila")->format("ym");
+
+    do {
+      $formattedSeries = str_pad($series, 3, "0", STR_PAD_LEFT);
+      $generatedVoucher = $code . " " . $date . "-" . $formattedSeries;
+
+      $series++;
+    } while ($this->checkDuplicateGeneratedVoucher($generatedVoucher));
+
+    return $generatedVoucher;
+  }
+
+  function checkDuplicateGeneratedVoucher($voucher)
+  {
+    return Transaction::where("voucher_no", $voucher)->exists();
+  }
 }

@@ -1287,7 +1287,6 @@ class TransactionResource extends JsonResource
     }
 
     //Issue
-
     $issueReceive = $this->issueReceive;
     $issueIssue = $this->issueIssue;
 
@@ -1336,6 +1335,57 @@ class TransactionResource extends JsonResource
         }
       } else {
         $transaction_result["issue"] = [];
+      }
+    }
+
+    //for Auto Debit
+    $debitReceive = $this->debitReceive;
+    $debitFile = $this->debitFile;
+    $debitReason = $this->debitReason;
+    $debitStatus = null;
+    if ($this->debitStatus) {
+      $debitStatus = $this->debitStatus->status;
+    }
+
+    $debitValues = [
+      "date_received" => $debitReceive ? ($debitReceive->created_at ?: null) : null,
+      "date_filed" => $debitFile ? ($debitFile->created_at ?: null) : null,
+      "status" => $debitStatus,
+    ];
+
+    $reasondebitValues = [
+      "id" => $debitReason ? ($debitReason->reason_id ?: null) : null,
+      "reason" => $debitReason && $debitReason->reason ? $debitReason->reason->reason : null,
+      "remarks" => $debitReason ? ($debitReason->remarks ?: null) : null,
+    ];
+
+    if (
+      array_filter($debitValues, function ($value) {
+        return $value !== null;
+      }) === []
+    ) {
+      $transaction_result["debit"] = [];
+    } else {
+      if ($debitValues) {
+        $transaction_result["debit"] = [
+          "dates" => [
+            "received" => $debitValues["date_received"],
+            "filed" => $debitValues["date_filed"],
+          ],
+          "status" => $debitValues["status"],
+        ];
+
+        if ($reasondebitValues["id"] !== null || $reasondebitValues["remarks"] !== null) {
+          $transaction_result["debit"]["reason"] = [
+            "id" => $reasondebitValues["id"],
+            "reason" => $reasondebitValues["reason"],
+            "remarks" => $reasondebitValues["remarks"],
+          ];
+        } else {
+          $transaction_result["debit"]["reason"] = null;
+        }
+      } else {
+        $transaction_result["debit"] = [];
       }
     }
 

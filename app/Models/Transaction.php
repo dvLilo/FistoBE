@@ -587,4 +587,43 @@ class Transaction extends Model
       ->latest()
       ->limit(1);
   }
+
+  public function debitReceive()
+  {
+    return $this->hasOne(Filing::class, "tag_id")
+      ->select(["created_at"])
+      ->where("status", "debit-receive")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function debitFile()
+  {
+    return $this->hasOne(Filing::class, "tag_id")
+      ->select(["created_at"])
+      ->where("status", "debit-file")
+      ->latest()
+      ->limit(1);
+  }
+
+  public function debitStatus()
+  {
+    return $this->hasOne(Filing::class, "tag_id")
+      ->with([
+        "reason" => function ($query) {
+          $query->select(["reason"]);
+        },
+      ])
+      ->select(["status"])
+      ->latest()
+      ->limit(1);
+  }
+
+  public function debitReason()
+  {
+    return $this->hasOne(Filing::class, "tag_id")
+      ->select(["tag_id", "reason_id", "remarks"])
+      ->latest()
+      ->limit(1);
+  }
 }
