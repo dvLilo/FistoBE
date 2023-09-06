@@ -386,6 +386,7 @@ class TransactionController extends Controller
                                           "inspect-return",
                                           "issue-return",
                                           "audit-return",
+                                          "debit-return",
                                         ])
                                         ->orWhere(function ($query) {
                                           $query->whereIn("status", ["audit-return"])->where("document_id", 9);
@@ -554,32 +555,32 @@ class TransactionController extends Controller
       })
       ->when(in_array($role, $cheque_window), function ($query) use ($status, $is_auto_debit) {
         $query
-          ->when(
-            $is_auto_debit,
-            function ($query) {
-              $query->where("document_type", "Auto Debit");
-            },
-            function ($query) {
-              $query->where("document_type", "<>", "Auto Debit");
-            }
-          )
+          // ->when(
+          //   $is_auto_debit,
+          //   function ($query) {
+          //     $query->where("document_type", "Auto Debit");
+          //   },
+          //   function ($query) {
+          //     $query->where("document_type", "<>", "Auto Debit");
+          //   }
+          // )
           ->when(
             strtolower($status) == "cheque-receive",
-            // function ($query) {
-            //   $query
-            //     ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
-            //     ->whereNull("is_for_releasing");
-            // },
-            function ($query) use ($is_auto_debit) {
+            function ($query) {
               $query
                 ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
-                ->whereNull("is_for_releasing")
-                ->orWhere(function ($query) use ($is_auto_debit) {
-                  $query->when($is_auto_debit, function ($query) {
-                    $query->where("status", "cheque-receive")->where("is_for_releasing", true);
-                  });
-                });
+                ->whereNull("is_for_releasing");
             },
+            // function ($query) use ($is_auto_debit) {
+            //   $query
+            //     ->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"])
+            //     ->whereNull("is_for_releasing")
+            //     ->orWhere(function ($query) use ($is_auto_debit) {
+            //       $query->when($is_auto_debit, function ($query) {
+            //         $query->where("status", "cheque-receive")->where("is_for_releasing", true);
+            //       });
+            //     });
+            // },
             function ($query) use ($status) {
               $query->when(
                 strtolower($status) == "cheque-cheque",
@@ -644,7 +645,17 @@ class TransactionController extends Controller
                                                     ->where("is_for_releasing", true);
                                                 },
                                                 function ($query) use ($status) {
-                                                  $query->where("status", preg_replace("/\s+/", "", $status));
+                                                  $query->when(
+                                                    strtolower($status) == "pending-debit",
+                                                    function ($query) {
+                                                      $query
+                                                        ->where("document_id", 9)
+                                                        ->where("status", "inspect-inspect");
+                                                    },
+                                                    function ($query) use ($status) {
+                                                      $query->where("status", preg_replace("/\s+/", "", $status));
+                                                    }
+                                                  );
                                                 }
                                               );
                                             }
