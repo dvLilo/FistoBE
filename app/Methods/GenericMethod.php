@@ -4815,12 +4815,13 @@ class GenericMethod
     }
 
     $series = 1;
-    $code = "GA";
+    // $code = "GA";
     $date = Carbon::now("Asia/Manila")->format("ym");
 
     do {
       $formattedSeries = str_pad($series, 3, "0", STR_PAD_LEFT);
-      $generatedVoucher = $code . " " . $date . "-" . $formattedSeries;
+      // $generatedVoucher = $code . " " . $date . "-" . $formattedSeries;
+      $generatedVoucher = $date . "-" . $formattedSeries;
 
       $series++;
     } while ($this->checkDuplicateGeneratedVoucher($generatedVoucher));
