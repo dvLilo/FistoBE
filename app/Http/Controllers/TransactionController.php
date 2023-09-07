@@ -356,7 +356,7 @@ class TransactionController extends Controller
                     strtolower($status) == "pending-transmit",
                     function ($query) {
                       $query
-                        ->whereIn("status", ["approve-approve", "transmit-transfer", "inspect-inspect"])
+                        ->whereIn("status", ["approve-approve", "transmit-transfer"])
                         ->whereNull("is_for_releasing");
                     },
                     function ($query) use ($users_id, $status) {
@@ -593,12 +593,14 @@ class TransactionController extends Controller
                   $query->when(
                     strtolower($status) == "pending",
                     function ($query) {
-                      // $query->whereIn("status", ["transmit-transmit", "audit-return"])->where(function ($query) {
-                      //   $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
-                      // });
-                      $query->whereIn("status", ["transmit-transmit"])->where(function ($query) {
-                        $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
-                      });
+                      $query
+                        ->whereIn("status", ["transmit-transmit"])
+                        ->where(function ($query) {
+                          $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
+                        })
+                        ->orWhere(function ($query) {
+                          $query->where("status", "inspect-inspect")->where("document_id", 8);
+                        });
                     },
                     function ($query) use ($status) {
                       $query->when(
