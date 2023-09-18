@@ -51,6 +51,7 @@ class TransactionFlow
     $subprocess = $request["subprocess"];
     $reason_id = isset($request["reason"]["id"]) ? $request["reason"]["id"] : null;
     $date_now = Carbon::now("Asia/Manila")->format("Y-m-d");
+    $generic = new GenericMethod();
 
     // $transaction = Transaction::select(
     //   "transaction_id",
@@ -459,8 +460,7 @@ class TransactionFlow
         // GenericMethod::voucherNoValidationUponSaving($voucher_no, $id);
         $status = "voucher-voucher";
 
-        $test = new GenericMethod();
-        $voucher_no = $test->generateVoucherNo($transaction->id);
+        $voucher_no = $generic->generateVoucherNo($transaction->id);
 
         // if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit) {
         //   $transaction->update([
@@ -931,9 +931,6 @@ class TransactionFlow
         $approver_name
       );
     } elseif ($process == "audit") {
-      // $model = new Audit;
-
-      $audit = new GenericMethod();
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       $type = "cheque";
       // $transaction = Transaction::find($id);
@@ -1036,7 +1033,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
-      $audit->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
+      $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
 
       // if ($state == "inspect" && $transaction->is_for_voucher_audit == true) {
       //   if ($type === "voucher") {
@@ -1066,7 +1063,6 @@ class TransactionFlow
         $approver_name
       );
     } elseif ($process == "inspect") {
-      $voucher = new GenericMethod();
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       $type = "voucher";
       if ($subprocess == "receive") {
@@ -1119,7 +1115,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
-      $voucher->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
+      $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, $type);
 
       GenericMethod::updateTransactionStatus(
         $id,
@@ -1139,16 +1135,13 @@ class TransactionFlow
         $approver_name
       );
     } elseif ($process == "executive") {
-      // $model = new Audit;
-
-      $executive = new GenericMethod();
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
       // $transaction = Transaction::find($id);
 
       if ($subprocess == "receive") {
         $status = "executive-receive";
 
-        $executive->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks);
+        $generic->executiveSign($id, $date_now, $status, $reason_id, $reason_remarks);
       } elseif ($subprocess == "hold") {
         $status = "executive-hold";
       } elseif ($subprocess == "return") {
@@ -1173,7 +1166,7 @@ class TransactionFlow
         // $transaction->update([
         //   "is_for_voucher_audit" => null,
         // ]);
-        $executive->executiveSign($id, null, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
+        $generic->executiveSign($id, null, $status, $reason_id, $reason_remarks, $signed_by, $signed_date);
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         $status = GenericMethod::getStatus($process, $transaction);
       }
@@ -1393,7 +1386,6 @@ class TransactionFlow
       $account_titles = $cheque_account_titles;
       $cheques = $cheque_cheques;
       $model = new Treasury();
-      $issue = new GenericMethod();
       if ($subprocess == "receive") {
         $status = "issue-receive";
       } elseif ($subprocess == "issue") {
@@ -1468,7 +1460,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
-      $issue->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
+      $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
 
       GenericMethod::chequeTransaction(
         $model,
@@ -1569,11 +1561,12 @@ class TransactionFlow
   public static function validateChequeNo($request)
   {
     $cheque_no = $request["cheque_no"];
+    $bank_id = $request->bank_id;
     $id = $request["id"];
 
     $transaction = Transaction::with("cheques.cheques")
-      ->whereHas("cheques.cheques", function ($query) use ($cheque_no) {
-        $query->where("cheque_no", $cheque_no);
+      ->whereHas("cheques.cheques", function ($query) use ($cheque_no, $bank_id) {
+        $query->where("cheque_no", $cheque_no)->where("bank_id", $bank_id);
       })
       ->where("id", "<>", $id)
       ->exists();
