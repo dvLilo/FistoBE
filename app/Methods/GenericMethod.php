@@ -3789,7 +3789,42 @@ class GenericMethod
         ->count();
 
       if (!is_null($payroll_control_no)) {
+        // $transactions = DB::table("transactions")
+        //   ->leftJoin("transaction_client", "transactions.request_id", "=", "transaction_client.request_id")
+        //   ->select("client_name")
+        //   ->where("company_id", $company_id)
+        //   ->where("department_id", $department_id)
+        //   ->where("location_id", $location_id)
+        //   ->where("supplier_id", $supplier_id)
+        //   ->where("payroll_category", "$payroll_category")
+        //   ->where("payroll_type", $payroll_type)
+        //   ->where("client_name", $client_name)
+        //   ->whereNotNull("payroll_control_no")
+        //   ->where("state", "!=", "void")
+        //   ->when($id, function ($query, $id) {
+        //     $query->where("transactions.id", "<>", $id);
+        //   })
+        //   ->where(function ($query) use ($payroll_from, $payroll_to) {
+        //     $query
+        //       ->where(function ($query) use ($payroll_from, $payroll_to) {
+        //         $query
+        //           ->where(function ($query1) use ($payroll_from) {
+        //             $query1->where("payroll_from", "<=", $payroll_from)->where("payroll_to", ">=", $payroll_from);
+        //           })
+        //           ->orWhere(function ($query2) use ($payroll_to) {
+        //             $query2->where("payroll_from", "<=", $payroll_to)->where("payroll_to", ">=", $payroll_to);
+        //           });
+        //       })
+        //       ->orWhere(function ($query) use ($payroll_from, $payroll_to) {
+        //         $query->where(function ($query1) use ($payroll_from, $payroll_to) {
+        //           $query1->where("payroll_from", ">=", $payroll_from)->where("payroll_to", "<=", $payroll_to);
+        //         });
+        //       });
+        //   })
+        //   ->count();
+
         $controlNoTransactions = DB::table("transactions")
+          ->leftJoin("transaction_client", "transactions.request_id", "=", "transaction_client.request_id")
           ->select("payroll_control_no")
           ->where("company_id", $company_id)
           ->where("department_id", $department_id)
@@ -3797,6 +3832,7 @@ class GenericMethod
           ->where("supplier_id", $supplier_id)
           ->where("payroll_category", "$payroll_category")
           ->where("payroll_type", $payroll_type)
+          ->where("client_name", $client_name)
           ->where("payroll_control_no", $payroll_control_no)
           ->where("state", "!=", "void")
           ->when($id, function ($query, $id) {
@@ -3826,6 +3862,14 @@ class GenericMethod
         } else {
           return;
         }
+
+        // if ($controlNoTransactions >= 1) {
+        //   array_push($duplicate_client, "Payroll control number");
+        // } elseif ($transactions > 0) {
+        //   array_push($duplicate_client, $client_name);
+        // } else {
+        //   return;
+        // }
       }
 
       if ($transactions > 0) {
@@ -3865,7 +3909,7 @@ class GenericMethod
     }
 
     $duplicate_clients = GenericMethod::addAnd($duplicate_client);
-    if (!empty($duplicate_client)) {
+    if (!empty($duplicate_clients)) {
       return GenericMethod::resultLaravelFormat(
         [
           "document.payroll.type",
@@ -3989,7 +4033,19 @@ class GenericMethod
       //   return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
       // }
 
-      if (!$fields["document"]["reference"]["allowable"]) {
+      // if (!$fields["document"]["reference"]["allowable"]) {
+      //   if ($additional_plust_balance_amount < $reference_amount) {
+      //     return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
+      //   }
+      // }
+
+      // if (isset($fields["document"]["reference"]["allowable"])) {
+      //   if ($additional_plust_balance_amount < $reference_amount) {
+      //     return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
+      //   }
+      // }
+
+      if (isset($fields["document"]["reference"]) && !$fields["document"]["reference"]["allowable"]) {
         if ($additional_plust_balance_amount < $reference_amount) {
           return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
         }
@@ -4020,87 +4076,6 @@ class GenericMethod
     $balance = $balance_po_ref_amount - $reference_amount;
     return $balance;
   }
-
-  //-------------------------------------------------
-
-  // public static function PADValidatePOBalance($fields, $company_id, $po_no, float $document_amount, $po_group, $id = 0)
-  // {
-  //   $balance_po_ref_amount = Transaction::leftJoin(
-  //     "p_o_batches",
-  //     "transactions.request_id",
-  //     "=",
-  //     "p_o_batches.request_id"
-  //   )
-  //     ->where("transactions.company_id", $company_id)
-  //     ->when($id, function ($query, $id) {
-  //       $query->where("transactions.id", "<>", $id);
-  //     })
-  //     ->where("transactions.state", "!=", "void")
-  //     ->where("p_o_batches.po_no", $po_no)
-  //     ->orderBy("transactions.id", "desc")
-  //     ->get("balance_po_ref_amount")
-  //     ->first();
-
-  //   if (empty($balance_po_ref_amount)) {
-  //     return;
-  //   }
-  //   $balance_po_ref_amount = $balance_po_ref_amount->balance_po_ref_amount;
-
-  //   if ($balance_po_ref_amount == 0) {
-  //     if (!$id) {
-  //       return GenericMethod::resultLaravelFormat("po_group.no", ["PO already exist."]);
-  //     }
-  //   }
-  //   // Additional PO
-  //   $additional_po_group = [];
-  //   $po_total_amount = 0;
-
-  //   foreach ($po_group as $k => $v) {
-  //     if (
-  //       !POBatch::leftJoin("transactions", "p_o_batches.request_id", "=", "transactions.request_id")
-  //         ->where("company_id", "=", $company_id)
-  //         ->when($id, function ($query, $id) {
-  //           $query->where("transactions.id", "<>", $id);
-  //         })
-  //         ->where("p_o_batches.po_no", "=", $po_group[$k]["no"])
-  //         ->where("state", "!=", "void")
-  //         ->exists()
-  //     ) {
-  //       $additional_po_group[$k]["no"] = $po_group[$k]["no"];
-  //       $additional_po_group[$k]["amount"] = $po_group[$k]["amount"];
-  //       $additional_po_group[$k]["rr_no"] = $po_group[$k]["rr_no"];
-  //     }
-  //     $po_total_amount = $po_total_amount + $po_group[$k]["amount"];
-  //   }
-  //   $additional_po_group = array_values($additional_po_group);
-
-  //   if (count($additional_po_group) > 0) {
-  //     $new_po_total_amount = GenericMethod::getPOTotalAmount($request_id = 0, $additional_po_group);
-  //     $additional_plust_balance_amount = $new_po_total_amount + $balance_po_ref_amount;
-
-  //     if ($additional_plust_balance_amount < $document_amount) {
-  //       return GenericMethod::resultLaravelFormat("document.amount", ["Insufficient PO balance."]);
-  //     }
-  //     $balance = GenericMethod::getBalance($new_po_total_amount, $balance_po_ref_amount, $document_amount);
-
-  //     return [
-  //       "po_total_amount" => $po_total_amount,
-  //       "new_po_total_amount" => $new_po_total_amount,
-  //       "balance" => $balance,
-  //       "new_po_group" => $additional_po_group,
-  //     ];
-  //   }
-
-  //   // if (!$fields["document"]["reference"]["allowable"]) {
-  //   //   if ($balance_po_ref_amount < $reference_amount) {
-  //   //     return GenericMethod::resultLaravelFormat("document.reference.no", ["Insufficient PO balance."]);
-  //   //   }
-  //   // }
-
-  //   $balance = $balance_po_ref_amount - $document_amount;
-  //   return $balance;
-  // }
-  //-------------------------------------------------
 
   public static function getBalancePORefAmount($company_id, $reference_no)
   {

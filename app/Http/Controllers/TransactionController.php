@@ -179,7 +179,7 @@ class TransactionController extends Controller
             },
             function ($query) use ($status) {
               $query->when(
-                strtolower($status) == "return-return",
+                strtolower($status) == "return-request",
                 function ($query) use ($status) {
                   $query->whereIn("status", ["tag-return"]);
                 },
@@ -269,7 +269,7 @@ class TransactionController extends Controller
                             },
                             function ($query) use ($status) {
                               $query->when(
-                                strtolower($status) == "return-return",
+                                strtolower($status) == "return-tag",
                                 function ($query) use ($status) {
                                   $query->whereIn("status", ["voucher-return"]);
                                 },
@@ -379,20 +379,15 @@ class TransactionController extends Controller
                                 },
                                 function ($query) use ($status) {
                                   $query->when(
-                                    strtolower($status) == "return-return",
+                                    strtolower($status) == "return-voucher",
                                     function ($query) use ($status) {
-                                      $query
-                                        ->whereIn("status", [
-                                          "cheque-return",
-                                          "approve-return",
-                                          "inspect-return",
-                                          "issue-return",
-                                          "audit-return",
-                                          "debit-return",
-                                        ])
-                                        ->orWhere(function ($query) {
-                                          $query->whereIn("status", ["audit-return"])->where("document_id", 9);
-                                        });
+                                      $query->whereIn("status", [
+                                        "cheque-return",
+                                        "approve-return",
+                                        "inspect-return",
+                                        "issue-return",
+                                        "debit-return",
+                                      ]);
                                     },
                                     function ($query) use ($status) {
                                       $query->when(
@@ -612,7 +607,7 @@ class TransactionController extends Controller
                           $query->when(
                             strtolower($status) == "return-return",
                             function ($query) use ($status) {
-                              $query->whereIn("status", ["release-return", "reverse-return"]);
+                              $query->whereIn("status", ["reverse-return"]);
                             },
                             function ($query) use ($status) {
                               $query->when(
@@ -657,7 +652,26 @@ class TransactionController extends Controller
                                                         ->where("status", "inspect-inspect");
                                                     },
                                                     function ($query) use ($status) {
-                                                      $query->where("status", preg_replace("/\s+/", "", $status));
+                                                      $query->when(
+                                                        strtolower($status) == "return-audit",
+                                                        function ($query) {
+                                                          $query->whereIn("status", ["audit-return"]);
+                                                        },
+                                                        function ($query) use ($status) {
+                                                          $query->when(
+                                                            strtolower($status) == "return-release",
+                                                            function ($query) {
+                                                              $query->whereIn("status", ["release-return"]);
+                                                            },
+                                                            function ($query) use ($status) {
+                                                              $query->where(
+                                                                "status",
+                                                                preg_replace("/\s+/", "", $status)
+                                                              );
+                                                            }
+                                                          );
+                                                        }
+                                                      );
                                                     }
                                                   );
                                                 }
@@ -1552,6 +1566,7 @@ class TransactionController extends Controller
 
             if ($currentTransaction->is_not_editable == 1) {
               $updateData = [
+                "document_no" => data_get($fields, "document.no"),
                 "document_date" => data_get($fields, "document.date"),
                 "remarks" => data_get($fields, "document.remarks"),
                 "company" => data_get($fields, "document.company.name"),
@@ -1572,6 +1587,15 @@ class TransactionController extends Controller
               }
 
               $currentTransaction->update($updateData, ["timestamps" => false]);
+              $poGroups = data_get($fields, "po_group");
+
+              for ($i = 0; $i < count($poGroups); $i++) {
+                POBatch::where("request_id", $currentTransaction->request_id)
+                  ->where("po_no", $poGroups[$i]["no"])
+                  ->update([
+                    "rr_group" => $poGroups[$i]["rr_no"],
+                  ]);
+              }
 
               return $this->resultResponse("update", "Transaction", []);
             }
@@ -1882,6 +1906,8 @@ class TransactionController extends Controller
           return $this->resultResponse("update", "Transaction", []);
         }
 
+        #----------------------------------------------------------------------#
+
         // $transaction = Transaction::find($id);
 
         // $count = Transaction::where("transaction_id", $transaction->transaction_id)
@@ -1889,7 +1915,7 @@ class TransactionController extends Controller
         //   ->count("request_id");
 
         // if (
-        //   Tagging::where("transaction_id", $transaction->transaction_id)
+        //   Transaction::where("transaction_id", $transaction->transaction_id)
         //     ->whereNotIn("status", ["tag-return", "tag-void"])
         //     ->exists()
         // ) {
@@ -2247,6 +2273,16 @@ class TransactionController extends Controller
           if ($currentTransaction->status == "tag-return") {
             $updateData["status"] = "Pending";
             $updateData["state"] = "pending";
+          }
+
+          $poGroups = data_get($fields, "po_group");
+
+          for ($i = 0; $i < count($poGroups); $i++) {
+            POBatch::where("request_id", $currentTransaction->request_id)
+              ->where("po_no", $poGroups[$i]["no"])
+              ->update([
+                "rr_group" => $poGroups[$i]["rr_no"],
+              ]);
           }
 
           $currentTransaction->update($updateData, ["timestamps" => false]);
