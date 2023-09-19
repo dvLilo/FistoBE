@@ -275,7 +275,7 @@ class TransactionController extends Controller
                                 },
                                 function ($query) use ($status) {
                                   $query->when(
-                                    strtolower($status) == "return-hold",
+                                    strtolower($status) == "hold-voucher",
                                     function ($query) use ($status) {
                                       $query->whereIn("status", ["voucher-hold"]);
                                     },
@@ -391,9 +391,15 @@ class TransactionController extends Controller
                                     },
                                     function ($query) use ($status) {
                                       $query->when(
-                                        strtolower($status) == "return-hold",
+                                        strtolower($status) == "hold-voucher",
                                         function ($query) use ($status) {
-                                          $query->whereIn("status", ["cheque-hold", "approve-hold"]);
+                                          $query->whereIn("status", [
+                                            "cheque-hold",
+                                            "approve-hold",
+                                            "inspect-hold",
+                                            "issue-hold",
+                                            "debit-hold",
+                                          ]);
                                         },
                                         function ($query) use ($status) {
                                           $query->when(
@@ -611,9 +617,13 @@ class TransactionController extends Controller
                             },
                             function ($query) use ($status) {
                               $query->when(
-                                strtolower($status) == "return-hold",
+                                // strtolower($status) == "return-hold",
+                                // function ($query) use ($status) {
+                                //   $query->whereIn("status", ["release-hold"]);
+                                // }
+                                strtolower($status) == "hold-cheque",
                                 function ($query) use ($status) {
-                                  $query->whereIn("status", ["release-hold"]);
+                                  $query->whereIn("status", ["audit-hold"]);
                                 },
                                 function ($query) use ($status) {
                                   $query->when(
@@ -653,7 +663,7 @@ class TransactionController extends Controller
                                                     },
                                                     function ($query) use ($status) {
                                                       $query->when(
-                                                        strtolower($status) == "return-audit",
+                                                        strtolower($status) == "return-cheque",
                                                         function ($query) {
                                                           $query->whereIn("status", ["audit-return"]);
                                                         },
