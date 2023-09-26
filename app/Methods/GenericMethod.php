@@ -846,8 +846,8 @@ class GenericMethod
     foreach ($cheques as $specific_cheques) {
       $cheque_no = $specific_cheques["no"];
       $transaction = Transaction::with("cheques.cheques")
-        ->whereHas("cheques.cheques", function ($query) use ($cheque_no) {
-          $query->where("cheque_no", $cheque_no);
+        ->whereHas("cheques.cheques", function ($query) use ($cheque_no, $specific_cheques) {
+          $query->where("cheque_no", $cheque_no)->where("bank_id", $specific_cheques["bank"]["id"]);
         })
         ->where("id", "<>", $id)
         // ->when($id, function ($query, $id) {
@@ -1500,6 +1500,9 @@ class GenericMethod
         case "stall d rental":
         case "cusa rental":
         case "dorm rental":
+        case "corporate special program - education":
+        case "official store rental":
+        case "unofficial store rental":
         case "rental":
           $errors = [];
           $error_date_format = [];
@@ -1886,7 +1889,11 @@ class GenericMethod
       ]);
 
       if ($new_transaction->id) {
-        GenericMethod::insert_debit_attachment($request_id, $fields["autoDebit_group"]);
+        // GenericMethod::insert_debit_attachment($request_id, $fields["autoDebit_group"]);
+
+          if (isset($fields["autoDebit_group"])) {
+              GenericMethod::insert_debit_attachment($request_id, $fields["autoDebit_group"]);
+          }
       }
     } elseif ($fields["document"]["id"] == 1 && $fields["document"]["payment_type"] == "Partial") {
       $new_transaction = Transaction::create([

@@ -388,6 +388,9 @@ class TransactionResource extends JsonResource
           case "stall d rental":
           case "cusa rental":
           case "dorm rental":
+          case "corporate special program - education":
+          case "official store rental":
+          case "unofficial store rental":
           case "rental":
             $document["period_covered"] = $this->period_covered;
             $document["prm_multiple_from"] = $this->prm_multiple_from;
@@ -1024,6 +1027,9 @@ class TransactionResource extends JsonResource
         case "dorm rental":
         case "additional rental":
         case "lounge rental":
+        case "corporate special program education":
+        case "official store rental":
+        case "unofficial store rental":
         case "rental":
           $prm_fields = Transaction::where("transaction_id", $this->transaction_id)
             // ->where("state", "!=", "void")
