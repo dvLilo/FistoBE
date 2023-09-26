@@ -275,7 +275,7 @@ class TransactionController extends Controller
                                 },
                                 function ($query) use ($status) {
                                   $query->when(
-                                    strtolower($status) == "hold-voucher",
+                                    strtolower($status) == "hold-tag",
                                     function ($query) use ($status) {
                                       $query->whereIn("status", ["voucher-hold"]);
                                     },
@@ -1540,11 +1540,20 @@ class TransactionController extends Controller
         if ($is_duplicate) {
           return $this->resultResponse("invalid", "", $is_duplicate);
         }
-        GenericMethod::validate_debit_amount(
-          $fields["document"]["amount"],
-          $fields["autoDebit_group"],
-          "Document amount and net of cwt amount is not equal."
-        );
+        // GenericMethod::validate_debit_amount(
+        //   $fields["document"]["amount"],
+        //   $fields["autoDebit_group"],
+        //   "Document amount and net of cwt amount is not equal."
+        // );
+
+        isset($fields["autoDebit_group"])
+          ? GenericMethod::validate_debit_amount(
+            $fields["document"]["amount"],
+            $fields["autoDebit_group"],
+            "Document amount and net of cwt amount is not equal."
+          )
+          : null;
+
         $transaction = GenericMethod::insertTransaction($transaction_id, null, $request_id, $date_requested, $fields);
         if (isset($transaction->transaction_id)) {
           return $this->resultResponse("save", "Transaction", []);
@@ -2402,12 +2411,22 @@ class TransactionController extends Controller
 
         $changes = GenericMethod::getTransactionChanges($request_id, $request, $id);
 
-        GenericMethod::validate_debit_amount(
-          $fields["document"]["amount"],
-          $fields["autoDebit_group"],
-          "Document amount and net of amount is not equal."
-        );
-        GenericMethod::update_debit_attachment($request_id, $fields["autoDebit_group"], $id);
+        // GenericMethod::validate_debit_amount(
+        //   $fields["document"]["amount"],
+        //   $fields["autoDebit_group"],
+        //   "Document amount and net of amount is not equal."
+        // );
+        // GenericMethod::update_debit_attachment($request_id, $fields["autoDebit_group"], $id);
+
+        if ($fields["autoDebit_group"]) {
+          GenericMethod::validate_debit_amount(
+            $fields["document"]["amount"],
+            $fields["autoDebit_group"],
+            "Document amount and net of amount is not equal."
+          );
+          GenericMethod::update_debit_attachment($request_id, $fields["autoDebit_group"], $id);
+        }
+
         $transaction = GenericMethod::updateTransaction(
           $id,
           $po_total_amount,
