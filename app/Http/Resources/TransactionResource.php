@@ -1070,24 +1070,24 @@ class TransactionResource extends JsonResource
     }
 
     // AUTO DEBIT GROUP
-    if ($this->document_type == "Auto Debit") {
-      $auto_debit = [];
-      foreach ($transaction_with_debit->auto_debit as $k => $auto_debit_batch) {
-        $auto_debit[$k]["request_id"] = $auto_debit_batch->request_id;
-        $auto_debit[$k]["pn_no"] = $auto_debit_batch->pn_no;
-        $auto_debit[$k]["interest_from"] = $auto_debit_batch->interest_from;
-        $auto_debit[$k]["interest_to"] = $auto_debit_batch->interest_to;
-        $auto_debit[$k]["outstanding_amount"] = floatVal($auto_debit_batch->outstanding_amount);
-        $auto_debit[$k]["interest_rate"] = floatVal($auto_debit_batch->interest_rate);
-        $auto_debit[$k]["no_of_days"] = floatVal($auto_debit_batch->no_of_days);
-        $auto_debit[$k]["principal_amount"] = floatVal($auto_debit_batch->principal_amount);
-        $auto_debit[$k]["interest_due"] = floatVal($auto_debit_batch->interest_due);
-        $auto_debit[$k]["cwt"] = floatVal($auto_debit_batch->cwt);
-        $auto_debit[$k]["dst"] = floatVal($auto_debit_batch->dst);
-      }
-
-      $autoDebit_group = $auto_debit;
-    }
+//    if ($this->document_type == "Auto Debit") {
+//      $auto_debit = [];
+//      foreach ($transaction_with_debit->auto_debit as $k => $auto_debit_batch) {
+//        $auto_debit[$k]["request_id"] = $auto_debit_batch->request_id;
+//        $auto_debit[$k]["pn_no"] = $auto_debit_batch->pn_no;
+//        $auto_debit[$k]["interest_from"] = $auto_debit_batch->interest_from;
+//        $auto_debit[$k]["interest_to"] = $auto_debit_batch->interest_to;
+//        $auto_debit[$k]["outstanding_amount"] = floatVal($auto_debit_batch->outstanding_amount);
+//        $auto_debit[$k]["interest_rate"] = floatVal($auto_debit_batch->interest_rate);
+//        $auto_debit[$k]["no_of_days"] = floatVal($auto_debit_batch->no_of_days);
+//        $auto_debit[$k]["principal_amount"] = floatVal($auto_debit_batch->principal_amount);
+//        $auto_debit[$k]["interest_due"] = floatVal($auto_debit_batch->interest_due);
+//        $auto_debit[$k]["cwt"] = floatVal($auto_debit_batch->cwt);
+//        $auto_debit[$k]["dst"] = floatVal($auto_debit_batch->dst);
+//
+//      }
+//      $autoDebit_group = $auto_debit;
+//    }
 
     // COUNTER RECEIPT
     $counter_receipt = [];
@@ -1130,7 +1130,22 @@ class TransactionResource extends JsonResource
       "document" => $document,
     ];
 
-    $transaction_result["autoDebit_group"] = $autoDebit_group;
+//    $transaction_result["autoDebit_group"] = $autoDebit_group;
+      $transaction_result["autoDebit_group"] = $this->auto_debit->map(function ($autoDebit) {
+        return [
+          "request_id" => $autoDebit->request_id,
+          "pn_no" => $autoDebit->pn_no,
+          "interest_from" => $autoDebit->interest_from,
+          "interest_to" => $autoDebit->interest_to,
+          "outstanding_amount" => floatVal($autoDebit->outstanding_amount),
+          "interest_rate" => floatVal($autoDebit->interest_rate),
+          "no_of_days" => floatVal($autoDebit->no_of_days),
+          "principal_amount" => floatVal($autoDebit->principal_amount),
+          "interest_due" => floatVal($autoDebit->interest_due),
+          "cwt" => floatVal($autoDebit->cwt),
+          "dst" => floatVal($autoDebit->dst),
+        ];
+      });
     $transaction_result["po_group"] = $po_details;
     $transaction_result["prm_group"] = $prm_group;
     $transaction_result["tag"] = $tag;
