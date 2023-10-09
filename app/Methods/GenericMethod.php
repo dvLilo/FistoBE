@@ -2,44 +2,38 @@
 
 namespace App\Methods;
 
-use Carbon\Carbon;
-use App\Models\User;
+use App\Exceptions\FistoException;
+use App\Exceptions\FistoLaravelException;
+use App\Models\Approver;
+use App\Models\Associate;
 use App\Models\Audit;
 use App\Models\Cheque;
-// For Pagination with Collection
+use App\Models\ClearingAccountTitle;
+use App\Models\DebitBatch;
+use App\Models\Executive;
 use App\Models\Filing;
-use App\Models\Reason;
 use App\Models\POBatch;
-
-use App\Models\Release;
+use App\Models\Reason;
+use App\Models\ReferrenceBatch;
+use App\Models\RequestorLogs;
 use App\Models\Reverse;
 use App\Models\Tagging;
-use App\Models\Approver;
+use App\Models\Transaction;
+use App\Models\TransactionClient;
 use App\Models\Transfer;
 use App\Models\Treasury;
-use App\Models\Associate;
-use App\Models\Executive;
-use App\Models\DebitBatch;
-use App\Models\Transaction;
-use Illuminate\Support\Str;
-use App\Models\PayrollClient;
-use App\Models\RequestorLogs;
-use Illuminate\Routing\Route;
-use App\Models\ReferrenceBatch;
-use App\Models\TransactionClient;
-use App\Exceptions\FistoException;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use App\Models\VoucherAccountTitle;
-
-use App\Models\ClearingAccountTitle;
+use App\Models\User;
 use App\Models\UserDocumentCategory;
-
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
-use App\Exceptions\FistoLaravelException;
-use Illuminate\Validation\ValidationException;
+use App\Models\VoucherAccountTitle;
+use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+// For Pagination with Collection
 
 class GenericMethod
 {
@@ -249,9 +243,9 @@ class GenericMethod
     } elseif ($process == "voucher") {
       $model = new Associate();
       $field = "voucher_no";
-    } elseif ($process == "approve") {
-      $model = new Approver();
-      $field = "distributed_id";
+//    } elseif ($process == "approve") {
+//      $model = new Approver();
+//      $field = "distributed_id";
     } elseif ($process == "cheque") {
       $model = new Treasury();
       $field = "cheque_no";
@@ -273,6 +267,8 @@ class GenericMethod
       $field = "";
     } elseif ($process == "debit") {
       $field = "";
+    } elseif ($process == "approve") {
+        $field = "";
     }
 
     $status = $process . "-" . $process;
@@ -280,7 +276,15 @@ class GenericMethod
     if ($process == "debit") {
       $status = $process . "-" . "file";
     }
+    //---------------------------------------------------------------//
+      $is_approved = Approver::where("tag_id", $transaction->tag_no)
+          ->where("status", "approve-approve")
+          ->exists();
 
+    if ($process == "approve" and $is_approved) {
+        return $status;
+    }
+      //---------------------------------------------------------------//
     $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
     if ($process == "cheque" and $is_exists) {
       return $status;

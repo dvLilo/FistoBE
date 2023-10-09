@@ -1,6 +1,7 @@
 <?php
 namespace App\Methods;
 
+use App\Http\Controllers\TransactionController;
 use Carbon\Carbon;
 use App\Models\Gas;
 
@@ -285,7 +286,7 @@ class TransactionFlow
         // }
       } elseif ($subprocess == "void") {
         $status = "tag-void";
-
+         static::voidTransaction($request, $id);
         // if ($transaction->document_id == 4 && $transaction->payment_type == "Partial") {
         //   switch ($transaction->is_not_editable) {
         //     case false:
@@ -369,44 +370,6 @@ class TransactionFlow
 
         //       break;
         //   }
-        // }
-
-        // if (
-        //   $transaction->document_id == 4 &&
-        //   $transaction->payment_type == "Partial" &&
-        //   $transaction->is_not_editable == true
-        // ) {
-        //   // $poNo = $transaction
-        //   //   ->po_details()
-        //   //   ->pluck("po_no")
-        //   //   ->last();
-
-        //   // $poRequestIds = POBatch::where("po_no", $poNo)
-        //   //   ->pluck("request_id")
-        //   //   ->toArray();
-
-        //   // $currentBalance =
-        //   //   $transaction->referrence_amount +
-        //   //   Transaction::where("request_id", end($poRequestIds))->value("balance_po_ref_amount");
-
-        //   // Transaction::where("request_id", end($poRequestIds))->update([
-        //   //   "balance_po_ref_amount" => $currentBalance,
-        //   // ]);
-
-        //   $poNo = $transaction
-        //     ->po_details()
-        //     ->pluck("po_no")
-        //     ->last();
-
-        //   $lastRequestId = POBatch::where("po_no", $poNo)
-        //     ->pluck("request_id")
-        //     ->last();
-
-        //   $currentBalance =
-        //     $transaction->referrence_amount +
-        //     Transaction::where("request_id", $lastRequestId)->value("balance_po_ref_amount");
-
-        //   Transaction::updateOrInsert(["request_id" => $lastRequestId], ["balance_po_ref_amount" => $currentBalance]);
         // }
       } elseif ($subprocess == "tag") {
         $status = "tag-tag";
@@ -642,7 +605,7 @@ class TransactionFlow
 
         if (
           $transaction->document_id === 8 &&
-          $transaction->is_for_voucher_audit == false &&
+          $transaction->is_for_voucher_audit === false &&
           $transaction->status == "inspect-inspect"
         ) {
           $transaction->update([
@@ -657,7 +620,7 @@ class TransactionFlow
             $transaction->update([
               "is_for_voucher_audit" => true,
             ]);
-          } elseif ($transaction->status === "transmit-receive" && $transaction->is_for_voucher_audit == false) {
+          } elseif ($transaction->status === "transmit-receive" && !$transaction->is_for_voucher_audit) {
             // Case 2: Update for transmission status
             $transaction->update([
               "is_for_voucher_audit" => null,
@@ -748,7 +711,7 @@ class TransactionFlow
         //   ]);
         // }
 
-        if ($transaction->is_for_releasing == true) {
+        if ($transaction->is_for_releasing) {
           $transaction->update([
             "is_for_releasing" => true,
           ]);
@@ -1592,5 +1555,10 @@ class TransactionFlow
 
     GenericMethod::transferTransaction($id, $from_user_id, $from_full_name, $to_user_id, $to_full_name);
     return GenericMethod::resultResponse("transfer", "", "");
+  }
+
+  public static function voidTransaction($request, $id) {
+      $test = new TransactionController();
+      $test->voidTransaction($request, $id);
   }
 }

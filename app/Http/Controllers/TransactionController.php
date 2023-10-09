@@ -100,18 +100,27 @@ class TransactionController extends Controller
       "company_id",
       // ,'tag_no'
     ])
-      ->with("users", function ($query) {
-        return $query->select(["id", "first_name", "middle_name", "last_name", "users.department", "position"]);
-      })
-      ->with("supplier.supplier_type", function ($query) {
-        return $query->select(["id", "type as name", "transaction_days"]);
-      })
-      ->with("po_details", function ($query) {
-        return $query->select(["id", "request_id", "po_no", "po_total_amount"]);
-      })
-      ->with("audit")
-      ->with("executive")
-      ->with("cheques.cheques")
+      ->with([
+        "users:id,first_name,middle_name,last_name,department,position",
+        //          "supplier:id,name,supplier_type_id",
+        "supplier.supplier_type:id,type as name,transaction_days",
+        "po_details:id,request_id,po_no,po_total_amount",
+        "audit",
+        "executive",
+        "cheques.cheques",
+      ])
+      //      ->with("users", function ($query) {
+      //        return $query->select(["id", "first_name", "middle_name", "last_name", "users.department", "position"]);
+      //      })
+      //      ->with("supplier.supplier_type", function ($query) {
+      //        return $query->select(["id", "type as name", "transaction_days"]);
+      //      })
+      //      ->with("po_details", function ($query) {
+      //        return $query->select(["id", "request_id", "po_no", "po_total_amount"]);
+      //      })
+      //      ->with("audit", "executive", "cheques.cheques")
+      //      ->with("executive")
+      //      ->with("cheques.cheques")
       ->when(!empty($document_ids), function ($query) use ($document_ids) {
         $query->whereIn("document_id", $document_ids);
       })

@@ -1027,7 +1027,7 @@ class TransactionResource extends JsonResource
         case "dorm rental":
         case "additional rental":
         case "lounge rental":
-        case "corporate special program education":
+        case "corporate special program - education":
         case "official store rental":
         case "unofficial store rental":
         case "rental":
