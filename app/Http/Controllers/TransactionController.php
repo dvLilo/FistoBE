@@ -336,6 +336,7 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
 
             "status",
             "state",

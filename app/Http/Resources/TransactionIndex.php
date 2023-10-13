@@ -114,6 +114,7 @@ class TransactionIndex extends JsonResource
         "location" => $this->location,
         "document_no" => $this->document_no,
         "document_amount" => $this->document_id == 3 ? $this->net_amount : $this->document_amount,
+          "cheque_date" => $this->cheque_date,
         "referrence_no" => $this->referrence_no,
         "referrence_amount" => $this->referrence_amount,
         "status" => $this->state,

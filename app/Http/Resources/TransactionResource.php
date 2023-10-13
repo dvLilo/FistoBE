@@ -1394,6 +1394,15 @@ class TransactionResource extends JsonResource
             "filed" => $debitValues["date_filed"],
           ],
           "status" => $debitValues["status"],
+            "accounts" => $this->debit_file->map(function ($debitFile) {
+                return [
+                    "entry" => $debitFile->entry,
+                    "accounts" => [
+                        "id" => $debitFile->account_title_id,
+                        "name" => $debitFile->account_title_name
+                    ],
+                ];
+            }),
         ];
 
         if ($reasondebitValues["id"] !== null || $reasondebitValues["remarks"] !== null) {

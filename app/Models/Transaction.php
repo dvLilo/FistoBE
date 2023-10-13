@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -625,5 +626,10 @@ class Transaction extends Model
       ->select(["tag_id", "reason_id", "remarks"])
       ->latest()
       ->limit(1);
+  }
+
+  public function debit_file(): HasMany {
+      return $this->hasMany(ClearingAccountTitle::class, 'clear_id', 'tag_no')
+          ->where('transaction_type', 'debit');
   }
 }

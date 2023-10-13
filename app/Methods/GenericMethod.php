@@ -1630,6 +1630,9 @@ class GenericMethod
               "total_net" => $total_net ? $total_net : null,
             ]);
           }
+
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
         case "official store leasing":
         case "unofficial store leasing":
@@ -1724,7 +1727,8 @@ class GenericMethod
               "remarks" => $fields["document"]["remarks"],
               "document_type" => $fields["document"]["name"],
               "po_total_amount" => $po_total_amount,
-              "request_id" => $temporary_request_id ? $temporary_request_id : null,
+//              "request_id" => $temporary_request_id ? $temporary_request_id : null,
+              "request_id" => isset($temporary_request_id) ? $temporary_request_id : null,
 
               "date_requested" => $date_requested,
               "status" => "Pending",
@@ -1738,6 +1742,8 @@ class GenericMethod
               "batch_no" => $fields["document"]["batch_no"],
             ]);
           }
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
 
         case "loans":
@@ -1844,6 +1850,9 @@ class GenericMethod
               "batch_no" => $fields["document"]["batch_no"],
             ]);
           }
+
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
       }
     } elseif ($fields["document"]["id"] == 9) {
@@ -4574,7 +4583,7 @@ class GenericMethod
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
       case "transfer":
-        return GenericMethod::result(200, "Transaction has been transfered.", []);
+        return GenericMethod::result(200, "Transaction has been transferred.", []);
         break;
       case "fetch":
         return GenericMethod::result(200, Str::plural($modelName) . " has been fetched.", $data);
@@ -4818,5 +4827,11 @@ class GenericMethod
   function checkDuplicateGeneratedVoucher($voucher)
   {
     return Transaction::where("voucher_no", $voucher)->exists();
+  }
+
+  public static function prmMultiplerequestUpdateID($new_transaction) {
+      $newTransactionId = $new_transaction->transaction_id;
+      $requestIds = Transaction::where('transaction_id', $newTransactionId)->pluck('id');
+      Transaction::whereIn('id', $requestIds)->update(['request_id' => DB::raw('id')]);
   }
 }

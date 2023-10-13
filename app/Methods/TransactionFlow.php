@@ -2,6 +2,7 @@
 namespace App\Methods;
 
 use App\Http\Controllers\TransactionController;
+use App\Models\ClearingAccountTitle;
 use Carbon\Carbon;
 use App\Models\Gas;
 
@@ -1422,8 +1423,10 @@ class TransactionFlow
         return GenericMethod::resultResponse("invalid-access", "", "");
       }
 
-      $state = $subprocess;
+      $subprocess == "issue" ? $state = "release" : $state = $subprocess;
+//      $state = $subprocess;
       $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
+
 
       GenericMethod::chequeTransaction(
         $model,
@@ -1454,10 +1457,56 @@ class TransactionFlow
         $approver_name
       );
     } elseif ($process == "debit") {
+        $account_titles = $accounts;
       if ($subprocess == "receive") {
         $status = "debit-receive";
       } elseif ($subprocess == "file") {
         $status = "debit-file";
+          if (!empty($account_titles)) {
+              $debit_entries_amount = array_filter($account_titles, function ($account_title) {
+                  return strtolower($account_title["entry"]) != strtolower("credit");
+              });
+
+              $credit_entries_amount = array_filter($account_titles, function ($account_title) {
+                  return strtolower($account_title["entry"]) != strtolower("debit");
+              });
+
+              $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
+              $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
+
+              switch ($transaction->document_id) {
+                  case 3:
+                      if ($debit_amount != $credit_amount) {
+                          return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+                      }
+                      if ($transaction->net_amount != $debit_amount) {
+                          return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+                      }
+
+                      break;
+
+                  default:
+                      if ($debit_amount != $credit_amount) {
+                          return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
+                      }
+
+                      if ($transaction->document_amount != $debit_amount) {
+                          return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+                      }
+              }
+          }
+          ClearingAccountTitle::where('clear_id', $tag_no)->delete();
+          foreach ($account_titles as $account_title) {
+              ClearingAccountTitle::create([
+                  'clear_id' => $tag_no,
+                  'entry' => $account_title['entry'],
+                  'account_title_id' => $account_title['account_title']['id'],
+                  'account_title_name' => $account_title['account_title']['name'],
+                  'amount' => $account_title['amount'],
+                  'remarks' => $account_title['remarks'],
+                  'transaction_type' => 'debit'
+              ]);
+          }
       } elseif ($subprocess == "return") {
         $status = "debit-return";
       } elseif ($subprocess == "hold") {
@@ -1473,7 +1522,7 @@ class TransactionFlow
       }
 
       $state = $subprocess;
-
+//      return $transaction->document_amount;
       Filing::create([
         "tag_id" => $transaction->id,
         "date_received" => $date_now,
