@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SubUnitRequest;
+use App\Http\Resources\SubUnitResource;
 use App\Models\SubUnit;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -29,7 +30,7 @@ class SubUnitController extends Controller
         }
 
         if (count($subunit)) {
-            return $this->resultResponse('fetch', 'Sub Unit', $subunit);
+            return $this->resultResponse('fetch', 'Sub Unit', SubUnitResource::collection($subunit)->response()->getData(true));
         } else {
             return $this->resultResponse('not-found', 'Sub Unit', []);
         }
