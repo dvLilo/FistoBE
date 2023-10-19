@@ -48,8 +48,10 @@ class BusinessUnitController extends Controller
 
         $associates = $request->users;
 
-        foreach ($associates as $associate) {
-            $new_business_unit->users()->attach($associate);
+        if (isset($associates)) {
+            foreach ($associates as $associate) {
+                $new_business_unit->users()->attach($associate);
+            }
         }
 
         return $this->resultResponse('save','Business Unit', $new_business_unit);
