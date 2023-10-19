@@ -16,21 +16,36 @@ class SubUnitController extends Controller
         $search =  $request['search'];
         $paginate = $request->input('paginate', 1);
 
-        $subunit = SubUnit::withTrashed()->where(function ($query) use ($status) {
+        $subunit = SubUnit::withTrashed()
+            ->where(function ($query) use ($status) {
             return $status ? $query->whereNull('deleted_at') : $query->whereNotNull('deleted_at');
         })->where(function ($query) use ($search) {
             $query->where('subunit', 'like', '%' . $search . '%')
                 ->orWhere('code', 'like', '%' . $search . '%');
-        })->latest('updated_at');
+        })->select(['id','code', 'subunit','updated_at', 'deleted_at', 'department_id'])
+            ->latest('updated_at');
 
         if ($paginate == 1) {
             $subunit = $subunit->paginate($rows);
         } else if ($paginate == 0) {
             $subunit = $subunit->get(['id','code', 'subunit']);
         }
+        $subunit->transform(function ($value) {
+            return [
+                'id' => $value->id,
+                'code' => $value->code,
+                'subunit' => $value->subunit,
+                'department' => [
+                    'id' => $value->department->id,
+                    'name' => $value->department->department,
+                ],
+                'updated_at' => $value->updated_at->format('d-m-Y'),
+                'deleted_at' => $value->deleted_at,
+            ];
+        });
 
         if (count($subunit)) {
-            return $this->resultResponse('fetch', 'Sub Unit', SubUnitResource::collection($subunit)->response()->getData(true));
+            return $this->resultResponse('fetch', 'Sub Unit', $subunit);
         } else {
             return $this->resultResponse('not-found', 'Sub Unit', []);
         }
