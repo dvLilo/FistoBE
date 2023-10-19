@@ -72,7 +72,7 @@ class DepartmentController extends Controller
             ->get(["id", "code", "department as name", "company", "updated_at", "deleted_at"]);
         })
         ->when($api_for == "default", function ($query) {
-          return $query->get(["id", "department as name"]);
+          return $query->get(["id", "code", "department as name"]);
         });
 
       if (count($departments)) {
