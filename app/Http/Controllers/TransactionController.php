@@ -90,7 +90,7 @@ class TransactionController extends Controller
     $cheque_window = ["Treasury Associate"];
     $audit_window = ["Audit Associate"];
     $executive_assistant = ["Executive Assistant"];
-    $gas_window = ["GAS"];
+    $gas_window = ["GAS Associate"];
 
     $is_voucher_transfered = $status == "voucher-transfer";
     $is_transmit_transfered = $status == "transmit-transfer";
