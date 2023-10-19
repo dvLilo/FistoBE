@@ -87,7 +87,7 @@ Route::group(["middleware" => "auth:sanctum"], function () {
       Route::get("supplier-reference", [MasterlistController::class, "supplierRefDropdown"]);
       Route::get("location-category-supplier", [MasterlistController::class, "loccatsupDropdown"]);
       Route::get("location-category", [MasterlistController::class, "loccatDropdown"]);
-      Route::get("account-title", [MasterlistController::class, "accountTitleDropdown"]);
+      Route::get("account-title/{id}", [MasterlistController::class, "accountTitleDropdown"]);
       Route::get("company", [MasterlistController::class, "companyDropdown"]);
       Route::get("organization", [MasterlistController::class, "organizationDropdown"]);
       Route::get("department", [MasterlistController::class, "departmentDropdown"]);
@@ -194,6 +194,18 @@ Route::group(["middleware" => "auth:sanctum"], function () {
     // ORGANIZATION
     Route::put("organization", [OrganizationDepartmentController::class, "import"]);
     Route::resource("organization", OrganizationDepartmentController::class);
+
+    //BUSINESS UNIT
+      Route::patch('business-units/{id}', [\App\Http\Controllers\BusinessUnitController::class, 'change_status']);
+      Route::resource("business-units", \App\Http\Controllers\BusinessUnitController::class);
+
+      //SUB UNIT
+      Route::patch("sub-units/{id}", [\App\Http\Controllers\SubUnitController::class, "change_status"]);
+      Route::resource("sub-units", \App\Http\Controllers\SubUnitController::class);
+
+      //DOCUMENT COA
+//      Route::patch("document-coa/{id}", [\App\Http\Controllers\DocumentCoaController::class, "change_status"]);
+//      Route::resource("document-coa", \App\Http\Controllers\DocumentCoaController::class);
   });
 
   // USER
@@ -213,10 +225,9 @@ Route::group(["middleware" => "auth:sanctum"], function () {
   Route::post("transactions/validate-soa-no/", [TransactionController::class, "validateSOANumber"]);
 
   // TRANSACTION FLOW
-  Route::post("transactions/flow/update-transaction/{id}", [
-    TransactionFlowController::class,
-    "updateInTransactionFlow",
-  ]);
+  Route::post("transactions/flow/update-transaction/{id}", [TransactionFlowController::class, "updateInTransactionFlow"]);
+  Route::post("transactions/flow/receive", [TransactionFlowController::class, "multipleReceive"]);
+
   Route::post("transactions/flow/validate-voucher-no", [TransactionFlowController::class, "validateVoucherNo"]);
   Route::post("transactions/flow/validate-cheque-no", [TransactionFlowController::class, "validateChequeNo"]);
   Route::put("transactions/flow/transfer/{id}", [TransactionFlowController::class, "transfer"]);

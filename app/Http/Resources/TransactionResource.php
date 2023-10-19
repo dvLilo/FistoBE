@@ -1027,7 +1027,7 @@ class TransactionResource extends JsonResource
         case "dorm rental":
         case "additional rental":
         case "lounge rental":
-        case "corporate special program education":
+        case "corporate special program - education":
         case "official store rental":
         case "unofficial store rental":
         case "rental":
@@ -1153,6 +1153,57 @@ class TransactionResource extends JsonResource
     $transaction_result["approve"] = $approve;
     $transaction_result["transmit"] = $transmit;
     $transaction_result["cheque"] = $cheque_description;
+
+    // GAS
+      $receiveGas = $this->receiveGas;
+      $gas = $this->gas;
+      $reasonGas = $this->reasonGas;
+      $statusGas = null;
+      if ($this->statusGas) {
+        $statusGas = $this->statusGas->status;
+      }
+
+      $gasValues = [
+        "date_received" => $receiveGas ? ($receiveGas->created_at ?: null) : null,
+        "date_gas" => $gas ? ($gas->created_at ?: null) : null,
+        "status" => $statusGas,
+      ];
+
+      $reasonGasValues = [
+        "id" => $reasonGas ? ($reasonGas->reason_id ?: null) : null,
+        "reason" => $reasonGas && $reasonGas->reason ? $reasonGas->reason->reason : null,
+        "remarks" => $reasonGas ? ($reasonGas->remarks ?: null) : null,
+      ];
+
+      if (
+          array_filter($gasValues, function ($value) {
+          return $value !== null;
+        }) === []
+      ) {
+        $transaction_result["gas"] = [];
+      } else {
+        if ($gasValues) {
+          $transaction_result["gas"] = [
+            "dates" => [
+              "received" => $gasValues["date_received"],
+              "gas" => $gasValues["date_gas"],
+            ],
+            "status" => $gasValues["status"],
+          ];
+
+          if ($reasonGasValues["id"] !== null || $reasonGasValues["remarks"] !== null) {
+            $transaction_result["gas"]["reason"] = [
+              "id" => $reasonGasValues["id"],
+              "reason" => $reasonGasValues["reason"],
+              "remarks" => $reasonGasValues["remarks"],
+            ];
+          } else {
+            $transaction_result["gas"]["reason"] = null;
+          }
+        } else {
+          $transaction_result["gas"] = [];
+        }
+      }
 
     //Inspect Voucher
     $receive = $this->receiveVoucher;
@@ -1394,6 +1445,15 @@ class TransactionResource extends JsonResource
             "filed" => $debitValues["date_filed"],
           ],
           "status" => $debitValues["status"],
+            "accounts" => $this->debit_file->map(function ($debitFile) {
+                return [
+                    "entry" => $debitFile->entry,
+                    "accounts" => [
+                        "id" => $debitFile->account_title_id,
+                        "name" => $debitFile->account_title_name
+                    ],
+                ];
+            }),
         ];
 
         if ($reasondebitValues["id"] !== null || $reasondebitValues["remarks"] !== null) {

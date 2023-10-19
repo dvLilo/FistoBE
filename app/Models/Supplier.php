@@ -11,7 +11,7 @@ class Supplier extends Model
 {
   use HasFactory;
   use SoftDeletes;
-  
+
   protected $table = 'suppliers';
   protected $fillable = ['code', 'name', 'terms', 'supplier_type_id', 'referrences'];
   protected $hidden = ['pivot','supplier_type_id','created_at'];

@@ -2,44 +2,39 @@
 
 namespace App\Methods;
 
-use Carbon\Carbon;
-use App\Models\User;
+use App\Exceptions\FistoException;
+use App\Exceptions\FistoLaravelException;
+use App\Models\Approver;
+use App\Models\Associate;
 use App\Models\Audit;
 use App\Models\Cheque;
-// For Pagination with Collection
+use App\Models\ClearingAccountTitle;
+use App\Models\DebitBatch;
+use App\Models\Executive;
 use App\Models\Filing;
-use App\Models\Reason;
+use App\Models\Gas;
 use App\Models\POBatch;
-
-use App\Models\Release;
+use App\Models\Reason;
+use App\Models\ReferrenceBatch;
+use App\Models\RequestorLogs;
 use App\Models\Reverse;
 use App\Models\Tagging;
-use App\Models\Approver;
+use App\Models\Transaction;
+use App\Models\TransactionClient;
 use App\Models\Transfer;
 use App\Models\Treasury;
-use App\Models\Associate;
-use App\Models\Executive;
-use App\Models\DebitBatch;
-use App\Models\Transaction;
-use Illuminate\Support\Str;
-use App\Models\PayrollClient;
-use App\Models\RequestorLogs;
-use Illuminate\Routing\Route;
-use App\Models\ReferrenceBatch;
-use App\Models\TransactionClient;
-use App\Exceptions\FistoException;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use App\Models\VoucherAccountTitle;
-
-use App\Models\ClearingAccountTitle;
+use App\Models\User;
 use App\Models\UserDocumentCategory;
-
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
-use App\Exceptions\FistoLaravelException;
-use Illuminate\Validation\ValidationException;
+use App\Models\VoucherAccountTitle;
+use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+// For Pagination with Collection
 
 class GenericMethod
 {
@@ -249,9 +244,9 @@ class GenericMethod
     } elseif ($process == "voucher") {
       $model = new Associate();
       $field = "voucher_no";
-    } elseif ($process == "approve") {
-      $model = new Approver();
-      $field = "distributed_id";
+//    } elseif ($process == "approve") {
+//      $model = new Approver();
+//      $field = "distributed_id";
     } elseif ($process == "cheque") {
       $model = new Treasury();
       $field = "cheque_no";
@@ -273,6 +268,10 @@ class GenericMethod
       $field = "";
     } elseif ($process == "debit") {
       $field = "";
+    } elseif ($process == "approve") {
+        $field = "";
+    } elseif ($process == "gas") {
+        $field = "";
     }
 
     $status = $process . "-" . $process;
@@ -280,7 +279,15 @@ class GenericMethod
     if ($process == "debit") {
       $status = $process . "-" . "file";
     }
+    //---------------------------------------------------------------//
+      $is_approved = Approver::where("tag_id", $transaction->tag_no)
+          ->where("status", "approve-approve")
+          ->exists();
 
+    if ($process == "approve" and $is_approved) {
+        return $status;
+    }
+      //---------------------------------------------------------------//
     $is_exists = Cheque::where("transaction_id", $transaction["transaction_id"])->exists();
     if ($process == "cheque" and $is_exists) {
       return $status;
@@ -316,6 +323,14 @@ class GenericMethod
 
     if ($process == "debit" and $is_debited) {
       return $status;
+    }
+
+    $is_gas = Gas::where("transaction_id", $transaction->id)
+      ->where("status", "gas-gas")
+      ->exists();
+
+    if($process == "gas" and $is_gas){
+        return $status;
     }
 
     if (!$transaction["$field"]) {
@@ -425,8 +440,17 @@ class GenericMethod
       "reason_id" => $reason_id,
       "remarks" => $reason_remarks,
       "distributed_id" => $distributed_id,
-      "distributed_name" => $distributed_name,
+      "distributed_name" => $distributed_name
     ]);
+  }
+
+  public function gasTransaction($transaction_id, $status, $reason_id, $remarks) {
+      Gas::create([
+          'transaction_id' => $transaction_id,
+          'status' => $status,
+          'reason_id' => $reason_id,
+          'remarks' => $remarks
+      ]);
   }
 
   public static function voucherTransaction(
@@ -437,7 +461,6 @@ class GenericMethod
     $date_now,
     $reason_id,
     $status,
-    $receipt_type,
     $voucher_no,
     $approver,
     $account_titles
@@ -456,7 +479,6 @@ class GenericMethod
     $voucher_transaction = $model::Create([
       "transaction_id" => $transaction_id,
       "tag_id" => $tag_no,
-      "receipt_type" => $receipt_type,
       "approver_id" => $approver_id,
       "approver_name" => $approver_name,
       "status" => $status,
@@ -1277,6 +1299,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
     } elseif ($fields["document"]["id"] == 8) {
       //PCF
@@ -1322,6 +1348,10 @@ class GenericMethod
         "request_id" => $request_id,
 
         "date_requested" => $date_requested,
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
     } elseif ($fields["document"]["id"] == 7) {
       //Payrol
@@ -1370,6 +1400,10 @@ class GenericMethod
         "request_id" => $request_id,
 
         "date_requested" => $date_requested,
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
     } elseif ($fields["document"]["id"] == 4) {
       // Receipt
@@ -1423,6 +1457,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
         "is_not_editable" => false,
       ]);
     } elseif ($fields["document"]["id"] == 5) {
@@ -1472,6 +1510,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
     } elseif ($fields["document"]["id"] == 3) {
       //PRM Multiple
@@ -1624,8 +1666,15 @@ class GenericMethod
               "total_gross" => $total_gross ? $total_gross : null,
               "total_cwt" => $total_cwt ? $total_cwt : null,
               "total_net" => $total_net ? $total_net : null,
+                "business_unit_id" => $fields["document"]["business_unit"]["id"],
+                "business_unit" => $fields["document"]["business_unit"]["name"],
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+                "sub_unit" => $fields["document"]["sub_unit"]["name"],
             ]);
           }
+
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
         case "official store leasing":
         case "unofficial store leasing":
@@ -1720,7 +1769,8 @@ class GenericMethod
               "remarks" => $fields["document"]["remarks"],
               "document_type" => $fields["document"]["name"],
               "po_total_amount" => $po_total_amount,
-              "request_id" => $temporary_request_id ? $temporary_request_id : null,
+//              "request_id" => $temporary_request_id ? $temporary_request_id : null,
+              "request_id" => isset($temporary_request_id) ? $temporary_request_id : null,
 
               "date_requested" => $date_requested,
               "status" => "Pending",
@@ -1732,8 +1782,14 @@ class GenericMethod
               "cheque_date" => $cheque_date ? $cheque_date : null,
               "release_date" => $fields["document"]["release_date"],
               "batch_no" => $fields["document"]["batch_no"],
+                "business_unit_id" => $fields["document"]["business_unit"]["id"],
+                "business_unit" => $fields["document"]["business_unit"]["name"],
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+                "sub_unit" => $fields["document"]["sub_unit"]["name"],
             ]);
           }
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
 
         case "loans":
@@ -1838,8 +1894,15 @@ class GenericMethod
               "cheque_date" => $cheque_date ? $cheque_date : null,
               "release_date" => $fields["document"]["release_date"],
               "batch_no" => $fields["document"]["batch_no"],
+                "business_unit_id" => $fields["document"]["business_unit"]["id"],
+                "business_unit" => $fields["document"]["business_unit"]["name"],
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+                "sub_unit" => $fields["document"]["sub_unit"]["name"],
             ]);
           }
+
+          static::prmMultiplerequestUpdateID($new_transaction);
+
           break;
       }
     } elseif ($fields["document"]["id"] == 9) {
@@ -1886,6 +1949,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
 
       if ($new_transaction->id) {
@@ -1932,6 +1999,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
         "is_not_editable" => false,
       ]);
     } else {
@@ -1977,6 +2048,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
+          "business_unit_id" => $fields["document"]["business_unit"]["id"],
+          "business_unit" => $fields["document"]["business_unit"]["name"],
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"],
+          "sub_unit" => $fields["document"]["sub_unit"]["name"],
       ]);
     }
 
@@ -2139,6 +2214,11 @@ class GenericMethod
     $currentTransaction->reason_id = null;
     $currentTransaction->reason = null;
     $currentTransaction->reason_remarks = null;
+
+    $currentTransaction->business_unit_id = $fields["document"]["business_unit"]["id"];
+    $currentTransaction->business_unit = $fields["document"]["business_unit"]["name"];
+    $currentTransaction->sub_unit_id = $fields["document"]["sub_unit"]["id"];
+    $currentTransaction->sub_unit = $fields["document"]["sub_unit"]["name"];
 
     // Contractor's Billing
     $currentTransaction->capex_no = $capex_no;
@@ -2404,6 +2484,7 @@ class GenericMethod
     $id,
     $transaction_id,
     $request_id,
+    $receipt_type,
     $tag_no,
     $status,
     $state,
@@ -2458,6 +2539,7 @@ class GenericMethod
           $status,
           $state,
           $tag_no,
+            $receipt_type,
           $reason_id,
           $reason,
           $reason_remarks,
@@ -2471,6 +2553,7 @@ class GenericMethod
           $query->update([
             "status" => $status,
             "state" => $state,
+            "receipt_type" => $receipt_type,
             "tag_no" => $tag_no,
             "reason_id" => $reason_id,
             "reason" => $reason,
@@ -2486,6 +2569,7 @@ class GenericMethod
         function ($query) use (
           $status,
           $state,
+          $receipt_type,
           $tag_no,
           $reason_id,
           $reason,
@@ -2501,6 +2585,7 @@ class GenericMethod
           $query->update([
             "status" => $status,
             "state" => $state,
+            "receipt_type" => $receipt_type,
             "tag_no" => $tag_no,
             "reason_id" => $reason_id,
             "reason" => $reason,
@@ -2559,9 +2644,10 @@ class GenericMethod
     return $group_details;
   }
 
-  public static function generateTagNo()
+  public static function generateTagNo($receipt_type, $id)
   {
-    return Transaction::max("tag_no") + 1;
+//    return Transaction::max("tag_no") + 1;
+      return static::generateTagNoTest($receipt_type, $id);
   }
 
   public static function countTableById($table, $id)
@@ -4518,6 +4604,9 @@ class GenericMethod
       case "void":
         return GenericMethod::result(200, "Transaction has been voided.", []);
         break;
+        case "gas":
+            return GenericMethod::result(200, "Transaction has been saved.", []);
+            break;
       case "tag":
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
@@ -4570,7 +4659,7 @@ class GenericMethod
         return GenericMethod::result(200, "Transaction has been saved.", []);
         break;
       case "transfer":
-        return GenericMethod::result(200, "Transaction has been transfered.", []);
+        return GenericMethod::result(200, "Transaction has been transferred.", []);
         break;
       case "fetch":
         return GenericMethod::result(200, Str::plural($modelName) . " has been fetched.", $data);
@@ -4814,5 +4903,33 @@ class GenericMethod
   function checkDuplicateGeneratedVoucher($voucher)
   {
     return Transaction::where("voucher_no", $voucher)->exists();
+  }
+
+  public static function generateTagNoTest($receipt_type, $id) {
+      $existingTag = Transaction::whereNotNull("tag_no")
+          ->where("id", $id)->where("receipt_type", $receipt_type)
+          ->first();
+
+      if ($existingTag) {
+          return $existingTag->tag_no;
+      }
+
+      $series = 0;
+      do {
+          $series++;
+      } while (static::checkDuplicateGeneratedTagNo($series, $receipt_type));
+
+      return $series;
+  }
+
+  public static function checkDuplicateGeneratedTagNo($tag_no, $receipt_type) {
+      return Transaction::where('tag_no', $tag_no)->where('receipt_type', $receipt_type)->exists();
+  }
+
+
+  public static function prmMultiplerequestUpdateID($new_transaction) {
+      $newTransactionId = $new_transaction->transaction_id;
+      $requestIds = Transaction::where('transaction_id', $newTransactionId)->pluck('id');
+      Transaction::whereIn('id', $requestIds)->update(['request_id' => DB::raw('id')]);
   }
 }

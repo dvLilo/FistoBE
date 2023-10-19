@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -66,6 +67,7 @@ class Transaction extends Model
     "balance_document_ref_amount",
     "balance_po_ref_amount",
     "balance_po_ref_qty",
+      "receipt_type",
     "tag_no",
 
     "utilities_category_id",
@@ -113,6 +115,11 @@ class Transaction extends Model
     "voucher_no",
     "is_for_releasing",
     "is_for_voucher_audit",
+
+      "business_unit_id",
+      "business_unit",
+      "sub_unit_id",
+      "sub_unit"
   ];
 
   public $timestamps = ["created_at"];
@@ -496,6 +503,42 @@ class Transaction extends Model
   //     ->limit(1);
   // }
 
+    public function receiveGas()
+    {
+        return $this->hasOne(Gas::class, "transaction_id")
+            ->select(["transaction_id", "status", "created_at"])
+            ->where("status", "gas-receive")
+            ->latest()
+            ->limit(1);
+    }
+
+    public function gas() {
+        return $this->hasOne(Gas::class, "transaction_id")
+            ->select(["transaction_id", "status", "created_at"])
+            ->where("status", "gas-gas")
+            ->latest()
+            ->limit(1);
+    }
+
+    public function reasonGas() {
+        return $this->hasOne(Gas::class, "transaction_id")
+                ->select(["transaction_id", "reason_id", "remarks"])
+                ->latest()
+                ->limit(1);
+    }
+
+    public function statusGas() {
+        return $this->hasOne(Gas::class, "transaction_id")
+                ->with([
+                    "reason" => function ($query) {
+                        $query->select(["reason"]);
+                    },
+                ])
+                ->select(["status"])
+                ->latest()
+                ->limit(1);
+    }
+
   public function receiveExecutive()
   {
     return $this->hasOne(Executive::class, "transaction_id")
@@ -626,4 +669,10 @@ class Transaction extends Model
       ->latest()
       ->limit(1);
   }
+
+  public function debit_file(): HasMany {
+      return $this->hasMany(ClearingAccountTitle::class, 'clear_id', 'tag_no')
+          ->where('transaction_type', 'debit');
+  }
+
 }

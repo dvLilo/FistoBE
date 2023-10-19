@@ -25,66 +25,6 @@ class TransactionIndex extends JsonResource
       : 0;
 
     $is_latest = 0;
-
-    $latestAudit = $this->audit ? $this->audit : $this->auditVoucher;
-
-    $auditValues = [
-      $latestAudit ? $latestAudit->transaction_id : null,
-      $latestAudit ? $latestAudit->date_received : null,
-      $latestAudit ? $latestAudit->status : null,
-      $this->audit ? $this->audit->reason_id : null,
-      $this->audit ? $this->audit->remarks : null,
-      $this->auditVoucher ? optional($this->auditVoucher->auditedBy)->id : null,
-      $this->auditVoucher ? optional($this->auditVoucher->auditedBy)->first_name : null,
-      $this->audit ? optional($this->audit->auditedBy)->id : null,
-      $this->audit ? optional($this->audit->auditedBy)->first_name : null,
-      $this->audit ? $this->audit->date_audited : null,
-      $this->auditVoucher ? $this->auditVoucher->date_audited : null,
-    ];
-
-    if (
-      array_filter($auditValues, function ($value) {
-        return $value !== null;
-      }) === []
-    ) {
-      $auditData = [];
-    } else {
-      $auditData = [
-        "transaction_id" => $latestAudit ? $latestAudit->transaction_id : null,
-        "date_received" => $latestAudit ? $latestAudit->date_received : null,
-        "status" => $latestAudit ? $latestAudit->status : null,
-        "reason_id" => $this->audit ? $this->audit->reason_id : null,
-        "remarks" => $this->audit ? $this->audit->remarks : null,
-        "audit_by" => [
-          "voucher" => $this->auditVoucher
-            ? [
-              "id" => optional($this->auditVoucher->auditedBy)->id,
-              "name" => optional($this->auditVoucher->auditedBy)->name,
-              "date_audit" => $this->auditVoucher->date_audited,
-            ]
-            : [],
-          "cheque" => $this->audit
-            ? [
-              "id" => optional($this->audit->auditedBy)->id,
-              "name" => optional($this->audit->auditedBy)->name,
-              "date_audit" => $this->audit->date_audited,
-            ]
-            : [],
-        ],
-      ];
-    }
-
-    $executiveValues = [
-      $this->executive ? $this->executive->transaction_id : null,
-      $this->executive ? $this->executive->date_received : null,
-      $this->executive ? $this->executive->status : null,
-      $this->executive ? $this->executive->reason_id : null,
-      $this->executive ? $this->executive->remarks : null,
-      $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-      $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-      $this->executive ? $this->executive->date_signed : null,
-    ];
-
     if (!empty($this->po_details)) {
       if ($this->po_details->last() != null) {
         $po_no = $this->po_details->last()->po_no;
@@ -174,6 +114,7 @@ class TransactionIndex extends JsonResource
         "location" => $this->location,
         "document_no" => $this->document_no,
         "document_amount" => $this->document_id == 3 ? $this->net_amount : $this->document_amount,
+          "cheque_date" => $this->cheque_date,
         "referrence_no" => $this->referrence_no,
         "referrence_amount" => $this->referrence_amount,
         "status" => $this->state,

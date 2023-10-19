@@ -90,6 +90,7 @@ class TransactionController extends Controller
     $cheque_window = ["Treasury Associate"];
     $audit_window = ["Audit Associate"];
     $executive_assistant = ["Executive Assistant"];
+    $gas_window = ["GAS"];
 
     $is_voucher_transfered = $status == "voucher-transfer";
     $is_transmit_transfered = $status == "transmit-transfer";
@@ -100,18 +101,27 @@ class TransactionController extends Controller
       "company_id",
       // ,'tag_no'
     ])
-      ->with("users", function ($query) {
-        return $query->select(["id", "first_name", "middle_name", "last_name", "users.department", "position"]);
-      })
-      ->with("supplier.supplier_type", function ($query) {
-        return $query->select(["id", "type as name", "transaction_days"]);
-      })
-      ->with("po_details", function ($query) {
-        return $query->select(["id", "request_id", "po_no", "po_total_amount"]);
-      })
-      ->with("audit")
-      ->with("executive")
-      ->with("cheques.cheques")
+      ->with([
+        "users:id,first_name,middle_name,last_name,department,position",
+        //          "supplier:id,name,supplier_type_id",
+        "supplier.supplier_type:id,type as name,transaction_days",
+        "po_details:id,request_id,po_no,po_total_amount",
+        "audit",
+        "executive",
+        "cheques.cheques",
+      ])
+      //      ->with("users", function ($query) {
+      //        return $query->select(["id", "first_name", "middle_name", "last_name", "users.department", "position"]);
+      //      })
+      //      ->with("supplier.supplier_type", function ($query) {
+      //        return $query->select(["id", "type as name", "transaction_days"]);
+      //      })
+      //      ->with("po_details", function ($query) {
+      //        return $query->select(["id", "request_id", "po_no", "po_total_amount"]);
+      //      })
+      //      ->with("audit", "executive", "cheques.cheques")
+      //      ->with("executive")
+      //      ->with("cheques.cheques")
       ->when(!empty($document_ids), function ($query) use ($document_ids) {
         $query->whereIn("document_id", $document_ids);
       })
@@ -271,7 +281,7 @@ class TransactionController extends Controller
                               $query->when(
                                 strtolower($status) == "return-tag",
                                 function ($query) use ($status) {
-                                  $query->whereIn("status", ["voucher-return"]);
+                                  $query->whereIn("status", ["voucher-return", "gas-return"]);
                                 },
                                 function ($query) use ($status) {
                                   $query->when(
@@ -327,6 +337,7 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
 
             "status",
             "state",
@@ -349,7 +360,12 @@ class TransactionController extends Controller
               $query->when(
                 strtolower($status) == "pending",
                 function ($query) {
-                  $query->whereIn("status", ["tag-tag", "voucher-transfer"]);
+//                  $query->whereIn("status", ["tag-tag", "voucher-transfer"])->where('receipt_type', 'unofficial');
+                    $query->where(function ($query) {
+                        $query->whereIn('status', ['tag-tag', 'voucher-transfer'])->where('receipt_type', 'unofficial');
+                    })->orWhere(function ($query) {
+                        $query->where('status', 'gas-gas')->where('receipt_type', 'official');
+                    });
                 },
                 function ($query) use ($users_id, $status) {
                   $query->when(
@@ -868,6 +884,57 @@ class TransactionController extends Controller
             "state",
           ]);
       })
+        ->when(in_array($role, $gas_window), function ($query) use ($status) {
+            $query
+                ->when(
+                    strtolower($status) == "gas-receive",
+                    function ($query) {
+                        $query->whereIn("status", ["gas-receive", "gas-unhold", "gas-unreturn"]);
+                    },
+                    function ($query) use ($status) {
+                        $query->when(
+                            strtolower($status) == "pending",
+                            function ($query) {
+                                $query->whereIn("status", ["tag-tag"])->where('receipt_type', 'official');
+                            },
+                            function ($query) use ($status) {
+                                $query->where("status", preg_replace("/\s+/", "", $status));
+                            }
+                        );
+                    }
+                )
+                ->select([
+                    "id",
+                    "users_id",
+                    "request_id",
+                    "supplier_id",
+                    "document_id",
+                    "tag_no",
+
+                    "transaction_id",
+                    "document_type",
+                    "payment_type",
+                    "remarks",
+                    "date_requested",
+
+                    "company_id",
+                    "company",
+                    "department",
+                    "location",
+
+                    "document_no",
+                    "document_amount",
+                    "referrence_no",
+                    "referrence_amount",
+                    "net_amount",
+
+                    "approver_id",
+                    "approver_name",
+
+                    "status",
+                    "state",
+                ]);
+        })
       ->latest("updated_at")
       ->paginate($rows);
 
@@ -1598,6 +1665,10 @@ class TransactionController extends Controller
                 // "referrence_no" => data_get($fields, "document.reference.no"),
                 "category_id" => data_get($fields, "document.category.id"),
                 "category" => data_get($fields, "document.category.name"),
+                  "business_unit_id" => data_get($fields, "document.business_unit.id"),
+                  "business_unit" => data_get($fields, "document.business_unit.name"),
+                  "sub_unit_id" => data_get($fields, "document.sub_unit.id"),
+                  "sub_unit" => data_get($fields, "document.sub_unit.name"),
               ];
 
               if ($currentTransaction->status == "tag-return") {
