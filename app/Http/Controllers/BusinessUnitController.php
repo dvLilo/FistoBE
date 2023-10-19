@@ -30,8 +30,28 @@ class BusinessUnitController extends Controller
             $business_unit = $business_unit->get();
         }
 
+        $business_unit->transform(function ($value) {
+            return [
+                'id' => $value->id,
+                'code' => $value->code,
+                'company' => [
+                    'id' => $value->company->id,
+                    'name' => $value->company->company,
+                ],
+                'business_unit' => $value->business_unit,
+                'associates' => $value->users->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->first_name . ' ' . $user->last_name,
+                    ];
+                }),
+                'updated_at' => $value->updated_at,
+                'deleted_at' => $value->deleted_at,
+            ];
+        });
+
         if (count($business_unit)) {
-            return $this->resultResponse('fetch', 'Business Unit', BusinessUnitResource::collection($business_unit)->response()->getData(true));
+            return $this->resultResponse('fetch', 'Business Unit', $business_unit);
         } else {
             return $this->resultResponse('not-found', 'Business Unit', []);
         }
@@ -46,7 +66,7 @@ class BusinessUnitController extends Controller
             'business_unit' => $request->business_unit,
         ]);
 
-        $associates = $request->users;
+        $associates = $request->associates;
 
         if (isset($associates)) {
             foreach ($associates as $associate) {
