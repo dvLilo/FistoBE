@@ -35,6 +35,6 @@ class CreateDocumentCoasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('document_coas');
+        Schema::dropIfExists('document_coa');
     }
 }

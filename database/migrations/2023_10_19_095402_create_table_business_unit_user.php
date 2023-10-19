@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTableGas extends Migration
+class CreateTableBusinessUnitUser extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateTableGas extends Migration
      */
     public function up()
     {
-        Schema::create('gas', function (Blueprint $table) {
+        Schema::create('business_unit_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->constrained('transactions')->nullable();
-            $table->string('status')->nullable();
-            $table->foreignId('reason_id')->nullable()->constrained('reasons');
-            $table->string('remarks')->nullable();
+            $table->foreignId('business_unit_id')->constrained('business_units')->nullable();
+            $table->foreignId('user_id')->constrained('users')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ class CreateTableGas extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('gas');
+        Schema::dropIfExists('business_unit_user');
     }
 }

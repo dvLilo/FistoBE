@@ -115,7 +115,6 @@ class Transaction extends Model
     "voucher_no",
     "is_for_releasing",
     "is_for_voucher_audit",
-
       "business_unit_id",
       "business_unit",
       "sub_unit_id",
