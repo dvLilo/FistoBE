@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Methods\GenericMethod;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Methods\TransactionFlow;
 
@@ -22,6 +24,27 @@ class TransactionFlowController extends Controller
     public function transfer(Request $request, $id){
 
        return TransactionFlow::transfer($request, $id);
+    }
+
+    public function multipleReceive(Request $request) {
+        $process = $request->input('process');
+        $transactions = $request->input('transactions');
+
+        Transaction::whereIn('id', $transactions)
+            ->update([
+                'state' => $process,
+                'status' => $process . '-receive',
+            ]);
+
+//        foreach ($transactions as $transaction) {
+//            Transaction::find($transaction)
+//                ->update([
+//                    'state' => $process,
+//                    'status' => $process . '-received',
+//                ]);
+//        }
+
+        return GenericMethod::resultResponse("receive", null, []);
     }
     // public function pullRequest(Request $request){
     //     $process =  $request['process'];

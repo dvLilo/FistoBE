@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
@@ -39,5 +40,10 @@ class Document extends Model
     public function document_categories()
     {
         return $this->belongsToMany(Category::class, 'user_document_category','document_id','category_id')->select('categories.id','categories.name');
+    }
+
+    public function document_coa(): HasMany
+    {
+        return $this->hasMany(DocumentCoa::class, 'document_id', 'id');
     }
 }

@@ -55,38 +55,16 @@ class TransactionFlow
     $date_now = Carbon::now("Asia/Manila")->format("Y-m-d");
     $generic = new GenericMethod();
 
-    // $transaction = Transaction::select(
-    //   "transaction_id",
-    //   "tag_no",
-    //   "voucher_no",
-    //   "voucher_month",
-    //   "users_id",
-    //   "remarks",
-    //   "document_amount",
-    //   "referrence_amount",
-    //   "distributed_id",
-    //   "approver_id",
-    //   "request_id",
-    //   "document_type",
-    //   "document_id",
-    //   "category",
-    //   "state",
-    //   "total_gross",
-    //   "document_amount",
-    //   "payment_type",
-
-    //   "is_not_editable",
-    //   "is_for_releasing"
-    // )->find($id);
-
     $request_id = $transaction->request_id;
     $transaction_id = $transaction->transaction_id;
     $remarks = $transaction->remarks;
     $users_id = $transaction->users_id;
 
+    $receipt_type = isset($request->receipt_type) ? $request->receipt_type : $transaction->receipt_type;
+
     $tag_no = $transaction->tag_no;
-    if ($transaction->tag_no == 0 and $subprocess == "tag") {
-      $tag_no = GenericMethod::generateTagNo();
+    if ($subprocess == "tag") {
+        $tag_no = GenericMethod::generateTagNo($receipt_type, $transaction->id);
     }
 
     $previous_voucher_transaction = Transaction::with("transaction_voucher.account_title")
@@ -177,7 +155,7 @@ class TransactionFlow
     // $percentage_tax = GenericMethod::with_previous_transaction($request['tax']['percentage_tax'],$previous_percentage_tax);
     // $withholding_tax = GenericMethod::with_previous_transaction($request['tax']['withholding_tax'],$previous_withholding_tax);
     // $net_amount = GenericMethod::with_previous_transaction($request['tax']['net_amount'],$previous_net_amount);
-    $receipt_type = GenericMethod::with_previous_transaction($request["receipt_type"], $previous_receipt_type);
+//    $receipt_type = GenericMethod::with_previous_transaction($request["receipt_type"], $previous_receipt_type);
     // $voucher_no = GenericMethod::with_previous_transaction($request["voucher"]["no"], $previous_voucher_no);
     // $voucher_no = null;
 
@@ -251,6 +229,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -348,7 +327,7 @@ class TransactionFlow
         //         ->update([
         //           "total_gross" => $gross_amount,
         //           "document_amount" => $gross_amount,
-        //         ]);
+        //         GenericMethod::resultResponse
 
         //       break;
 
@@ -374,6 +353,8 @@ class TransactionFlow
         // }
       } elseif ($subprocess == "tag") {
         $status = "tag-tag";
+//        $receipt_type = $request->receipt_type;
+//        $tag_no = GenericMethod::generateTagNo($receipt_type);
       } elseif (in_array($subprocess, ["unhold", "unreturn"])) {
         $status = GenericMethod::getStatus($process, $transaction);
       }
@@ -396,6 +377,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -426,25 +408,6 @@ class TransactionFlow
 
         $voucher_no = $generic->generateVoucherNo($transaction->id);
 
-        // if ($transaction->document_id === 8 && $transaction->is_for_voucher_audit) {
-        //   $transaction->update([
-        //     "is_for_voucher_audit" => null,
-        //   ]);
-        // }
-
-        // if (
-        //   $transaction->status == "cheque-return" ||
-        //   $transaction->status == "issue-return" ||
-        //   $transaction->status == "audit-return" ||
-        //   $transaction->status == "inspect-return" ||
-        //   $transaction->status == "debit-return"
-        // ) {
-        //   $transaction->update([
-        //     "is_for_releasing" => null,
-        //     "is_for_voucher_audit" => null,
-        //   ]);
-        // }
-
         $transaction->update([
           "is_for_releasing" => null,
           "is_for_voucher_audit" => null,
@@ -460,27 +423,6 @@ class TransactionFlow
       if (!$document_amount) {
         $document_amount = $transaction["referrence_amount"];
       }
-
-      // if (!empty($account_titles)) {
-      //   $debit_entries_amount = array_filter($account_titles, function ($account_title) {
-      //     return strtolower($account_title["entry"]) != strtolower("credit");
-      //   });
-
-      //   $credit_entries_amount = array_filter($account_titles, function ($account_title) {
-      //     return strtolower($account_title["entry"]) != strtolower("debit");
-      //   });
-
-      //   $debit_amount = array_sum(array_column($debit_entries_amount, "amount"));
-      //   $credit_amount = array_sum(array_column($credit_entries_amount, "amount"));
-
-      //   if ($debit_amount != $credit_amount) {
-      //     return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
-      //   }
-
-      //   if ($document_amount != $debit_amount) {
-      //     return GenericMethod::resultResponse("not-equal", "Document and account title", []);
-      //   }
-      // }
 
       if ($subprocess == "voucher") {
         if (!empty($account_titles)) {
@@ -517,6 +459,7 @@ class TransactionFlow
           }
         }
       }
+
       GenericMethod::voucherTransaction(
         $model,
         $transaction_id,
@@ -525,7 +468,6 @@ class TransactionFlow
         $date_now,
         $reason_id,
         $status,
-        $receipt_type,
         $voucher_no,
         $approver,
         $account_titles
@@ -535,6 +477,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -584,6 +527,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -661,6 +605,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -881,6 +826,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1013,6 +959,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1085,6 +1032,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1151,6 +1099,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1194,6 +1143,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1244,6 +1194,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1300,6 +1251,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1333,6 +1285,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1443,6 +1396,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1536,6 +1490,7 @@ class TransactionFlow
         $id,
         $transaction_id,
         $request_id,
+        $receipt_type,
         $tag_no,
         $status,
         $state,
@@ -1549,6 +1504,45 @@ class TransactionFlow
         $approver_id,
         $approver_name
       );
+    } elseif ($process == 'gas') {
+        if ($subprocess == 'receive') {
+            $status = 'gas-receive';
+        } elseif ($subprocess == 'gas') {
+            $status = 'gas-gas';
+        } elseif ($subprocess == 'return') {
+            $status = 'gas-return';
+        } elseif ($subprocess == 'hold') {
+            $status = 'gas-hold';
+        } elseif ($subprocess == 'void') {
+            $status = 'gas-void';
+        } elseif (in_array($subprocess, ['unhold', 'unreturn'])) {
+            $status = GenericMethod::getStatus($process, $transaction);
+        }
+
+        $state = $subprocess;
+        if ($subprocess == 'gas') {
+             $state = 'transmit';
+        }
+
+        $generic->gasTransaction($id, $status, $reason_id, $reason_remarks);
+        GenericMethod::updateTransactionStatus(
+            $id,
+            $transaction_id,
+            $request_id,
+            $receipt_type,
+            $tag_no,
+            $status,
+            $state,
+            $reason_id,
+            $reason_description,
+            $reason_remarks,
+            $voucher_no,
+            $voucher_month,
+            $distributed_id,
+            $distributed_name,
+            $approver_id,
+            $approver_name
+        );
     }
 
     return GenericMethod::resultResponse($state, "", "");

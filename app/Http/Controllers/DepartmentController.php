@@ -53,10 +53,10 @@ class DepartmentController extends Controller
         ->when($api_for == "vladimir", function ($query) {
           return $query
           ->with("Company")
-          ->get(["id", "code", "department as name", "company", 
+          ->get(["id", "code", "department as name", "company",
           DB::RAW("(CASE WHEN (ISNULL(deleted_at)) THEN 1 ELSE 0 END) as status"),
           "deleted_at"]);
-          
+
           // return $query->get([
           //   "id",
           //   "code",
