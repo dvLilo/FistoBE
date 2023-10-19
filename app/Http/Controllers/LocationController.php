@@ -58,7 +58,7 @@ class LocationController extends Controller
           });
         })
         ->when($api_for == "vladimir", function ($query) {
-          return $query->with("departments")->get(["id", "code", "location as name", 
+          return $query->with("departments")->get(["id", "code", "location as name",
           DB::RAW("(CASE WHEN (ISNULL(deleted_at)) THEN 1 ELSE 0 END) as status"),
           "deleted_at"]);
 
@@ -73,7 +73,7 @@ class LocationController extends Controller
           return $query->with("departments")->get(["id", "code", "location as name", "updated_at", "deleted_at"]);
         })
         ->when($api_for == "default", function ($query) {
-          return $query->get(["id", "location as name"]);
+          return $query->get(["id", "code", "location as name"]);
         });
 
       if (count($locations)) {
