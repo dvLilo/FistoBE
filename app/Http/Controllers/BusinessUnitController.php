@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BusinessUnitRequest;
+use App\Http\Resources\BusinessUnitResource;
 use App\Models\BusinessUnit;
 use Illuminate\Http\Request;
 
@@ -30,7 +31,7 @@ class BusinessUnitController extends Controller
         }
 
         if (count($business_unit)) {
-            return $this->resultResponse('fetch', 'Business Unit', $business_unit);
+            return $this->resultResponse('fetch', 'Business Unit', BusinessUnitResource::collection($business_unit)->response()->getData(true));
         } else {
             return $this->resultResponse('not-found', 'Business Unit', []);
         }
@@ -44,6 +45,12 @@ class BusinessUnitController extends Controller
             'code' => $request->code,
             'business_unit' => $request->business_unit,
         ]);
+
+        $associates = $request->users;
+
+        foreach ($associates as $associate) {
+            $new_business_unit->users()->attach($associate);
+        }
 
         return $this->resultResponse('save','Business Unit', $new_business_unit);
     }
@@ -66,6 +73,11 @@ class BusinessUnitController extends Controller
                 'code' => $request->code,
                 'business_unit' => $request->business_unit,
             ]);
+
+            $associates = $request->users;
+
+            $businessunit->users()->detach();
+            $businessunit->users()->attach($associates);
 
             return $this->resultResponse('update','Business Unit', $businessunit);
         } else {
