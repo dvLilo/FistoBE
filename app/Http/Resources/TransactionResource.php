@@ -663,6 +663,7 @@ class TransactionResource extends JsonResource
 
       $tag = [
         "status" => $transaction_tag_status,
+          "receipt_type" => $this->receipt_type,
         "no" => $transaction_tag_no,
         "dates" => $dates,
         "distributed_to" => $distributed_to,

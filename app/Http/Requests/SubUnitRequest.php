@@ -39,7 +39,7 @@ class SubUnitRequest extends FormRequest
                     ->where(function ($query) {
                         $query->where('id', $this->department_id)->whereNull('deleted_at');
                     })
-                ]
+            ]
         ];
     }
 

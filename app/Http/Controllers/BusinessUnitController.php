@@ -96,7 +96,7 @@ class BusinessUnitController extends Controller
                 'business_unit' => $request->business_unit,
             ]);
 
-            $associates = $request->users;
+            $associates = $request->associates;
 
             $businessunit->users()->detach();
             $businessunit->users()->attach($associates);

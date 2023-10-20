@@ -40,6 +40,13 @@ class BusinessUnitRequest extends FormRequest
                 'required',
                 Rule::unique('business_units', 'business_unit')->ignore($this->route('business_unit'))
             ],
+            'associates' => [
+                'array',
+                Rule::exists('users', 'id')
+                    ->where(function ($query) {
+                        $query->whereNull('deleted_at');
+                    })
+            ],
         ];
     }
 

@@ -287,7 +287,7 @@ class TransactionController extends Controller
                                   $query->when(
                                     strtolower($status) == "hold-tag",
                                     function ($query) use ($status) {
-                                      $query->whereIn("status", ["voucher-hold"]);
+                                      $query->whereIn("status", ["voucher-hold", "gas-hold"]);
                                     },
                                     function ($query) use ($status) {
                                       $query->when(
@@ -616,7 +616,7 @@ class TransactionController extends Controller
                           $query->whereNull("is_for_voucher_audit")->orWhere("is_for_releasing", true);
                         })
                         ->orWhere(function ($query) {
-                          $query->where("status", "inspect-inspect")->where("document_id", 8);
+                          $query->where("status", "inspect-inspect")->where("document_id", 8);//PCF
                         });
                     },
                     function ($query) use ($status) {
