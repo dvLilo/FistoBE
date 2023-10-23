@@ -72,6 +72,7 @@ Route::group(["middleware" => "auth:sanctum"], function () {
     Route::get("approver", [MasterlistController::class, "approverDropdown"]);
     Route::get("account-title", [MasterlistController::class, "transactionAccountTitleDropdown"]);
     Route::get("credit-card", [CreditCardController::class, "index"]);
+    Route::get("account-title/{id}", [MasterlistController::class, "accountTitleDocumentDropdown"]);
     // TRANSACTION
     Route::get("company", [CompanyController::class, "index"]);
     Route::get("department", [DepartmentController::class, "index"]);
@@ -88,7 +89,6 @@ Route::group(["middleware" => "auth:sanctum"], function () {
       Route::get("location-category-supplier", [MasterlistController::class, "loccatsupDropdown"]);
       Route::get("location-category", [MasterlistController::class, "loccatDropdown"]);
         Route::get("account-title", [MasterlistController::class, "accountTitleDropdown"]);
-      Route::get("account-title/{id}", [MasterlistController::class, "accountTitleDocumentDropdown"]);
       Route::get("company", [MasterlistController::class, "companyDropdown"]);
       Route::get("organization", [MasterlistController::class, "organizationDropdown"]);
       Route::get("department", [MasterlistController::class, "departmentDropdown"]);
