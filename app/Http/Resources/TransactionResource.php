@@ -707,23 +707,23 @@ class TransactionResource extends JsonResource
               "remarks" => $item["remarks"],
                 "company" => [
                     'id' => $item['company_id'],
-                    'name' => isset($item['company_id']) ? Company::where('id', $item['company_id'])->first()->company : null
+                    'name' => isset($item['company_id']) ? $item["company"] : null
                 ],
                 "department" => [
                     'id' => $item['department_id'],
-                    'name' => isset($item['department_id']) ? Department::where('id', $item['department_id'])->first()->department : null
+                    'name' => isset($item['department_id']) ? $item["department"] : null
                 ],
                 "location" => [
                     'id' => $item['location_id'],
-                    'name' => isset($item['location_id']) ? Location::where('id', $item['location_id'])->first()->location : null
+                    'name' => isset($item['location_id']) ? $item["location"] : null
                 ],
                 "business_unit" => [
                     'id' => $item['business_unit_id'],
-                    'name' => isset($item['business_unit_id']) ? BusinessUnit::where('id', $item['business_unit_id'])->first()->business_unit : null
+                    'name' => isset($item['business_unit_id']) ? $item["business_unit"] : null
                 ],
                 "sub_unit" => [
                     'id' => $item['sub_unit_id'],
-                    'name' => isset($item['sub_unit_id']) ? SubUnit::where('id', $item['sub_unit_id'])->first()->sub_unit : null
+                    'name' => isset($item['sub_unit_id']) ? $item["sub_unit"] : null
                 ],
             ],
           ];
