@@ -155,23 +155,24 @@ class DocumentController extends Controller
         $specific_document->categories()->attach($category_ids);
 
         $accounts = $documentCoaRequest['account'];
-        DocumentCoa::where('document_id', $id)->delete();
 
         if (isset($accounts)) {
+            DocumentCoa::where('document_id', $id)->delete();
             foreach ($accounts as $account) {
                 $test = DocumentCoa::create([
                     'document_id' => $specific_document->id,
-                    'entry' => $account['entry'],
-                    'company_id' => $account['company_id'],
-                    'business_unit_id' => $account['business_unit_id'],
+                    'entry' => $account['entry'] ?? null,
+                    'company_id' => $account['company_id'] ?? null,
+                    'business_unit_id' => $account['business_unit_id'] ?? null,
                     'department_id' => $account['department_id'],
-                    'sub_unit_id' => $account['sub_unit_id'],
-                    'location_id' => $account['location_id'],
-                    'account_title_id' => $account['account_title_id'],
+                    'sub_unit_id' => $account['sub_unit_id'] ?? null,
+                    'location_id' => $account['location_id'] ?? null,
+                    'account_title_id' => $account['account_title_id'] ?? null,
                 ]);
             }
         }
-        return $this->validateIfNothingChangeThenSave($specific_document,'Document',$is_tagged_modified);
+//        return $this->validateIfNothingChangeThenSave($specific_document,'Document',$is_tagged_modified);
+        return $this->resultResponse('update','Document',$specific_document);
     }
 
     public function change_status(Request $request,$id){
