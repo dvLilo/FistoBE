@@ -11,7 +11,7 @@ class DocumentCoa extends Model
     use HasFactory;
 
     protected $table = 'document_coa';
-    protected $hidden = ['created_at'];
+    protected $hidden = ['created_at', 'document_id', 'company_id', 'business_unit_id', 'department_id', 'sub_unit_id', 'location_id', 'account_title_id'];
 
     protected $fillable = [
         'entry',

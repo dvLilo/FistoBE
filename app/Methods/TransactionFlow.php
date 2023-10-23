@@ -2,6 +2,7 @@
 namespace App\Methods;
 
 use App\Http\Controllers\TransactionController;
+use App\Models\Charging;
 use App\Models\ClearingAccountTitle;
 use Carbon\Carbon;
 use App\Models\Gas;
@@ -458,6 +459,21 @@ class TransactionFlow
               }
           }
         }
+
+//          $charging = Charging::where("transaction_id", $transaction->id)->first();
+//
+//          if ($charging) {
+//              $charging->update([
+//                  "company_id" => data_get($request, "company_id") ?? $transaction->company_id,
+//                  "department_id" => data_get($request, "department_id") ?? $transaction->department_id,
+//              ]);
+//          } else {
+//              Charging::create([
+//                  "transaction_id" => $transaction->id,
+//                  "company_id" => $transaction->company_id,
+//                  "department_id" => $transaction->department_id,
+//              ]);
+//          }
       }
 
       GenericMethod::voucherTransaction(
@@ -473,7 +489,7 @@ class TransactionFlow
         $account_titles
       );
 
-      GenericMethod::updateTransactionStatus(
+        GenericMethod::updateTransactionStatus(
         $id,
         $transaction_id,
         $request_id,

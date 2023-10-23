@@ -27,11 +27,11 @@ class SubUnitRequest extends FormRequest
         return [
             'code' => [
                 'required',
-                Rule::unique('sub_units', 'code')->ignore($this->sub_unit)
+                Rule::unique('sub_units', 'code')->ignore($this->route('sub_unit'))
             ],
-            'subunit' => [
+            'sub_unit' => [
                 'required',
-                Rule::unique('sub_units', 'subunit')->ignore($this->sub_unit)
+                Rule::unique('sub_units', 'subunit')->ignore($this->route('sub_unit'))
             ],
             'department_id' => [
                 'required',

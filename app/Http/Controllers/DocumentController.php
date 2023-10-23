@@ -29,7 +29,16 @@ class DocumentController extends Controller
 //                $query->select('categories.id', 'categories.name');
 //            }
             "categories:id,name",
-            "document_coa"
+            "accounts" => function ($query) {
+                $query->with([
+                    "company:id,company as name",
+                    "business_unit:id,business_unit as name",
+                    "department:id,department as name",
+                    "account_title:id,title as name",
+                    "business_unit:id,business_unit as name",
+                    "sub_unit:id,subunit as name",
+                ]);
+            }
         ])
         ->where(function ($query) use ($status){
           return ($status==true)?$query->whereNull('deleted_at'):$query->whereNotNull('deleted_at');
@@ -41,37 +50,6 @@ class DocumentController extends Controller
         ->select(['id','type','description','created_at','updated_at','deleted_at'])
         ->latest('updated_at')
         ->paginate($rows);
-
-        $documents->transform(function ($value) {
-            return [
-                'id' => $value->id,
-                'type' => $value->type,
-                'description' => $value->description,
-                'created_at' => $value->created_at,
-                'updated_at' => $value->updated_at,
-                'accounts' => $value->document_coa->map(function ($document_coa) {
-                    return [
-                        'entry' => $document_coa->entry,
-                        'account_title' => [
-                            'id' => $document_coa->account_title->id,
-                            'name' => $document_coa->account_title->title,
-                        ],
-                        'company' => [
-                            'id' => $document_coa->company->id,
-                            'name' => $document_coa->company->company,
-                        ],
-                        'department' => [
-                            'id' => $document_coa->department->id,
-                            'name' => $document_coa->department->department
-                        ],
-                        'location' => [
-                            'id' => $document_coa->location->id,
-                            'name' => $document_coa->location->location
-                        ]
-                    ];
-                })
-            ];
-        });
 
         if(count($documents)==true){
             return $this->resultResponse('fetch','Document', $documents);
