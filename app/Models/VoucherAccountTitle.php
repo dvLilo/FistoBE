@@ -20,10 +20,15 @@ class VoucherAccountTitle extends Model
         ,"remarks"
         ,"transaction_type",
         "company_id",
+        "company",
         "department_id",
+        "department",
         "location_id",
+        "location",
         "business_unit_id",
-        "sub_unit_id"
+        "business_unit",
+        "sub_unit_id",
+        "sub_unit"
     ];
 
 }

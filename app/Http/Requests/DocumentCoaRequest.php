@@ -72,46 +72,46 @@ class DocumentCoaRequest extends FormRequest
 
         return [
             'account.*.entry' => [
-                'required',
-                Rule::unique('document_coa')->where('account_title_id', request('account.*.account_title_id'))
-                    ->where('entry', request('account.*.entry'))
-                    ->where('document_id', $this->id)
+                'nullable',
+//                Rule::unique('document_coa')->where('account_title_id', request('account.*.account_title_id'))
+//                    ->where('entry', request('account.*.entry'))
+//                    ->where('document_id', $this->id)
             ],
             'account.*.company_id' => [
-                'required',
-                Rule::exists('companies', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('companies', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ],
             'account.*.business_unit_id' => [
-                'required',
-                Rule::exists('business_units', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('business_units', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ],
             'account.*.department_id' => [
-                'required',
-                Rule::exists('departments', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('departments', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ],
             'account.*.sub_unit_id' => [
-                'required',
-                Rule::exists('sub_units', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('sub_units', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ],
             'account.*.location_id' => [
-                'required',
-                Rule::exists('locations', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('locations', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ],
             'account.*.account_title_id' => [
-                'required',
-                Rule::exists('account_titles', 'id')->where(function ($query) {
-                    $query->whereNull('deleted_at');
-                })
+                'nullable',
+//                Rule::exists('account_titles', 'id')->where(function ($query) {
+//                    $query->whereNull('deleted_at');
+//                })
             ]
         ];
     }

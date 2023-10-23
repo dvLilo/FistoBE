@@ -945,10 +945,15 @@ class GenericMethod
         "remarks" => $remarks,
         "transaction_type" => $transaction_type,
           "company_id" => $specific_account_title["company"]["id"] ?? null,
+          "company" => $specific_account_title["company"]["name"] ?? null,
           "department_id" => $specific_account_title["department"]["id"] ?? null,
+          "department" => $specific_account_title["department"]["name"] ?? null,
           "location_id" => $specific_account_title["location"]["id"] ?? null,
+          "location" => $specific_account_title["location"]["name"] ?? null,
           "business_unit_id" => $specific_account_title["business_unit"]["id"] ?? null,
+          "business_unit" => $specific_account_title["business_unit"]["name"] ?? null,
           "sub_unit_id" => $specific_account_title["sub_unit"]["id"] ?? null,
+          "sub_unit" => $specific_account_title["sub_unit"]["name"] ?? null,
       ]);
     }
   }
