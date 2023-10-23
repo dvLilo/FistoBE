@@ -944,6 +944,11 @@ class GenericMethod
         "amount" => $amount,
         "remarks" => $remarks,
         "transaction_type" => $transaction_type,
+          "company_id" => $specific_account_title["company"]["id"] ?? null,
+          "department_id" => $specific_account_title["department"]["id"] ?? null,
+          "location_id" => $specific_account_title["location"]["id"] ?? null,
+          "business_unit_id" => $specific_account_title["business_unit"]["id"] ?? null,
+          "sub_unit_id" => $specific_account_title["sub_unit"]["id"] ?? null,
       ]);
     }
   }
@@ -1240,7 +1245,6 @@ class GenericMethod
     $balance_po_ref_amount = 0
   ) {
     $status = "create";
-    // return $date_requested;
 
     $requestor = Auth::user();
 
@@ -1299,10 +1303,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } elseif ($fields["document"]["id"] == 8) {
       //PCF
@@ -1348,10 +1352,10 @@ class GenericMethod
         "request_id" => $request_id,
 
         "date_requested" => $date_requested,
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } elseif ($fields["document"]["id"] == 7) {
       //Payrol
@@ -1400,10 +1404,10 @@ class GenericMethod
         "request_id" => $request_id,
 
         "date_requested" => $date_requested,
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } elseif ($fields["document"]["id"] == 4) {
       // Receipt
@@ -1458,10 +1462,10 @@ class GenericMethod
         "date_requested" => $date_requested,
         "status" => "Pending",
         "is_not_editable" => false,
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } elseif ($fields["document"]["id"] == 5) {
       //Contractor's Billing
@@ -1510,10 +1514,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } elseif ($fields["document"]["id"] == 3) {
       //PRM Multiple
@@ -1666,10 +1670,10 @@ class GenericMethod
               "total_gross" => $total_gross ? $total_gross : null,
               "total_cwt" => $total_cwt ? $total_cwt : null,
               "total_net" => $total_net ? $total_net : null,
-                "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-                "business_unit" => data_get($fields, 'document.business_unit.name'),
-                "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-                "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+                "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+                "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+                "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
             ]);
           }
 
@@ -1782,10 +1786,10 @@ class GenericMethod
               "cheque_date" => $cheque_date ? $cheque_date : null,
               "release_date" => $fields["document"]["release_date"],
               "batch_no" => $fields["document"]["batch_no"],
-                "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-                "business_unit" => data_get($fields, 'document.business_unit.name'),
-                "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-                "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+                "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+                "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+                "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
             ]);
           }
           static::prmMultiplerequestUpdateID($new_transaction);
@@ -1894,10 +1898,10 @@ class GenericMethod
               "cheque_date" => $cheque_date ? $cheque_date : null,
               "release_date" => $fields["document"]["release_date"],
               "batch_no" => $fields["document"]["batch_no"],
-                "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-                "business_unit" => data_get($fields, 'document.business_unit.name'),
-                "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-                "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+                "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+                "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+                "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+                "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
             ]);
           }
 
@@ -1949,10 +1953,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
 
       if ($new_transaction->id) {
@@ -2000,10 +2004,10 @@ class GenericMethod
         "date_requested" => $date_requested,
         "status" => "Pending",
         "is_not_editable" => false,
-          "business_unit_id" => data_get($fields, 'document.business_unit.id'),
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     } else {
       $new_transaction = Transaction::create([
@@ -2048,10 +2052,10 @@ class GenericMethod
 
         "date_requested" => $date_requested,
         "status" => "Pending",
-          "business_unit_id" => $fields["document"]["business_unit"]["id"],
-          "business_unit" => data_get($fields, 'document.business_unit.name'),
-          "sub_unit_id" => data_get($fields, 'document.sub_unit.id'),
-          "sub_unit" => data_get($fields, 'document.sub_unit.name'),
+          "business_unit_id" => $fields["document"]["business_unit"]["id"] ?? null,
+          "business_unit" => $fields["document"]["business_unit"]["name"] ?? null,
+          "sub_unit_id" => $fields["document"]["sub_unit"]["id"] ?? null,
+          "sub_unit" => $fields["document"]["sub_unit"]["name"] ?? null,
       ]);
     }
 
@@ -2215,10 +2219,10 @@ class GenericMethod
     $currentTransaction->reason = null;
     $currentTransaction->reason_remarks = null;
 
-    $currentTransaction->business_unit_id = $fields["document"]["business_unit"]["id"];
-    $currentTransaction->business_unit = $fields["document"]["business_unit"]["name"];
-    $currentTransaction->sub_unit_id = $fields["document"]["sub_unit"]["id"];
-    $currentTransaction->sub_unit = $fields["document"]["sub_unit"]["name"];
+//    $currentTransaction->business_unit_id = $fields["document"]["business_unit"]["id"];
+//    $currentTransaction->business_unit = $fields["document"]["business_unit"]["name"];
+//    $currentTransaction->sub_unit_id = $fields["document"]["sub_unit"]["id"];
+//    $currentTransaction->sub_unit = $fields["document"]["sub_unit"]["name"];
 
     // Contractor's Billing
     $currentTransaction->capex_no = $capex_no;

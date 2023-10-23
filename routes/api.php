@@ -202,6 +202,7 @@ Route::group(["middleware" => "auth:sanctum"], function () {
       //SUB UNIT
       Route::patch("sub-units/{id}", [\App\Http\Controllers\SubUnitController::class, "change_status"]);
       Route::resource("sub-units", \App\Http\Controllers\SubUnitController::class);
+      Route::post("sub-units/import", [\App\Http\Controllers\SubUnitController::class, "import"]);
 
       //DOCUMENT COA
 //      Route::patch("document-coa/{id}", [\App\Http\Controllers\DocumentCoaController::class, "change_status"]);

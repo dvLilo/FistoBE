@@ -36,14 +36,6 @@ class TransactionFlowController extends Controller
                 'status' => $process . '-receive',
             ]);
 
-//        foreach ($transactions as $transaction) {
-//            Transaction::find($transaction)
-//                ->update([
-//                    'state' => $process,
-//                    'status' => $process . '-received',
-//                ]);
-//        }
-
         return GenericMethod::resultResponse("receive", null, []);
     }
     // public function pullRequest(Request $request){
