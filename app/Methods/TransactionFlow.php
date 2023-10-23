@@ -478,7 +478,8 @@ class TransactionFlow
 
       GenericMethod::voucherTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+        $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,

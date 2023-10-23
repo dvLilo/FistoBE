@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Http\Resources;
+use App\Models\BusinessUnit;
 use App\Models\Charging;
 use App\Models\Company;
 use App\Models\Department;
+use App\Models\Location;
+use App\Models\SubUnit;
 use App\Models\User;
 use App\Models\POBatch;
 use App\Models\Transaction;
@@ -31,6 +34,9 @@ class TransactionResource extends JsonResource
    */
   public function toArray($request)
   {
+//      return [
+//          'test' => $this->voucher_associate->account_title()->select(['company_id'])->get()
+//      ];
     $document = [];
     $tag = null;
     $voucher = null;
@@ -699,6 +705,26 @@ class TransactionResource extends JsonResource
               ],
               "amount" => $item["amount"],
               "remarks" => $item["remarks"],
+                "company" => [
+                    'id' => $item['company_id'],
+                    'name' => isset($item['company_id']) ? Company::where('id', $item['company_id'])->first()->company : null
+                ],
+                "department" => [
+                    'id' => $item['department_id'],
+                    'name' => isset($item['department_id']) ? Department::where('id', $item['department_id'])->first()->department : null
+                ],
+                "location" => [
+                    'id' => $item['location_id'],
+                    'name' => isset($item['location_id']) ? Location::where('id', $item['location_id'])->first()->location : null
+                ],
+                "business_unit" => [
+                    'id' => $item['business_unit_id'],
+                    'name' => isset($item['business_unit_id']) ? BusinessUnit::where('id', $item['business_unit_id'])->first()->business_unit : null
+                ],
+                "sub_unit" => [
+                    'id' => $item['sub_unit_id'],
+                    'name' => isset($item['sub_unit_id']) ? SubUnit::where('id', $item['sub_unit_id'])->first()->sub_unit : null
+                ],
             ],
           ];
         });

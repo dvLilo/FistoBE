@@ -230,7 +230,8 @@ class Transaction extends Model
 
   public function voucher()
   {
-    return $this->hasMany(Associate::class, "tag_id", "tag_no")
+      return $this->hasMany(Associate::class, "transaction_id", "id")
+//    return $this->hasMany(Associate::class, "tag_id", "tag_no")
       ->select(
         "transaction_id",
         "tag_id",
@@ -672,6 +673,10 @@ class Transaction extends Model
   public function debit_file(): HasMany {
       return $this->hasMany(ClearingAccountTitle::class, 'clear_id', 'tag_no')
           ->where('transaction_type', 'debit');
+  }
+
+  public function voucher_associate() {
+        return $this->hasOne(Associate::class, 'tag_id', 'tag_no')->latest()->limit(1);
   }
 
 }
