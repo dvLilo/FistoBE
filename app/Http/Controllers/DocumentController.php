@@ -37,6 +37,7 @@ class DocumentController extends Controller
                     "account_title:id,title as name",
                     "business_unit:id,business_unit as name",
                     "sub_unit:id,subunit as name",
+                    "location:id,location as name",
                 ]);
             }
         ])
