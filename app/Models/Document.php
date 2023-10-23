@@ -34,7 +34,7 @@ class Document extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'document_categories','document_id','category_id')->select('categories.id','categories.name');
+        return $this->belongsToMany(Category::class, 'document_categories','document_id','category_id');
     }
 
     public function document_categories()
@@ -42,7 +42,7 @@ class Document extends Model
         return $this->belongsToMany(Category::class, 'user_document_category','document_id','category_id')->select('categories.id','categories.name');
     }
 
-    public function document_coa(): HasMany
+    public function accounts(): HasMany
     {
         return $this->hasMany(DocumentCoa::class, 'document_id', 'id');
     }

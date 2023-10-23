@@ -58,7 +58,7 @@ class SubUnitController extends Controller
         $new_subunit = SubUnit::create([
             'department_id' => $request->department_id,
             'code' => $request->code,
-            'subunit' => $request->subunit,
+            'subunit' => $request->sub_unit,
         ]);
 
         return $this->resultResponse('save','Sub Unit', $new_subunit);
@@ -78,7 +78,7 @@ class SubUnitController extends Controller
             $subunit->update([
                 'department_id' => $request->department_id,
                 'code' => $request->code,
-                'subunit' => $request->subunit,
+                'subunit' => $request->sub_unit,
             ]);
 
             return $this->resultResponse('update','Sub Unit', $subunit);
@@ -118,7 +118,7 @@ class SubUnitController extends Controller
         date_default_timezone_set('Asia/Manila');
 
         $headers = "Code, Subunit, Company, Status";
-        $template = ["code", "subunit", "department", "status"];
+        $template = ["code", "sub_unit", "department", "status"];
         $keys = array_keys(current($subunit));
         $this->validateHeader($template, $keys, $headers);
 
@@ -126,7 +126,7 @@ class SubUnitController extends Controller
         foreach ($subunit as $sub) {
 
             $code = $sub['code'];
-            $subunitName = $sub['subunit'];
+            $subunitName = $sub['sub_unit'];
             $department = $sub['department'];
             $status = $sub['status'];
 
@@ -220,7 +220,7 @@ class SubUnitController extends Controller
                 $transformedChunk = $chunk->map(function ($sub) {
                     return [
                         'code' => $sub['code'],
-                        'subunit' => $sub['subunit'],
+                        'subunit' => $sub['sub_unit'],
                         'department_id' => Department::where('department', $sub['department'])->first()->id,
                         'created_at' => now(),
                         'updated_at' => now(),

@@ -141,6 +141,31 @@ class TransactionPostRequest extends FormRequest
       "autoDebit_group.*.interest_due" => "nullable",
       "autoDebit_group.*.cwt" => "nullable",
       "autoDebit_group.*.dst" => "nullable",
+
+        "document.business_unit.id" => [
+            "nullable",
+            Rule::exists("business_units", "id")->where(function ($query) {
+                $query->where("company_id", $this->input("document.company.id"));
+            }),
+        ],
+        "document.business_unit.name" => [
+            "nullable",
+            Rule::exists("business_units", "name")->where(function ($query) {
+                $query->where("company_id", $this->input("document.company.id"));
+            }),
+        ],
+        "document.sub_unit.id" => [
+            "nullable",
+            Rule::exists("sub_units", "id")->where(function ($query) {
+                $query->where("business_unit_id", $this->input("document.business_unit.id"));
+            }),
+        ],
+        "document.sub_unit.name" => [
+            "nullable",
+            Rule::exists("sub_units", "name")->where(function ($query) {
+                $query->where("business_unit_id", $this->input("document.business_unit.id"));
+            }),
+        ],
     ];
   }
 

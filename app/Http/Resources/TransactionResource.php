@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Resources;
+use App\Models\Charging;
+use App\Models\Company;
+use App\Models\Department;
 use App\Models\User;
 use App\Models\POBatch;
 use App\Models\Transaction;
@@ -692,7 +695,7 @@ class TransactionResource extends JsonResource
               "entry" => $item["entry"],
               "account_title" => [
                 "id" => $item["account_title_id"],
-                "name" => $item["account_title_name"],
+                "name" => $item["account_title_name"]
               ],
               "amount" => $item["amount"],
               "remarks" => $item["remarks"],
@@ -1475,6 +1478,35 @@ class TransactionResource extends JsonResource
     $transaction_result["file"] = $file_description;
     $transaction_result["reverse"] = $reverse_description;
     $transaction_result["clear"] = $clear_description;
+    $transaction_result["document"]["business_unit"] = [
+        "id" => $this->business_unit_id,
+        "name" => $this->business_unit,
+    ];
+    $transaction_result["document"]["sub_unit"] = [
+        "id" => $this->sub_unit_id,
+        "name" => $this->sub_unit,
+    ];
+
+    //---------------------------------------------------------------------------------------------------------------------------//
+//      $test = Transaction::where('id', $this->id)->select(['company_id', 'department_id'])->first()->toArray();
+//      $test2 = Charging::where('transaction_id', $this->id)->select(['company_id', 'department_id'])->first()->toArray();
+//
+//      $test_array = array_diff($test2, $test);
+//
+//      if ($test_array) {
+//          $changedData = [
+//              'company' => [
+//                  'id' => isset($test_array['company_id']) ? $test_array['company_id'] : null,
+//                  'name' => isset($test_array['company_id']) ? Company::where('id', $test_array['company_id'])->select('company')->first()->company : null,
+//              ],
+//              'department' => [
+//                  'id' => isset($test_array['department_id']) ? $test_array['department_id'] : null,
+//                  'name' => isset($test_array['department_id']) ? Department::where('id', $test_array['department_id'])->select('department')->first()->department : null,
+//              ]
+//          ];
+//          $transaction_result["change"] =  $changedData;
+//      }
+      //---------------------------------------------------------------------------------------------------------------------------//
     // return $transaction_result;
     $result = [];
     foreach ($transaction_result as $k => $v) {

@@ -64,33 +64,26 @@ class MasterlistController extends Controller
       "categories"=>UtilityCategory::whereNull('deleted_at')->get(['id','category']));
       return $this->resultResponse('fetch','Location and Category',$data);
   }
-//
-//  public function accountTitleDropdown(){
-//    $data =  array(
-//      "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
-//      return $this->resultResponse('fetch','Account Title',$data);
-//  }
 
-//    public function accountTitleDropdown(){
-//        $data =  array(
-//            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
-//
-//        return $this->resultResponse('fetch','Account Title',$data);
-//    }
+    public function accountTitleDropdown(){
+        $data =  array(
+            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
+        return $this->resultResponse('fetch','Account Title',$data);
+    }
 
-    public function accountTitleDropdown($id){
+    public function accountTitleDocumentDropdown($id){
 //        $data =  array(
 //            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
         $data = Document::where('id',$id)
             ->with([
-//            "categories" => function ($query) {
-//                $query->select('categories.id', 'categories.name');
-//            }
-                "categories:id,name",
-                "document_coa"
+                "categories:id,name"
             ])->first();
 
-        return $this->resultResponse('fetch','Account Title', new DocumentResource($data));
+        if ($data) {
+            return $this->resultResponse('fetch', 'Account Title', new DocumentResource($data));
+        } else {
+            return $this->resultResponse('not-found', 'Account Title', []);
+        }
     }
   public function transactionAccountTitleDropdown(Request $request){
     $api_for = $request->api_for?$request->api_for: "default";
