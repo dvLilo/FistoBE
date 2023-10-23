@@ -58,4 +58,5 @@ class Company extends Model
       ->select("id", "code", "department as name", "company")
       ->with("locations");
   }
+
 }
