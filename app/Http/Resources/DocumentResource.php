@@ -21,6 +21,7 @@ class DocumentResource extends JsonResource
                     'account_title' => [
                         'id' => $document_coa->account_title->id,
                         'name' => $document_coa->account_title->title,
+                        'code' => $document_coa->account_title->code,
                     ],
                     'company' => [
                         'id' => $document_coa->company->id,

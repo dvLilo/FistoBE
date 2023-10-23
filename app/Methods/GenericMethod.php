@@ -7,17 +7,22 @@ use App\Exceptions\FistoLaravelException;
 use App\Models\Approver;
 use App\Models\Associate;
 use App\Models\Audit;
+use App\Models\BusinessUnit;
 use App\Models\Cheque;
 use App\Models\ClearingAccountTitle;
+use App\Models\Company;
 use App\Models\DebitBatch;
+use App\Models\Department;
 use App\Models\Executive;
 use App\Models\Filing;
 use App\Models\Gas;
+use App\Models\Location;
 use App\Models\POBatch;
 use App\Models\Reason;
 use App\Models\ReferrenceBatch;
 use App\Models\RequestorLogs;
 use App\Models\Reverse;
+use App\Models\SubUnit;
 use App\Models\Tagging;
 use App\Models\Transaction;
 use App\Models\TransactionClient;
@@ -946,14 +951,19 @@ class GenericMethod
         "transaction_type" => $transaction_type,
           "company_id" => $specific_account_title["company"]["id"] ?? null,
           "company" => $specific_account_title["company"]["name"] ?? null,
+          "company_code" => isset($specific_account_title["company"]["name"]) ? Company::where("company", $specific_account_title["company"]["name"])->first()->code : null,
           "department_id" => $specific_account_title["department"]["id"] ?? null,
           "department" => $specific_account_title["department"]["name"] ?? null,
+          "department_code" => isset($specific_account_title["department"]["name"]) ? Department::where("department", $specific_account_title["department"]["name"])->first()->code : null,
           "location_id" => $specific_account_title["location"]["id"] ?? null,
           "location" => $specific_account_title["location"]["name"] ?? null,
+          "location_code" => isset($specific_account_title["location"]["name"]) ? Location::where("location", $specific_account_title["location"]["name"])->first()->code : null,
           "business_unit_id" => $specific_account_title["business_unit"]["id"] ?? null,
           "business_unit" => $specific_account_title["business_unit"]["name"] ?? null,
+          "business_unit_code" => isset($specific_account_title["business_unit"]["name"]) ? BusinessUnit::where("business_unit", $specific_account_title["business_unit"]["name"])->first()->code : null,
           "sub_unit_id" => $specific_account_title["sub_unit"]["id"] ?? null,
           "sub_unit" => $specific_account_title["sub_unit"]["name"] ?? null,
+          "sub_unit_code" => isset($specific_account_title["sub_unit"]["name"]) ? SubUnit::where("subunit", $specific_account_title["sub_unit"]["name"])->first()->code : null,
       ]);
     }
   }
