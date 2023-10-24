@@ -67,7 +67,7 @@ class MasterlistController extends Controller
 
     public function accountTitleDropdown(){
         $data =  array(
-            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
+            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title', 'code']));
         return $this->resultResponse('fetch','Account Title',$data);
     }
 

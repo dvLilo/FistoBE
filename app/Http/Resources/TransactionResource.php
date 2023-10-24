@@ -701,29 +701,35 @@ class TransactionResource extends JsonResource
               "entry" => $item["entry"],
               "account_title" => [
                 "id" => $item["account_title_id"],
+                  "code" => $item["account_title_code"],
                 "name" => $item["account_title_name"]
               ],
               "amount" => $item["amount"],
               "remarks" => $item["remarks"],
                 "company" => [
                     'id' => $item['company_id'],
-                    'name' => isset($item['company_id']) ? $item["company"] : null
+                    'name' => isset($item['company_id']) ? $item["company"] : null,
+                    'code' => isset($item['company_id']) ? $item["company_code"] : null
                 ],
                 "department" => [
                     'id' => $item['department_id'],
-                    'name' => isset($item['department_id']) ? $item["department"] : null
+                    'name' => isset($item['department_id']) ? $item["department"] : null,
+                    'code' => isset($item['department_id']) ? $item["department_code"] : null
                 ],
                 "location" => [
                     'id' => $item['location_id'],
-                    'name' => isset($item['location_id']) ? $item["location"] : null
+                    'name' => isset($item['location_id']) ? $item["location"] : null,
+                    'code' => isset($item['location_id']) ? $item["location_code"] : null
                 ],
                 "business_unit" => [
                     'id' => $item['business_unit_id'],
-                    'name' => isset($item['business_unit_id']) ? $item["business_unit"] : null
+                    'name' => isset($item['business_unit_id']) ? $item["business_unit"] : null,
+                    'code' => isset($item['business_unit_id']) ? $item["business_unit_code"] : null
                 ],
                 "sub_unit" => [
                     'id' => $item['sub_unit_id'],
-                    'name' => isset($item['sub_unit_id']) ? $item["sub_unit"] : null
+                    'name' => isset($item['sub_unit_id']) ? $item["sub_unit"] : null,
+                    'code' => isset($item['sub_unit_id']) ? $item["sub_unit_code"] : null
                 ],
             ],
           ];
