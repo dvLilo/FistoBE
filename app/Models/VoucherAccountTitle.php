@@ -15,6 +15,7 @@ class VoucherAccountTitle extends Model
         ,"treasury_id"
         ,"entry"
         ,"account_title_id"
+        ,"account_title_code"
         ,"account_title_name"
         ,"amount"
         ,"remarks"

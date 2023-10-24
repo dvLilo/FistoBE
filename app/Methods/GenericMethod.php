@@ -4,6 +4,7 @@ namespace App\Methods;
 
 use App\Exceptions\FistoException;
 use App\Exceptions\FistoLaravelException;
+use App\Models\AccountTitle;
 use App\Models\Approver;
 use App\Models\Associate;
 use App\Models\Audit;
@@ -946,6 +947,7 @@ class GenericMethod
         "entry" => $entry,
         "account_title_id" => $account_title_id,
         "account_title_name" => $account_title_name,
+          "account_title_code" => AccountTitle::where("title", $specific_account_title["account_title"]["name"])->first()->code ?? null,
         "amount" => $amount,
         "remarks" => $remarks,
         "transaction_type" => $transaction_type,
