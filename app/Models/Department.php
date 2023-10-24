@@ -12,7 +12,7 @@ class Department extends Model
   use HasFactory;
   use SoftDeletes;
   protected $table = "departments";
-  protected $fillable = ["code", "department", "company"];
+  protected $fillable = ["code", "department", "company", "operation"];
   protected $hidden = ["created_at", "pivot"];
 
   public function Company()

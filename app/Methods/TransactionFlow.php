@@ -407,7 +407,7 @@ class TransactionFlow
         // GenericMethod::voucherNoValidationUponSaving($voucher_no, $id);
         $status = "voucher-voucher";
 
-        $voucher_no = $generic->generateVoucherNo($transaction->id);
+//        $voucher_no = $generic->generateVoucherNo($transaction->id);
 
         $transaction->update([
           "is_for_releasing" => null,
@@ -458,7 +458,28 @@ class TransactionFlow
                 return GenericMethod::resultResponse("not-equal", "Document and account title", []);
               }
           }
+
+            $department_id = null;
+            foreach ($account_titles as $account_title) {
+                if (strtolower($account_title['entry']) == 'debit') {
+                    $department_id = $account_title['department']['id'];
+                    break;
+                }
+            }
+
+            $voucher_no = $generic->generateVoucherNo($transaction->id, $department_id);
         }
+
+//        if (isset($account_titles)) {
+//            $department_id = null;
+//            foreach ($account_titles as $account_title) {
+//                if (strtolower($account_title['entry']) == 'debit') {
+//                    $department_id = $account_title['department']['id'];
+//                    break;
+//                }
+//            }
+//            $voucher_no = $generic->generateVoucherNo($transaction->id, $department_id);
+//        }
 
 //          $charging = Charging::where("transaction_id", $transaction->id)->first();
 //
@@ -492,7 +513,8 @@ class TransactionFlow
 
         GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+            $transaction->id,
+//        $transaction_id,
         $request_id,
         $receipt_type,
         $tag_no,

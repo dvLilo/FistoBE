@@ -4896,7 +4896,7 @@ class GenericMethod
   }
   ##########################################################################################################
 
-  public function generateVoucherNo($id)
+  public function generateVoucherNo($id, $code)
   {
     $existingVoucher = Transaction::whereNotNull("voucher_no")
       ->where("id", $id)
@@ -4907,13 +4907,13 @@ class GenericMethod
     }
 
     $series = 1;
-    // $code = "GA";
+    $code = Department::where('id', $code)->first()->operation;
     $date = Carbon::now("Asia/Manila")->format("ym");
 
     do {
       $formattedSeries = str_pad($series, 3, "0", STR_PAD_LEFT);
-      // $generatedVoucher = $code . " " . $date . "-" . $formattedSeries;
-      $generatedVoucher = $date . "-" . $formattedSeries;
+       $generatedVoucher = $code . " " . $date . "-" . $formattedSeries;
+//      $generatedVoucher = $date . "-" . $formattedSeries;
 
       $series++;
     } while ($this->checkDuplicateGeneratedVoucher($generatedVoucher));
