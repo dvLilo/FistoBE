@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BusinessUnitRequest;
-use App\Http\Resources\BusinessUnitResource;
 use App\Models\BusinessUnit;
 use Illuminate\Http\Request;
 
