@@ -72,7 +72,7 @@ class DepartmentController extends Controller
             ->get(["id", "code", "department as name", "company", "updated_at", "deleted_at"]);
         })
         ->when($api_for == "default", function ($query) {
-          return $query->get(["id", "code", "department as name"]);
+          return $query->get(["id", "code", "department as name", "operation"]);
         });
 
       if (count($departments)) {
@@ -93,6 +93,7 @@ class DepartmentController extends Controller
       "code" => "required",
       "department" => "required",
       "company" => "required",
+        "operation" => "nullable"
     ]);
 
     $department_validateCodeDuplicate = Department::withTrashed()
@@ -115,6 +116,7 @@ class DepartmentController extends Controller
       "code" => $fields["code"],
       "department" => $fields["department"],
       "company" => $fields["company"],
+        "operation" => $fields["operation"] ?? null,
     ]);
     return $this->resultResponse("save", "Department", $new_department);
   }
@@ -127,6 +129,7 @@ class DepartmentController extends Controller
       "code" => "required",
       "department" => "required",
       "company" => "required",
+        "operation" => "nullable"
     ]);
 
     $department_validateCodeDuplicate = Department::withTrashed()
@@ -156,6 +159,7 @@ class DepartmentController extends Controller
       $specific_department->code = $fields["code"];
       $specific_department->department = $fields["department"];
       $specific_department->company = $fields["company"];
+        $specific_department->operation = $fields["operation"] ?? null;
       return $this->validateIfNothingChangeThenSave($specific_department, "Department");
     }
   }
@@ -180,8 +184,8 @@ class DepartmentController extends Controller
     $department_list = Department::withTrashed()->get();
     $company_list = Company::get();
 
-    $headers = "Code, Department, Company, Status";
-    $template = ["code", "department", "company", "status"];
+    $headers = "Code, Department, Company, Status, Operation";
+    $template = ["code", "department", "company", "status", "operation"];
     $keys = array_keys(current($data));
     $this->validateHeader($template, $keys, $headers);
 
@@ -299,6 +303,7 @@ class DepartmentController extends Controller
           "code" => $department["code"],
           "department" => $department["department"],
           "company" => Company::where("company", $department["company"])->first()->id,
+            "operation" => $department["operation"],
           "created_at" => $date,
           "updated_at" => $date,
           "deleted_at" => $status_date,
