@@ -22,19 +22,19 @@ class VoucherAccountTitle extends Model
         ,"transaction_type",
         "company_id",
         "company_code",
-        "company",
+        "company_name",
         "department_id",
         "department_code",
-        "department",
+        "department_name",
         "location_id",
         "location_code",
-        "location",
+        "location_name",
         "business_unit_id",
         "business_unit_code",
-        "business_unit",
+        "business_unit_name",
         "sub_unit_id",
         "sub_unit_code",
-        "sub_unit"
+        "sub_unit_name"
     ];
 
 }
