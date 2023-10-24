@@ -26,14 +26,17 @@ class DocumentResource extends JsonResource
                     'company' => [
                         'id' => $document_coa->company->id,
                         'name' => $document_coa->company->company,
+                        'code' => $document_coa->company->code,
                     ],
                     'department' => [
                         'id' => $document_coa->department->id,
-                        'name' => $document_coa->department->department
+                        'name' => $document_coa->department->department,
+                        'code' => $document_coa->department->code,
                     ],
                     'location' => [
                         'id' => $document_coa->location->id,
-                        'name' => $document_coa->location->location
+                        'name' => $document_coa->location->location,
+                        'code' => $document_coa->location->code,
                     ]
                 ];
             })
