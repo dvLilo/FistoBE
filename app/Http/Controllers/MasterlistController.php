@@ -23,6 +23,7 @@ use App\Models\Sedar;
 use App\Models\AccountTitle;
 use App\Models\OrganizationDepartment;
 
+use App\Models\VoucherCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -232,6 +233,12 @@ class MasterlistController extends Controller
     );
 
     return $this->resultResponse('fetch','Department',$data);
+  }
+
+  public function voucherCodeDropdown() {
+      $voucher_code = VoucherCode::whereNull('deleted_at')->get(['id', 'code']);
+
+      return $this->resultResponse('fetch', 'Voucher Code', $voucher_code);
   }
 
   public static function coa(Request $request){

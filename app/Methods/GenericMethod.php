@@ -4907,7 +4907,7 @@ class GenericMethod
     }
 
     $series = 1;
-    $code = Department::where('id', $code)->first()->operation;
+    $code = Department::where('id', $code)->first()->voucherCode->code;
     $date = Carbon::now("Asia/Manila")->format("ym");
 
     do {
