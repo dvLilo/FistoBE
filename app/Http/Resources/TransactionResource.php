@@ -731,6 +731,7 @@ class TransactionResource extends JsonResource
                     'name' => isset($item['sub_unit_id']) ? $item["sub_unit_name"] : null,
                     'code' => isset($item['sub_unit_id']) ? $item["sub_unit_code"] : null
                 ],
+                "is_default" => $item["is_default"]
             ],
           ];
         });

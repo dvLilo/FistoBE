@@ -34,7 +34,7 @@ class VoucherAccountTitle extends Model
         "business_unit_name",
         "sub_unit_id",
         "sub_unit_code",
-        "sub_unit_name"
+        "sub_unit_name",
+        "is_default"
     ];
-
 }

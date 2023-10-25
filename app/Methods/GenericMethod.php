@@ -966,6 +966,7 @@ class GenericMethod
           "sub_unit_id" => $specific_account_title["sub_unit"]["id"] ?? null,
           "sub_unit_name" => $specific_account_title["sub_unit"]["name"] ?? null,
           "sub_unit_code" => isset($specific_account_title["sub_unit"]["name"]) ? SubUnit::where("subunit", $specific_account_title["sub_unit"]["name"])->first()->code : null,
+          "is_default" => $specific_account_title["is_default"] ?? null,
       ]);
     }
   }
