@@ -236,7 +236,9 @@ class MasterlistController extends Controller
   }
 
   public function voucherCodeDropdown() {
-      $voucher_code = VoucherCode::whereNull('deleted_at')->get(['id', 'code']);
+      $voucher_code = array(
+            "voucher_codes" => VoucherCode::whereNull('deleted_at')->get(['id','code'])
+      );
 
       return $this->resultResponse('fetch', 'Voucher Code', $voucher_code);
   }
