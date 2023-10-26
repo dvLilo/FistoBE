@@ -366,7 +366,8 @@ class TransactionFlow
       GenericMethod::tagTransaction(
         $model,
         $request_id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $remarks,
         $date_now,
         $reason_id,
@@ -376,7 +377,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -554,7 +556,8 @@ class TransactionFlow
 
       GenericMethod::approveTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,
@@ -564,7 +567,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -577,8 +581,10 @@ class TransactionFlow
         $voucher_month,
         $distributed_id,
         $distributed_name,
-        $approver_id,
-        $approver_name
+//        $approver_id,
+          $transaction->approver_id,
+//        $approver_name
+          $transaction->approver_name
       );
     } elseif ($process == "transmit") {
       $transaction_type = $request["transaction_type"];

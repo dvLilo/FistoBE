@@ -14,7 +14,7 @@ class SubUnitController extends Controller
     public function index(Request $request)
     {
         $status =  $request['status'];
-        $rows =  $request->input('rows', 10);
+        $rows =  (int) $request->input('rows', 10);
         $search =  $request['search'];
         $paginate = $request->input('paginate', 1);
 
@@ -117,8 +117,8 @@ class SubUnitController extends Controller
 
         date_default_timezone_set('Asia/Manila');
 
-        $headers = "Code, Subunit, Company, Status";
-        $template = ["code", "sub_unit", "department", "status"];
+        $headers = "Code, Subunit, Department, Status";
+        $template = ["code", "subunit", "department", "status"];
         $keys = array_keys(current($subunit));
         $this->validateHeader($template, $keys, $headers);
 
@@ -126,13 +126,13 @@ class SubUnitController extends Controller
         foreach ($subunit as $sub) {
 
             $code = $sub['code'];
-            $subunitName = $sub['sub_unit'];
+            $subunitName = $sub['subunit'];
             $department = $sub['department'];
             $status = $sub['status'];
 
             if (in_array($code, $code_list)) {
                 $errorBag[] = (object) [
-                    'error_type' => 'duplicate',
+                    'error_type' => 'exist',
                     'line' => $index,
                     'description' => 'Code ' . $code . ' already exist.'
                 ];
@@ -140,7 +140,7 @@ class SubUnitController extends Controller
 
             if (in_array($subunitName, $subunit_list)) {
                 $errorBag[] = (object) [
-                    'error_type' => 'duplicate',
+                    'error_type' => 'exist',
                     'line' => $index,
                     'description' => 'Sub unit ' . $subunitName . ' already exist.'
                 ];
@@ -220,7 +220,7 @@ class SubUnitController extends Controller
                 $transformedChunk = $chunk->map(function ($sub) {
                     return [
                         'code' => $sub['code'],
-                        'subunit' => $sub['sub_unit'],
+                        'subunit' => $sub['subunit'],
                         'department_id' => Department::where('department', $sub['department'])->first()->id,
                         'created_at' => now(),
                         'updated_at' => now(),

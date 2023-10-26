@@ -34,9 +34,6 @@ class TransactionResource extends JsonResource
    */
   public function toArray($request)
   {
-//      return [
-//          'test' => $this->voucher_associate->account_title()->select(['company_id'])->get()
-//      ];
     $document = [];
     $tag = null;
     $voucher = null;
@@ -1555,12 +1552,18 @@ class TransactionResource extends JsonResource
     $flow_details = $model
       ::when(
         $process == "tag",
-        function ($query) use ($id) {
-          $query->where("request_id", $id);
-        },
-        function ($query) use ($id) {
-          $query->where("tag_id", $id);
-        }
+//        function ($query) use ($id) {
+//          $query->where("request_id", $id);
+//        },
+          function ($query) use ($id) {
+              $query->where("transaction_id", $id);
+          },
+//        function ($query) use ($id) {
+//          $query->where("tag_id", $id);
+//        }
+          function ($query) use ($id) {
+              $query->where("tag_id", $id);
+          }
       )
       ->latest()
       ->get();

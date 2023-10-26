@@ -350,7 +350,7 @@ class TransactionController extends Controller
         $is_transmit_transfered,
         $is_file_transfered
       ) {
-        $query
+        $query->where("distributed_id", $users_id)
           ->when(
             strtolower($status) == "voucher-receive",
             function ($query) {
