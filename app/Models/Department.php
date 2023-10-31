@@ -17,7 +17,7 @@ class Department extends Model
 
   public function Company()
   {
-    return $this->hasOne(Company::class, "id", "company")->select("id", "company as name");
+    return $this->hasOne(Company::class, "id", "company")->select("id", "company as name")->withTrashed();
   }
 
   public function getCreatedAtAttribute($value)
@@ -49,6 +49,6 @@ class Department extends Model
   }
 
   public function voucherCode() {
-      return $this->hasOne(VoucherCode::class, "id", "voucher_code_id");
+      return $this->hasOne(VoucherCode::class, "id", "voucher_code_id")->withTrashed();
   }
 }

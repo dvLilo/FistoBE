@@ -209,6 +209,8 @@ Route::group(["middleware" => "auth:sanctum"], function () {
       //DOCUMENT COA
 //      Route::patch("document-coa/{id}", [\App\Http\Controllers\DocumentCoaController::class, "change_status"]);
 //      Route::resource("document-coa", \App\Http\Controllers\DocumentCoaController::class);
+
+      //VOUCHER CODE
       Route::patch('voucher-codes/{id}', [\App\Http\Controllers\VoucherCodeController::class, "change_status"]);
       Route::resource("voucher-codes", \App\Http\Controllers\VoucherCodeController::class);
   });

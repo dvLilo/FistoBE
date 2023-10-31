@@ -28,11 +28,11 @@ class BusinessUnit extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'business_unit_users', 'business_unit_id', 'user_id');
+        return $this->belongsToMany(User::class, 'business_unit_users', 'business_unit_id', 'user_id')->withTrashed();
     }
 
 public function company()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Company::class)->withTrashed();
     }
 }

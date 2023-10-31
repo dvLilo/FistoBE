@@ -146,13 +146,6 @@ class SubUnitController extends Controller
                 ];
             }
 
-            if (empty($status)) {
-                $errorBag[] = (object)[
-                    'error_type' => 'empty',
-                    'line' => $index,
-                    'description' => 'Empty status.'
-                ];
-            }
 
             if (!in_array($status, ['Active', 'Inactive'])) {
                 $errorBag[] = (object)[
@@ -186,31 +179,61 @@ class SubUnitController extends Controller
 
 
         if (count($errorBag) || !count($errorBag)) {
-            $input_code = array_count_values(array_map('strval', array_column($subunit, 'code')));
-            $index = 2;
-            foreach ($input_code as $key => $value) {
-                if ($value > 1) {
-                    $errorBag[] = (object) [
-                        'error_type' => 'duplicate',
-                        'line' => $index,
-                        'description' => 'Code ' . $key . ' has a duplicate in your excel file.'
-                    ];
-                }
-                $index++;
+//            $input_code = array_count_values(array_map('strval', array_column($subunit, 'code')));
+////            $index = 2;
+////            foreach ($input_code as $key => $value) {
+////                if ($value > 1) {
+////                    $errorBag[] = (object) [
+////                        'error_type' => 'duplicate',
+////                        'line' => $index,
+////                        'description' => 'Code ' . $key . ' has a duplicate in your excel file.'
+////                    ];
+////                }
+////                $index++;
+////            }
+
+            $input_code = array_column($subunit, 'code');
+            $duplicate_code = array_keys(array_filter(array_count_values($input_code), function ($value) {
+                return $value > 1;
+            }));
+
+            if (count($duplicate_code) > 0) {
+                $errorBag[] = (object) [
+                    'error_type' => 'duplicate',
+                    'line' => implode(', ', array_map(function ($value) {
+                        return $value + 2;
+                    }, (array_keys($input_code, $duplicate_code[0])))),
+                    'description' => 'Code ' . $duplicate_code[0] . ' has a duplicate in your excel file.'
+                ];
             }
 
-            $input_subunit = array_count_values(array_map('strval', array_column($subunit, 'subunit')));
-            $index = 2;
-            foreach ($input_subunit as $key => $value) {
-                if ($value > 1) {
-                    $errorBag[] = (object) [
-                        'error_type' => 'duplicate',
-                        'line' => $index,
-                        'description' => 'Sub unit ' . $key . ' has a duplicate in your excel file.'
-                    ];
-                }
-                $index++;
+//            $input_subunit = array_count_values(array_map('strval', array_column($subunit, 'subunit')));
+//            $index = 2;
+//            foreach ($input_subunit as $key => $value) {
+//                if ($value > 1) {
+//                    $errorBag[] = (object) [
+//                        'error_type' => 'duplicate',
+//                        'line' => $index,
+//                        'description' => 'Sub unit ' . $key . ' has a duplicate in your excel file.'
+//                    ];
+//                }
+//                $index++;
+//            }
+            $input_subunit = array_column($subunit, 'subunit');
+            $duplicate_subunit = array_keys(array_filter(array_count_values($input_subunit), function ($value) {
+                return $value > 1;
+            }));
+
+            if (count($duplicate_subunit) > 0) {
+                $errorBag[] = (object) [
+                    'error_type' => 'duplicate',
+                    'line' => implode(', ', array_map(function ($value) {
+                        return $value + 2;
+                    }, (array_keys($input_subunit, $duplicate_subunit[0])))),
+                    'description' => 'Subunit ' . $duplicate_subunit[0] . ' has a duplicate in your excel file.'
+                ];
             }
+
         }
 
         if (!count($errorBag)) {

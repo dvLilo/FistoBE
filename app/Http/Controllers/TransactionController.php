@@ -106,8 +106,6 @@ class TransactionController extends Controller
         //          "supplier:id,name,supplier_type_id",
         "supplier.supplier_type:id,type as name,transaction_days",
         "po_details:id,request_id,po_no,po_total_amount",
-        "audit",
-        "executive",
         "cheques.cheques",
       ])
       //      ->with("users", function ($query) {
@@ -240,6 +238,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+            "receipt_type",
 
             "status",
             "state",
@@ -338,6 +338,7 @@ class TransactionController extends Controller
             "referrence_amount",
             "net_amount",
               "cheque_date",
+              "receipt_type",
 
             "status",
             "state",
@@ -467,6 +468,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+              "receipt_type",
 
             "status",
             "state",
@@ -563,6 +566,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+              "receipt_type",
 
             "approver_id",
             "approver_name",
@@ -744,6 +749,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+              "receipt_type",
 
             "status",
             "state",
@@ -825,6 +832,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+              "receipt_type",
 
             "approver_id",
             "approver_name",
@@ -876,6 +885,8 @@ class TransactionController extends Controller
             "referrence_no",
             "referrence_amount",
             "net_amount",
+              "cheque_date",
+              "receipt_type",
 
             "approver_id",
             "approver_name",
@@ -927,6 +938,8 @@ class TransactionController extends Controller
                     "referrence_no",
                     "referrence_amount",
                     "net_amount",
+                    "cheque_date",
+                    "receipt_type",
 
                     "approver_id",
                     "approver_name",

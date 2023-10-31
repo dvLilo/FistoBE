@@ -57,18 +57,34 @@ class TransactionResource extends JsonResource
     $counter_receipt_status = $this->counter_receipt_status ? $this->counter_receipt_status : null;
     $counter_receipt_no = $this->counter_receipt_no ? $this->counter_receipt_no : null;
 
-    $transaction = Transaction::with("tag")
-      ->with("voucher.account_title")
-      ->with("approve")
-      ->with("transmit")
-      ->with("cheques.cheques")
-      ->with("cheques.account_title")
-      ->with("audit")
-      ->with("release")
-      ->with("file")
-      ->with("reverse")
-      ->with("clear")
-      ->with("clear.account_title")
+    $transaction = Transaction::
+//    with("tag")
+//        ->with("voucher.account_title")
+//      ->with("approve")
+//      ->with("transmit")
+//      ->with("cheques.cheques")
+//      ->with("cheques.account_title")
+//      ->with("audit")
+//      ->with("release")
+//      ->with("file")
+//      ->with("reverse")
+//      ->with("clear")
+//      ->with("clear.account_title")
+        with([
+            'tag',
+            'voucher',
+            'account_titles',
+            'approve',
+            'transmit',
+            'cheques.cheques',
+            'cheques.account_title',
+            'audit',
+            'release',
+            'file',
+            'reverse',
+            'clear',
+            'clear.account_title'
+        ])
       ->when($this->document_type == "Auto Debit", function ($query) {
         $query->with("auto_debit");
       })
@@ -88,7 +104,7 @@ class TransactionResource extends JsonResource
       isset($transaction["document"]["capex_no"]) ? $transaction["document"]["capex_no"] : null;
       $transaction_tag_date = isset($transaction_tag->date) ? $transaction_tag->date : null;
       $transaction_tag_status = isset($transaction_tag->status) ? $transaction_tag->status : null;
-      $transaction_tag_distributed_id = isset($transaction->distributed_id) ? $transaction->distributed_id : null;
+      $transaction_tag_distributed_id = isset($transaction->distributed_id) ? $this->distributed_id : null;
       $transaction_tag_distributed_name = isset($transaction->distributed_name) ? $transaction->distributed_name : null;
 
       $reason_id = isset($transaction_tag->reason_id) ? $transaction_tag->reason_id : null;
@@ -689,8 +705,8 @@ class TransactionResource extends JsonResource
       $subprocess = ["transfer", "receive", "voucher"];
       $dates = $this->get_transaction_dates($model, $transaction_tag_no, $process, $subprocess);
 
-      if (isset($voucher->account_title)) {
-        $voucher_account_title = $voucher->account_title;
+      if (isset($this->account_titles)) {
+        $voucher_account_title = $this->account_titles;
         $voucher_account_title = $voucher_account_title->mapToGroups(function ($item, $key) {
           return [
             $item["associate_id"] => [

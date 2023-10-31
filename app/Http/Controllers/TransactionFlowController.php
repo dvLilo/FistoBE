@@ -53,7 +53,7 @@ class TransactionFlowController extends Controller
                     ]);
                 }
                 break;
-            case 'approver':
+            case 'approve':
                 foreach ($transactions as $transaction){
                     Approver::create([
                         'tag_id' => Transaction::where('id', $transaction)->first()->tag_no,

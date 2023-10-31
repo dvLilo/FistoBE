@@ -18,126 +18,60 @@ class TransactionIndex extends JsonResource
   public function toArray($request)
   {
     $this->state = $this->stateChange($this->state);
-    $is_editable_prm = Tagging::where("transaction_id", $this->transaction_id)
-      ->whereNotIn("status", ["tag-return", "tag-void"])
-      ->exists()
-      ? 1
-      : 0;
 
-    $is_latest = 0;
-    if (!empty($this->po_details)) {
-      if ($this->po_details->last() != null) {
-        $po_no = $this->po_details->last()->po_no;
-
-        $transactions_ids = POBatch::with("transaction_ids")
-          ->where("p_o_batches.po_no", $po_no)
-          ->select(["request_id", "po_no"])
-          ->get();
-
-        $transactions_ids->filter(function ($value, $key) use ($transactions_ids) {
-          if ($value->transaction_ids) {
-            $$transactions_ids[$key] = $transactions_ids[$key];
-          }
-        });
-
-        $transaction_obj = $transactions_ids->pluck(["transaction_ids"]);
-        $transaction_obj = $transaction_obj->filter();
-
-        if (!empty($transaction_obj->last())) {
-          if ($transaction_obj->last()) {
-            if ($this->id == $transaction_obj->last()->id) {
-              $is_latest = 1;
-            }
-            $transactions_details = [
-              "id" => $this->id,
-              "tag_no" => $this->tag_no,
-              "is_latest_transaction" => $is_latest,
-              "is_editable_prm" => $is_editable_prm,
-              "users_id" => $this->users_id,
-              "request_id" => $this->request_id,
-              "supplier_id" => $this->supplier_id,
-              "document_id" => $this->document_id,
-              "transaction_id" => $this->transaction_id,
-              "document_type" => $this->document_type,
-              "payment_type" => $this->payment_type,
-              "supplier" => $this->supplier,
-              "remarks" => $this->remarks,
-              "date_requested" => $this->date_requested,
-              "company_id" => $this->company_id,
-              "company" => $this->company,
-              "department" => $this->department,
-              "location" => $this->location,
-              "document_no" => $this->document_no,
-              "document_amount" => $this->document_amount,
-              "referrence_no" => $this->referrence_no,
-              "referrence_amount" => $this->referrence_amount,
-              "status" => $this->state,
-              "state" => $this->status,
-              "users" => $this->users,
-              "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
-              // "audit" => $auditData,
-              // "executive" => [
-              //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-              //   "date_received" => $this->executive ? $this->executive->date_received : null,
-              //   "status" => $this->executive ? $this->executive->status : null,
-              //   "reason_id" => $this->executive ? $this->executive->reason_id : null,
-              //   "remarks" => $this->executive ? $this->executive->remarks : null,
-              //   "signed_by" => [
-              //     "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-              //     "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-              //   ],
-              //   "date_signed" => $this->executive ? $this->executive->date_signed : null,
-              // ],
-            ];
-          }
-        }
-      }
-
-      $transactions_details = [
-        "id" => $this->id,
-        "tag_no" => $this->tag_no,
-        "is_latest_transaction" => $is_latest,
-        "is_editable_prm" => $is_editable_prm,
-        "users_id" => $this->users_id,
-        "request_id" => $this->request_id,
-        "supplier_id" => $this->supplier_id,
-        "document_id" => $this->document_id,
-        "transaction_id" => $this->transaction_id,
-        "document_type" => $this->document_type,
-        "payment_type" => $this->payment_type,
-        "supplier" => $this->supplier,
-        "remarks" => $this->remarks,
-        "date_requested" => $this->date_requested,
-        "company_id" => $this->company_id,
-        "company" => $this->company,
-        "department" => $this->department,
-        "location" => $this->location,
-        "document_no" => $this->document_no,
-        "document_amount" => $this->document_id == 3 ? $this->net_amount : $this->document_amount,
-          "cheque_date" => $this->cheque_date,
-        "referrence_no" => $this->referrence_no,
-        "referrence_amount" => $this->referrence_amount,
-        "status" => $this->state,
-        "state" => $this->status,
-        "users" => $this->users,
-        "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
-        // "audit" => $auditData,
-        // "executive" => [
-        //   "transaction_id" => $this->executive ? $this->executive->transaction_id : null,
-        //   "date_received" => $this->executive ? $this->executive->date_received : null,
-        //   "status" => $this->executive ? $this->executive->status : null,
-        //   "reason_id" => $this->executive ? $this->executive->reason_id : null,
-        //   "remarks" => $this->executive ? $this->executive->remarks : null,
-        //   "signed_by" => [
-        //     "id" => $this->executive ? optional($this->executive->executiveSignedBy)->id : null,
-        //     "name" => $this->executive ? optional($this->executive->executiveSignedBy)->first_name : null,
-        //   ],
-        //   "date_signed" => $this->executive ? $this->executive->date_signed : null,
-        // ],
-      ];
+    $is_editable_prm = 0;
+    if ($this->document_id == 3) {
+      $is_editable_prm = Tagging::where("transaction_id", $this->transaction_id)
+        ->whereNotIn("status", ["tag-return", "tag-void"])
+        ->exists();
     }
 
-    return $transactions_details;
+    $is_latest_transaction = 0;
+    if ($this->po_details->isNotEmpty() && strtoupper($this->payment_type) === "PARTIAL") {
+      $po_no = $this->po_details->last()->po_no;
+
+      $trxns_id = POBatch::with("transaction_ids")
+        ->where("p_o_batches.po_no", $po_no)
+        ->select(["request_id", "po_no"])
+        ->get();
+
+      $latest_trxn_id = $trxns_id->pluck("transaction_ids.id")->last();
+
+      if ($latest_trxn_id == $this->id) {
+        $is_latest_transaction = 1;
+      }
+    }
+
+    return [
+      "id" => $this->id,
+      "tag_no" => $this->tag_no,
+      "is_latest_transaction" => $is_latest_transaction,
+      "is_editable_prm" => $is_editable_prm,
+      "users_id" => $this->users_id,
+      "request_id" => $this->request_id,
+      "supplier_id" => $this->supplier_id,
+      "document_id" => $this->document_id,
+      "transaction_id" => $this->transaction_id,
+      "document_type" => $this->document_type,
+      "payment_type" => $this->payment_type,
+      "supplier" => $this->supplier,
+      "remarks" => $this->remarks,
+      "date_requested" => $this->date_requested,
+      "company_id" => $this->company_id,
+      "company" => $this->company,
+      "department" => $this->department,
+      "location" => $this->location,
+      "document_no" => $this->document_no,
+      "document_amount" => $this->document_id == 3 ? $this->net_amount : $this->document_amount,
+         "cheque_date" => $this->document_id == 3 ? $this->cheque_date : null,
+      "referrence_no" => $this->referrence_no,
+      "referrence_amount" => $this->referrence_amount,
+      "status" => $this->state,
+      "state" => $this->status,
+      "users" => $this->users,
+      "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
+        'receipt_type' => $this->receipt_type,
+    ];
   }
 
   public function stateChange($state)
