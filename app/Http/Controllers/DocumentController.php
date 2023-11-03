@@ -34,7 +34,7 @@ class DocumentController extends Controller
                     "company:id,company as name",
                     "business_unit:id,business_unit as name",
                     "department:id,department as name",
-                    "account_title:id,title as name",
+                    "account_title:id,code,title as name",
                     "business_unit:id,business_unit as name",
                     "sub_unit:id,subunit as name",
                     "location:id,location as name",

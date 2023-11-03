@@ -11,7 +11,7 @@ class VoucherCodeController extends Controller
     public function index(Request $request)  {
 
         $status =  $request['status'];
-        $rows =  $request->input('rows', 10);
+        $rows =  (int) $request->input('rows', 10);
         $search =  $request['search'];
         $paginate = $request->input('paginate', 1);
 

@@ -212,18 +212,18 @@ class Transaction extends Model
 
   public function tag()
   {
-    return $this->hasMany(Tagging::class, "request_id", "request_id")
-      ->select(
-        "request_id",
-        "tag_id",
-        "transaction_id",
-        "date_status as date",
-        "status",
-        "distributed_id",
-        "distributed_name",
-        "reason_id",
-        "remarks"
-      )
+    return $this->hasMany(Tagging::class)
+//      ->select(
+//        "request_id",
+//        "tag_id",
+//        "transaction_id",
+//        "date_status as date",
+//        "status",
+//        "distributed_id",
+//        "distributed_name",
+//        "reason_id",
+//        "remarks"
+//      )
       ->latest()
       ->limit(1);
   }
@@ -251,9 +251,20 @@ class Transaction extends Model
       ->limit(1);
   }
 
+  public function account_titles() {
+      return $this->hasManyThrough(
+          VoucherAccountTitle::class,
+          Associate::class,
+          'transaction_id',
+          'associate_id',
+          'id',
+          'id'
+      );
+  }
+
   public function approve()
   {
-    return $this->hasMany(Approver::class, "tag_id", "tag_no")
+    return $this->hasMany(Approver::class, "transaction_id", "id")
       ->select(
         "transaction_id",
         "tag_id",
@@ -279,7 +290,7 @@ class Transaction extends Model
 
   public function transmit()
   {
-    return $this->hasMany(Transmit::class, "tag_id", "tag_no")
+    return $this->hasMany(Transmit::class)
       ->select("transaction_id", "tag_id", "id", "date_status as date", "status")
       ->latest()
       ->limit(1);
@@ -678,5 +689,4 @@ class Transaction extends Model
   public function voucher_associate() {
         return $this->hasOne(Associate::class, 'tag_id', 'tag_no')->latest()->limit(1);
   }
-
 }

@@ -58,6 +58,7 @@ class TransactionFlow
 
     $request_id = $transaction->request_id;
     $transaction_id = $transaction->transaction_id;
+//      $transaction_id = $transaction->id;
     $remarks = $transaction->remarks;
     $users_id = $transaction->users_id;
 
@@ -185,8 +186,12 @@ class TransactionFlow
     $approver = GenericMethod::with_previous_transaction($request["approver"], $previous_approver);
     $distributed = GenericMethod::with_previous_transaction($request["distributed_to"], $previous_distributed);
 
-    $approver_id = isset($approver["id"]) ? $approver["id"] : null;
-    $approver_name = isset($approver["name"]) ? $approver["name"] : null;
+//    $approver_id = isset($approver["id"]) ? $approver["id"] : null;
+//    $approver_name = isset($approver["name"]) ? $approver["name"] : null;
+
+      $approver_id = $approver["id"] ?? $transaction->approver_id;
+      $approver_name = $approver["name"] ?? $transaction->approver_name;
+
     // $audit_by = data_get($request, "audit_by.id", null);
     $distributed_id = isset($distributed["id"]) ? $distributed["id"] : null;
     $distributed_name = isset($distributed["name"]) ? $distributed["name"] : null;
@@ -366,7 +371,8 @@ class TransactionFlow
       GenericMethod::tagTransaction(
         $model,
         $request_id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $remarks,
         $date_now,
         $reason_id,
@@ -376,7 +382,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -554,7 +561,8 @@ class TransactionFlow
 
       GenericMethod::approveTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,
@@ -564,7 +572,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -578,7 +587,9 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
+//          $transaction->approver_id,
         $approver_name
+//          $transaction->approver_name
       );
     } elseif ($process == "transmit") {
       $transaction_type = $request["transaction_type"];
@@ -631,7 +642,8 @@ class TransactionFlow
 
       GenericMethod::transmitTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+        $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,
@@ -642,7 +654,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+        $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -656,8 +669,10 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
+//        $transaction->approver_id,
         $approver_name,
-        $transaction_type
+//        $transaction->approver_name,
+//        $transaction_type
       );
     } elseif ($process == "cheque") {
       $account_titles = $cheque_account_titles;
@@ -852,7 +867,8 @@ class TransactionFlow
 
       GenericMethod::chequeTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,
@@ -863,7 +879,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,

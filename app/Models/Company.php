@@ -40,7 +40,7 @@ class Company extends Model
     return $this->belongsToMany(User::class, "company_users", "company_id", "user_id")->select([
       "users.id",
       DB::raw("CONCAT(users.first_name,' ',users.last_name)  AS name"),
-    ]);
+    ])->withTrashed();
   }
 
   public function charging()

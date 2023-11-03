@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Methods\GenericMethod;
+use App\Models\Approver;
+use App\Models\Associate;
+use App\Models\Tagging;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Methods\TransactionFlow;
@@ -29,6 +32,38 @@ class TransactionFlowController extends Controller
     public function multipleReceive(Request $request) {
         $process = $request->input('process');
         $transactions = $request->input('transactions');
+
+        switch ($process) {
+            case 'tag':
+                foreach ($transactions as $transaction) {
+                    Tagging::create([
+                        'transaction_id' => $transaction ,
+                        'status' => $process . '-receive',
+                        'date_status' => date('Y-m-d'),
+                    ]);
+                }
+                break;
+            case 'voucher':
+                foreach ($transactions as $transaction) {
+                    Associate::create([
+                        'transaction_id' => $transaction ,
+                        'status' => $process . '-receive',
+                        'date_status' => date('Y-m-d'),
+                        'tag_id' => Transaction::where('id', $transaction)->first()->tag_no,
+                    ]);
+                }
+                break;
+            case 'approve':
+                foreach ($transactions as $transaction){
+                    Approver::create([
+                        'tag_id' => Transaction::where('id', $transaction)->first()->tag_no,
+                        'status' => $process . '-receive',
+                        'date_status' => date('Y-m-d'),
+                        'transaction_id' => $transaction,
+                    ]);
+                }
+                break;
+        }
 
         Transaction::whereIn('id', $transactions)
             ->update([

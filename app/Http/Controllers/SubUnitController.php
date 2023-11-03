@@ -14,7 +14,7 @@ class SubUnitController extends Controller
     public function index(Request $request)
     {
         $status =  $request['status'];
-        $rows =  $request->input('rows', 10);
+        $rows =  (int) $request->input('rows', 10);
         $search =  $request['search'];
         $paginate = $request->input('paginate', 1);
 
@@ -117,8 +117,8 @@ class SubUnitController extends Controller
 
         date_default_timezone_set('Asia/Manila');
 
-        $headers = "Code, Subunit, Company, Status";
-        $template = ["code", "sub_unit", "department", "status"];
+        $headers = "Code, Subunit, Department, Status";
+        $template = ["code", "subunit", "department", "status"];
         $keys = array_keys(current($subunit));
         $this->validateHeader($template, $keys, $headers);
 
@@ -126,13 +126,13 @@ class SubUnitController extends Controller
         foreach ($subunit as $sub) {
 
             $code = $sub['code'];
-            $subunitName = $sub['sub_unit'];
+            $subunitName = $sub['subunit'];
             $department = $sub['department'];
             $status = $sub['status'];
 
             if (in_array($code, $code_list)) {
                 $errorBag[] = (object) [
-                    'error_type' => 'duplicate',
+                    'error_type' => 'exist',
                     'line' => $index,
                     'description' => 'Code ' . $code . ' already exist.'
                 ];
@@ -140,19 +140,12 @@ class SubUnitController extends Controller
 
             if (in_array($subunitName, $subunit_list)) {
                 $errorBag[] = (object) [
-                    'error_type' => 'duplicate',
+                    'error_type' => 'exist',
                     'line' => $index,
                     'description' => 'Sub unit ' . $subunitName . ' already exist.'
                 ];
             }
 
-            if (empty($status)) {
-                $errorBag[] = (object)[
-                    'error_type' => 'empty',
-                    'line' => $index,
-                    'description' => 'Empty status.'
-                ];
-            }
 
             if (!in_array($status, ['Active', 'Inactive'])) {
                 $errorBag[] = (object)[
@@ -186,31 +179,61 @@ class SubUnitController extends Controller
 
 
         if (count($errorBag) || !count($errorBag)) {
-            $input_code = array_count_values(array_map('strval', array_column($subunit, 'code')));
-            $index = 2;
-            foreach ($input_code as $key => $value) {
-                if ($value > 1) {
-                    $errorBag[] = (object) [
-                        'error_type' => 'duplicate',
-                        'line' => $index,
-                        'description' => 'Code ' . $key . ' has a duplicate in your excel file.'
-                    ];
-                }
-                $index++;
+//            $input_code = array_count_values(array_map('strval', array_column($subunit, 'code')));
+////            $index = 2;
+////            foreach ($input_code as $key => $value) {
+////                if ($value > 1) {
+////                    $errorBag[] = (object) [
+////                        'error_type' => 'duplicate',
+////                        'line' => $index,
+////                        'description' => 'Code ' . $key . ' has a duplicate in your excel file.'
+////                    ];
+////                }
+////                $index++;
+////            }
+
+            $input_code = array_column($subunit, 'code');
+            $duplicate_code = array_keys(array_filter(array_count_values($input_code), function ($value) {
+                return $value > 1;
+            }));
+
+            if (count($duplicate_code) > 0) {
+                $errorBag[] = (object) [
+                    'error_type' => 'duplicate',
+                    'line' => implode(', ', array_map(function ($value) {
+                        return $value + 2;
+                    }, (array_keys($input_code, $duplicate_code[0])))),
+                    'description' => 'Code ' . $duplicate_code[0] . ' has a duplicate in your excel file.'
+                ];
             }
 
-            $input_subunit = array_count_values(array_map('strval', array_column($subunit, 'subunit')));
-            $index = 2;
-            foreach ($input_subunit as $key => $value) {
-                if ($value > 1) {
-                    $errorBag[] = (object) [
-                        'error_type' => 'duplicate',
-                        'line' => $index,
-                        'description' => 'Sub unit ' . $key . ' has a duplicate in your excel file.'
-                    ];
-                }
-                $index++;
+//            $input_subunit = array_count_values(array_map('strval', array_column($subunit, 'subunit')));
+//            $index = 2;
+//            foreach ($input_subunit as $key => $value) {
+//                if ($value > 1) {
+//                    $errorBag[] = (object) [
+//                        'error_type' => 'duplicate',
+//                        'line' => $index,
+//                        'description' => 'Sub unit ' . $key . ' has a duplicate in your excel file.'
+//                    ];
+//                }
+//                $index++;
+//            }
+            $input_subunit = array_column($subunit, 'subunit');
+            $duplicate_subunit = array_keys(array_filter(array_count_values($input_subunit), function ($value) {
+                return $value > 1;
+            }));
+
+            if (count($duplicate_subunit) > 0) {
+                $errorBag[] = (object) [
+                    'error_type' => 'duplicate',
+                    'line' => implode(', ', array_map(function ($value) {
+                        return $value + 2;
+                    }, (array_keys($input_subunit, $duplicate_subunit[0])))),
+                    'description' => 'Subunit ' . $duplicate_subunit[0] . ' has a duplicate in your excel file.'
+                ];
             }
+
         }
 
         if (!count($errorBag)) {
@@ -220,7 +243,7 @@ class SubUnitController extends Controller
                 $transformedChunk = $chunk->map(function ($sub) {
                     return [
                         'code' => $sub['code'],
-                        'subunit' => $sub['sub_unit'],
+                        'subunit' => $sub['subunit'],
                         'department_id' => Department::where('department', $sub['department'])->first()->id,
                         'created_at' => now(),
                         'updated_at' => now(),

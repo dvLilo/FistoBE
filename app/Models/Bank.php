@@ -18,7 +18,7 @@ class Bank extends Model
   protected $table = 'banks';
   protected $fillable = ['code', 'name', 'branch', 'account_no', 'location', 'account_title_1', 'account_title_2'];
   protected $hidden = ['account_title_1','account_title_2','created_at'];
- 
+
   public function getCreatedAtAttribute($value){
     $date = Carbon::parse($value);
     return $date->format('Y-m-d H:i');
@@ -30,11 +30,11 @@ class Bank extends Model
   }
 
   public function AccountTitleOne() {
-    return $this->hasOne(AccountTitle::class, 'id', 'account_title_1')->select('id','title as name');
+    return $this->hasOne(AccountTitle::class, 'id', 'account_title_1')->select('id','title as name')->withTrashed();
   }
-  
+
   public function AccountTitleTwo() {
-    return $this->hasOne(AccountTitle::class, 'id', 'account_title_2')->select('id','title as name');
+    return $this->hasOne(AccountTitle::class, 'id', 'account_title_2')->select('id','title as name')->withTrashed();
   }
-  
+
 }
