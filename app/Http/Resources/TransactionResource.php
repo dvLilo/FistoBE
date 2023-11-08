@@ -58,33 +58,33 @@ class TransactionResource extends JsonResource
     $counter_receipt_no = $this->counter_receipt_no ? $this->counter_receipt_no : null;
 
     $transaction = Transaction::
-//    with("tag")
-//        ->with("voucher.account_title")
-//      ->with("approve")
-//      ->with("transmit")
-//      ->with("cheques.cheques")
-//      ->with("cheques.account_title")
-//      ->with("audit")
-//      ->with("release")
-//      ->with("file")
-//      ->with("reverse")
-//      ->with("clear")
-//      ->with("clear.account_title")
-        with([
-            'tag',
-            'voucher',
-            'account_titles',
-            'approve',
-            'transmit',
-            'cheques.cheques',
-            'cheques.account_title',
-            'audit',
-            'release',
-            'file',
-            'reverse',
-            'clear',
-            'clear.account_title'
-        ])
+    with("tag")
+        ->with("voucher.account_title")
+      ->with("approve")
+      ->with("transmit")
+      ->with("cheques.cheques")
+      ->with("cheques.account_title")
+      ->with("audit")
+      ->with("release")
+      ->with("file")
+      ->with("reverse")
+      ->with("clear")
+      ->with("clear.account_title")
+//        with([
+//            'tag',
+//            'voucher.account_title',
+////            'account_titles',
+//            'approve',
+//            'transmit',
+//            'cheques.cheques',
+//            'cheques.account_title',
+//            'audit',
+//            'release',
+//            'file',
+//            'reverse',
+//            'clear',
+//            'clear.account_title'
+//        ])
       ->when($this->document_type == "Auto Debit", function ($query) {
         $query->with("auto_debit");
       })
@@ -705,8 +705,8 @@ class TransactionResource extends JsonResource
       $subprocess = ["transfer", "receive", "voucher"];
       $dates = $this->get_transaction_dates($model, $transaction_tag_no, $process, $subprocess);
 
-      if (isset($this->account_titles)) {
-        $voucher_account_title = $this->account_titles;
+      if (isset($voucher->account_title)) {
+        $voucher_account_title = $voucher->account_title;
         $voucher_account_title = $voucher_account_title->mapToGroups(function ($item, $key) {
           return [
             $item["associate_id"] => [

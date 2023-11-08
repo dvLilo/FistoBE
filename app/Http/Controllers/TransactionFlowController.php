@@ -67,11 +67,44 @@ class TransactionFlowController extends Controller
 
         Transaction::whereIn('id', $transactions)
             ->update([
-                'state' => $process,
+                'state' => 'receive',
                 'status' => $process . '-receive',
             ]);
 
         return GenericMethod::resultResponse("receive", null, []);
+    }
+
+    public function multipleTag(Request $request) {
+        $process = $request->input('process');
+        $transactions = $request->input('transactions');
+        $receipt_type = $request->input('receipt_type');
+        $distributed_to = $request->input('distributed_to');
+
+        $tagData = [
+            'status' => $process . '-tag',
+            'date_status' => date('Y-m-d'),
+            'distributed_id' => data_get($distributed_to, 'id'),
+            'distributed_name' => data_get($distributed_to, 'name'),
+        ];
+
+        foreach ($transactions as $transaction) {
+            Tagging::create(array_merge(['transaction_id' => $transaction], $tagData));
+        }
+
+        foreach ($transactions as $transaction) {
+            Transaction::where('id', $transaction)
+                ->update([
+                    'state' => 'tag',
+                    'status' => $process . '-tag',
+                    'receipt_type' => $receipt_type,
+                    'distributed_id' => data_get($distributed_to, 'id'),
+                    'distributed_name' => data_get($distributed_to, 'name'),
+                    'tag_no' => GenericMethod::generateTagNo($receipt_type, $transaction)
+                ]);
+        }
+
+        return GenericMethod::result(200, "Transaction has been saved.", []);
+
     }
     // public function pullRequest(Request $request){
     //     $process =  $request['process'];
