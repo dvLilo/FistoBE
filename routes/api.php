@@ -234,6 +234,7 @@ Route::group(["middleware" => "auth:sanctum"], function () {
   // TRANSACTION FLOW
   Route::post("transactions/flow/update-transaction/{id}", [TransactionFlowController::class, "updateInTransactionFlow"]);
   Route::post("transactions/flow/receive", [TransactionFlowController::class, "multipleReceive"]);
+  Route::post("transactions/flow/tag", [TransactionFlowController::class, "multipleTag"]);
 
   Route::post("transactions/flow/validate-voucher-no", [TransactionFlowController::class, "validateVoucherNo"]);
   Route::post("transactions/flow/validate-cheque-no", [TransactionFlowController::class, "validateChequeNo"]);
