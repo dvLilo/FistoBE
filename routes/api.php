@@ -72,12 +72,14 @@ Route::group(["middleware" => "auth:sanctum"], function () {
     Route::get("approver", [MasterlistController::class, "approverDropdown"]);
     Route::get("account-title", [MasterlistController::class, "transactionAccountTitleDropdown"]);
     Route::get("credit-card", [CreditCardController::class, "index"]);
-    Route::get("account-title/{id}", [MasterlistController::class, "accountTitleDocumentDropdown"]);
+//    Route::get("account-title/{id}", [MasterlistController::class, "accountTitleDocumentDropdown"]);
+     Route::get("account-title/{id}", [MasterlistController::class, "accountTitleTransactionTypeDropdown"]);
     // TRANSACTION
     Route::get("company", [CompanyController::class, "index"]);
     Route::get("department", [DepartmentController::class, "index"]);
     Route::get("location", [LocationController::class, "index"]);
     Route::get("bank-account-title", [BankController::class, "index"]);
+    Route::get("transaction-type", [MasterlistController::class, "transactionTypeDropdown"]);
   });
 
   Route::group(["prefix" => "admin", "middleware" => ["auth" => "is_admin"]], function () {
@@ -88,12 +90,13 @@ Route::group(["middleware" => "auth:sanctum"], function () {
       Route::get("supplier-reference", [MasterlistController::class, "supplierRefDropdown"]);
       Route::get("location-category-supplier", [MasterlistController::class, "loccatsupDropdown"]);
       Route::get("location-category", [MasterlistController::class, "loccatDropdown"]);
-        Route::get("account-title", [MasterlistController::class, "accountTitleDropdown"]);
+      Route::get("account-title", [MasterlistController::class, "accountTitleDropdown"]);
       Route::get("company", [MasterlistController::class, "companyDropdown"]);
       Route::get("organization", [MasterlistController::class, "organizationDropdown"]);
       Route::get("department", [MasterlistController::class, "departmentDropdown"]);
       Route::get("associate", [MasterlistController::class, "associateDropdown"]);
       Route::get("voucher-code", [MasterlistController::class, "voucherCodeDropdown"]);
+//      Route::get("transaction-type", [MasterlistController::class, "transactionTypeDropdown"]);
     });
 
     // CATEGORY
@@ -210,6 +213,9 @@ Route::group(["middleware" => "auth:sanctum"], function () {
 //      Route::patch("document-coa/{id}", [\App\Http\Controllers\DocumentCoaController::class, "change_status"]);
 //      Route::resource("document-coa", \App\Http\Controllers\DocumentCoaController::class);
 
+      Route::patch('transaction-types/{id}', [\App\Http\Controllers\TransactionTypeController::class, "change_status"]);
+      Route::resource('transaction-types', \App\Http\Controllers\TransactionTypeController::class);
+
       //VOUCHER CODE
       Route::patch('voucher-codes/{id}', [\App\Http\Controllers\VoucherCodeController::class, "change_status"]);
       Route::resource("voucher-codes", \App\Http\Controllers\VoucherCodeController::class);
@@ -233,8 +239,6 @@ Route::group(["middleware" => "auth:sanctum"], function () {
 
   // TRANSACTION FLOW
   Route::post("transactions/flow/update-transaction/{id}", [TransactionFlowController::class, "updateInTransactionFlow"]);
-  Route::post("transactions/flow/receive", [TransactionFlowController::class, "multipleReceive"]);
-  Route::post("transactions/flow/tag", [TransactionFlowController::class, "multipleTag"]);
 
   Route::post("transactions/flow/validate-voucher-no", [TransactionFlowController::class, "validateVoucherNo"]);
   Route::post("transactions/flow/validate-cheque-no", [TransactionFlowController::class, "validateChequeNo"]);
@@ -249,6 +253,12 @@ Route::group(["middleware" => "auth:sanctum"], function () {
   Route::post("counter-receipts/download", [CounterReceiptController::class, "download"]);
   Route::post("counter-receipts/validate", [CounterReceiptController::class, "check"]);
   Route::post("counter-receipts/flow/{id}", [CounterReceiptController::class, "flow"]);
+
+  //MULTI
+    Route::post("transactions/flow/receive", [TransactionFlowController::class, "multipleReceive"]);
+    Route::post("transactions/flow/tag", [TransactionFlowController::class, "multipleTag"]);
+    // CHEQUES
+    Route::get("cheques", [TransactionController::class, "chequeIndex"]);
 
   // Route::get('transactions/flow/',[TransactionFlowController::class,'pullRequest']);
   // Route::get('transactions/flow/{id}',[TransactionFlowController::class,'pullSingleRequest']);

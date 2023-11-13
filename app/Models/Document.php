@@ -32,10 +32,10 @@ class Document extends Model
         return $date->format('Y-m-d H:i');
     }
 
-    public function categories()
-    {
-        return $this->belongsToMany(Category::class, 'document_categories','document_id','category_id')->withTrashed();
-    }
+//    public function categories()
+//    {
+//        return $this->belongsToMany(Category::class, 'document_categories','document_id','category_id')->withTrashed();
+//    }
 
     public function document_categories()
     {

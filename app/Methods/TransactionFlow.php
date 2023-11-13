@@ -63,6 +63,7 @@ class TransactionFlow
     $users_id = $transaction->users_id;
 
     $receipt_type = isset($request->receipt_type) ? $request->receipt_type : $transaction->receipt_type;
+//    $transact_type = isset($request->transaction_type) ? $request->transaction_type : $transaction->transaction_voucher->first()->transaction_type;
 
     $tag_no = $transaction->tag_no;
     if ($subprocess == "tag") {
@@ -450,8 +451,25 @@ class TransactionFlow
               if ($debit_amount != $credit_amount) {
                 return GenericMethod::resultResponse("not-equal", "Total debit and credit", []);
               }
-              if ($transaction->net_amount != $debit_amount) {
-                return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+//              if ($transaction->net_amount != $debit_amount) {
+//                return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+//              }
+
+              switch ($transaction->category) {
+                  case 'rental':
+                        if ($transaction->gross_amount != $debit_amount) {
+                            return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+                        }
+                      break;
+
+                  default:
+//                      if (($transaction->principal + $transaction->interest) != $debit_amount) {
+//                          return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+//                      }
+
+                      if (floatval((number_format(($transaction->principal + $transaction->interest), 2, '.', ''))) != $debit_amount) {
+                          return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+                      }
               }
 
               break;
@@ -515,7 +533,8 @@ class TransactionFlow
         $status,
         $voucher_no,
         $approver,
-        $account_titles
+        $account_titles,
+          $request->transaction_type
       );
 
         GenericMethod::updateTransactionStatus(
@@ -1186,7 +1205,8 @@ class TransactionFlow
       $state = $subprocess;
       GenericMethod::releaseTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $tag_no,
         $remarks,
         $date_now,
@@ -1197,7 +1217,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -1232,7 +1253,8 @@ class TransactionFlow
       $state = $subprocess;
       GenericMethod::fileTransaction(
         $model,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $tag_no,
         $reason_remarks,
         $date_now,
@@ -1248,7 +1270,8 @@ class TransactionFlow
       );
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -1262,7 +1285,9 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          'cheque',
+          $request->box_no ?? $transaction->box_no
       );
     } elseif ($process == "reverse") {
       $model = new Reverse();
@@ -1335,15 +1360,17 @@ class TransactionFlow
         return GenericMethod::resultResponse("invalid-access", "", "");
       }
 
-      $state = $subprocess;
-      GenericMethod::clearTransaction($model, $tag_no, $date_now, $status, $account_titles, $subprocess, $date_cleared);
+//      $state = $subprocess;
+        $state = $transaction->state;
+      GenericMethod::clearTransaction($model, $tag_no, $date_now, $status, $account_titles, $subprocess, $date_cleared, $transaction->id);
       GenericMethod::updateTransactionStatus(
         $id,
         $transaction_id,
         $request_id,
         $receipt_type,
         $tag_no,
-        $status,
+//        $status,
+          $transaction->status,
         $state,
         $reason_id,
         $reason_description,
@@ -1353,7 +1380,10 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+            'cheque',
+            $request->box_no ?? $transaction->box_no,
+          true
       );
     } elseif ($process == "issue") {
       $account_titles = $cheque_account_titles;
@@ -1418,6 +1448,12 @@ class TransactionFlow
             return GenericMethod::resultResponse("not-equal", "Cheque and account title", []);
           }
         }
+
+          $not_valid = GenericMethod::validateCheque($id, $cheques);
+          if ($not_valid) {
+              return GenericMethod::resultResponse("cheque-no-exist", "Cheque_no number already exist.", []);
+          }
+
       } elseif ($subprocess == "hold") {
         $status = "issue-hold";
       } elseif ($subprocess == "return") {
@@ -1434,23 +1470,28 @@ class TransactionFlow
 
       $subprocess == "issue" ? $state = "release" : $state = $subprocess;
 //      $state = $subprocess;
-      $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
+//      $generic->auditCheque($id, null, $status, $reason_id, $reason_remarks, null, null, "date");
+      $generic->issue($id, $status, $reason_id, $reason_remarks);
 
 
-      GenericMethod::chequeTransaction(
-        $model,
-        $transaction_id,
-        $tag_no,
-        $reason_remarks,
-        $date_now,
-        $reason_id,
-        $status,
-        $cheques,
-        $account_titles
-      );
+      if ($subprocess == "issue") {
+          GenericMethod::chequeTransaction(
+              $model,
+//        $transaction_id,
+              $transaction->id,
+              $tag_no,
+              $reason_remarks,
+              $date_now,
+              $reason_id,
+              'cheque-cheque',
+              $cheques,
+              $account_titles
+          );
+      }
       GenericMethod::updateTransactionStatus(
         $id,
-        $transaction_id,
+//        $transaction_id,
+          $transaction->id,
         $request_id,
         $receipt_type,
         $tag_no,
@@ -1581,6 +1622,44 @@ class TransactionFlow
         }
 
         $generic->gasTransaction($id, $status, $reason_id, $reason_remarks);
+        GenericMethod::updateTransactionStatus(
+            $id,
+            $transaction_id,
+            $request_id,
+            $receipt_type,
+            $tag_no,
+            $status,
+            $state,
+            $reason_id,
+            $reason_description,
+            $reason_remarks,
+            $voucher_no,
+            $voucher_month,
+            $distributed_id,
+            $distributed_name,
+            $approver_id,
+            $approver_name
+        );
+    } elseif ($process == 'discharge') {
+        if ($subprocess == 'receive') {
+            $status = 'discharge-receive';
+        } elseif ($subprocess == 'discharge') {
+            $subprocess = 'transmit';
+            $status = 'discharge-discharge';
+        } elseif ($subprocess == 'return') {
+            $status = 'discharge-return';
+        } elseif ($subprocess == 'hold') {
+            $status = 'discharge-hold';
+        } elseif ($subprocess == 'void') {
+            $status = 'discharge-void';
+        } elseif (in_array($subprocess, ['unhold', 'unreturn'])) {
+            $status = GenericMethod::getStatus($process, $transaction);
+        }
+
+        $state = $subprocess;
+
+        $generic->gasTransaction($id, $status, $reason_id, $reason_remarks);
+
         GenericMethod::updateTransactionStatus(
             $id,
             $transaction_id,

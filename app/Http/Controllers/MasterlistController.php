@@ -9,6 +9,7 @@ use App\Http\Resources\DocumentCoaResource;
 use App\Http\Resources\DocumentResource;
 use App\Http\Resources\UserResource;
 
+use App\Models\TransactionType;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Department;
@@ -72,20 +73,30 @@ class MasterlistController extends Controller
         return $this->resultResponse('fetch','Account Title',$data);
     }
 
-    public function accountTitleDocumentDropdown($id){
-//        $data =  array(
-//            "account_titles"=>AccountTitle::whereNull('deleted_at')->get(['id','title']));
-        $data = Document::where('id',$id)
-            ->with([
-                "categories:id,name"
-            ])->first();
+//    public function accountTitleDocumentDropdown($id){
+//        $data = Document::where('id',$id)
+//            ->with([
+//                "categories:id,name"
+//            ])->first();
+//
+//        if ($data) {
+//            return $this->resultResponse('fetch', 'Account Title', new DocumentResource($data));
+//        } else {
+//            return $this->resultResponse('not-found', 'Account Title', []);
+//        }
+//    }
 
-        if ($data) {
+    public function accountTitleTransactionTypeDropdown($id) {
+      $data = TransactionType::where('id', $id)
+          ->first();
+
+      if ($data) {
             return $this->resultResponse('fetch', 'Account Title', new DocumentResource($data));
         } else {
             return $this->resultResponse('not-found', 'Account Title', []);
-        }
+      }
     }
+
   public function transactionAccountTitleDropdown(Request $request){
     $api_for = $request->api_for?$request->api_for: "default";
     $data =  array(
@@ -241,6 +252,14 @@ class MasterlistController extends Controller
       );
 
       return $this->resultResponse('fetch', 'Voucher Code', $voucher_code);
+  }
+
+  public function transactionTypeDropdown() {
+      $transaction_type = array(
+            "transaction_types" => DB::table('transaction_types')->get(['id','transaction_type'])
+      );
+
+      return $this->resultResponse('fetch', 'Transaction Type', $transaction_type);
   }
 
   public static function coa(Request $request){

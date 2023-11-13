@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Associate;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\POBatch;
 use App\Models\Tagging;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\TransactionResource;
 
 class TransactionIndex extends JsonResource
 {
@@ -15,9 +18,53 @@ class TransactionIndex extends JsonResource
    * @param  \Illuminate\Http\Request  $request
    * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
    */
-  public function toArray($request)
+
+    public function toArray($request)
   {
-    $this->state = $this->stateChange($this->state);
+//      if (Auth::user()->role == 'Treasury Associate' && (request()->state == 'pending' || $this->status == 'cheque-receive')) {
+//
+//          return [
+//              'id' => $this->id,
+//              'transaction_no' => $this->transaction_id,
+//              'receipt_type' => $this->receipt_type,
+//              'payment_type' => $this->payment_type,
+//              'document' => [
+//                  'id' => $this->document_id,
+//                  'name' => $this->document_type
+//              ],
+//              'supplier' => [
+//                    'id' => $this->supplier_id,
+//                    'name' => $this->supplier->name,
+//                    'type' => $this->supplier->supplier_type->name,
+//              ],
+//              'voucher' => [
+//                  'no' => $this->voucher_no,
+//                  'month' => $this->voucher_month,
+//                  'date' => $this->get_transaction_dates(Associate::class, $this->id, 'voucher', ["voucher"])
+//              ],
+//              'company' => [
+//                  'id' => $this->company_id,
+//                  'name' => $this->company,
+//              ],
+//              'department' => [
+//                  'id' => $this->department_id,
+//                  'name' => $this->department,
+//              ],
+//              'location' => [
+//                    'id' => $this->location_id,
+//                    'name' => $this->location,
+//              ],
+//              'remarks' => $this->remarks,
+//              'document_no' => $this->document_no,
+//              'document_amount' => $this->document_amount,
+//              'referrence_no' => $this->referrence_no,
+//              'referrence_amount' => $this->referrence_amount,
+//              'status' => $this->stateChange($this->state),
+//              'state' => $this->status,
+//          ];
+//      }
+
+      $this->state = $this->stateChange($this->state);
 
     $is_editable_prm = 0;
     if ($this->document_id == 3) {
@@ -25,6 +72,7 @@ class TransactionIndex extends JsonResource
         ->whereNotIn("status", ["tag-return", "tag-void"])
         ->exists();
     }
+
 
     $is_latest_transaction = 0;
     if ($this->po_details->isNotEmpty() && strtoupper($this->payment_type) === "PARTIAL") {
@@ -62,7 +110,9 @@ class TransactionIndex extends JsonResource
       "department" => $this->department,
       "location" => $this->location,
       "document_no" => $this->document_no,
-      "document_amount" => $this->document_id == 3 ? $this->net_amount : $this->document_amount,
+        'document_amount' => ($this->document_id == 3)
+            ? ($this->category == 'rental' ? $this->gross_amount : (($this->principal + $this->interest)))
+            : $this->document_amount,
          "cheque_date" => $this->document_id == 3 ? $this->cheque_date : null,
       "referrence_no" => $this->referrence_no,
       "referrence_amount" => $this->referrence_amount,
@@ -71,6 +121,7 @@ class TransactionIndex extends JsonResource
       "users" => $this->users,
       "po_details" => in_array($this->document_id, [1, 4, 5]) ? $this->po_details : [],
         'receipt_type' => $this->receipt_type,
+        "is_cleared" => $this->is_cleared
     ];
   }
 
@@ -109,4 +160,35 @@ class TransactionIndex extends JsonResource
 
     return $state;
   }
+
+    public function get_transaction_dates($model, $id, $process, $subprocesses)
+    {
+        $flow_details = $model::where('transaction_id', $id)->latest()->get();
+
+        $details = [];
+        foreach ($subprocesses as $k => $subprocess) {
+            $status = $process . "-" . $subprocess;
+            $details[$k]["subprocess"] = strtolower($this->stateChange($subprocess));
+
+            if ($process == "tag") {
+                $details[$k]["date"] = isset($flow_details->where("status", $status)->first()->created_at)
+                    ? $flow_details->where("status", $status)->first()->created_at
+                    : null;
+            } else {
+                $details[$k]["date"] = isset($flow_details->where("status", $status)->first()["created_at"])
+                    ? $flow_details->where("status", $status)->first()["created_at"]
+                    : null;
+            }
+        }
+
+//        return array_reduce(
+//            $details,
+//            function ($result, $item) {
+//                $result[$item["subprocess"]] = $item["date"];
+//                return $result;
+//            },
+//            []
+//        );
+        return $details[0]["date"];
+    }
 }
