@@ -16,8 +16,39 @@ class Bank extends Model
   use SoftDeletes;
 
   protected $table = 'banks';
-  protected $fillable = ['code', 'name', 'branch', 'account_no', 'location', 'account_title_1', 'account_title_2'];
-  protected $hidden = ['account_title_1','account_title_2','created_at'];
+  protected $fillable = [
+      'code',
+      'name',
+      'branch',
+      'account_no',
+      'location',
+      'account_title_1',
+      'account_title_2',
+      'company_id_1',
+      'company_id_2',
+      'business_unit_id_1',
+      'business_unit_id_2',
+      'department_id_1',
+      'department_id_2',
+      'sub_unit_id_1',
+      'sub_unit_id_2',
+      'location_id_1',
+      'location_id_2'
+  ];
+  protected $hidden = [
+      'account_title_1',
+      'account_title_2',
+      'company_id_1',
+      'company_id_2',
+        'business_unit_id_1',
+        'business_unit_id_2',
+        'department_id_1',
+      'department_id_2',
+        'sub_unit_id_1',
+        'sub_unit_id_2',
+        'location_id_1',
+        'location_id_2',
+      'created_at'];
 
   public function getCreatedAtAttribute($value){
     $date = Carbon::parse($value);
@@ -36,5 +67,45 @@ class Bank extends Model
   public function AccountTitleTwo() {
     return $this->hasOne(AccountTitle::class, 'id', 'account_title_2')->select('id','title as name')->withTrashed();
   }
+
+    public function CompanyOne() {
+        return $this->hasOne(Company::class, 'id', 'company_id_1')->select('id','company as name')->withTrashed();
+    }
+
+    public function CompanyTwo() {
+        return $this->hasOne(Company::class, 'id', 'company_id_2')->select('id','company as name')->withTrashed();
+    }
+
+    public function BusinessUnitOne() {
+        return $this->hasOne(BusinessUnit::class, 'id', 'business_unit_id_1')->select('id','business_unit as name')->withTrashed();
+    }
+
+    public function BusinessUnitTwo() {
+        return $this->hasOne(BusinessUnit::class, 'id', 'business_unit_id_2')->select('id','business_unit as name')->withTrashed();
+    }
+
+    public function DepartmentOne() {
+        return $this->hasOne(Department::class, 'id', 'department_id_1')->select('id','department as name')->withTrashed();
+    }
+
+    public function DepartmentTwo() {
+        return $this->hasOne(Department::class, 'id', 'department_id_2')->select('id','department as name')->withTrashed();
+    }
+
+    public function SubUnitOne() {
+        return $this->hasOne(SubUnit::class, 'id', 'sub_unit_id_1')->select('id','subunit as name')->withTrashed();
+    }
+
+    public function SubUnitTwo() {
+        return $this->hasOne(SubUnit::class, 'id', 'sub_unit_id_2')->select('id','subunit as name')->withTrashed();
+    }
+
+    public function LocationOne() {
+        return $this->hasOne(Location::class, 'id', 'location_id_1')->select('id','location as name')->withTrashed();
+    }
+
+    public function LocationTwo() {
+        return $this->hasOne(Location::class, 'id', 'location_id_2')->select('id','location as name')->withTrashed();
+    }
 
 }

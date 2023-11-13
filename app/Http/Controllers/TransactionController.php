@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ChequeIndex;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\PODetailsRequest;
@@ -243,6 +244,10 @@ class TransactionController extends Controller
 
             "status",
             "state",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ]);
       })
       ->when(in_array($role, $tag_window), function ($query) use ($status) {
@@ -262,8 +267,12 @@ class TransactionController extends Controller
                   $query->when(
                     strtolower($status) == "pending-release", //remove this
                     function ($query) use ($status) {
-                      // $query->whereIn("status", ["cheque-release"]);
                       $query->whereIn("status", ["issue-issue"])->where("is_for_releasing", "=", true);
+//                        $query->where(function ($query) {
+//                            $query->whereIn('status', ["issue-issue"])->where('receipt_type', 'unofficial')->where("is_for_releasing", "=", true);
+//                        })->orWhere(function ($query) {
+//                            $query->where('status', 'discharge-discharge');
+//                        });
                     },
                     function ($query) use ($status) {
                       $query->when(
@@ -342,6 +351,10 @@ class TransactionController extends Controller
 
             "status",
             "state",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ]);
       })
       ->when(in_array($role, $voucher_window), function ($query) use (
@@ -380,7 +393,12 @@ class TransactionController extends Controller
                       $query->when(
                         strtolower($status) == "pending-file",
                         function ($query) {
-                          $query->whereIn("status", ["release-release", "file-transfer"]);
+//                          $query->whereIn("status", ["release-release", "file-transfer"]);
+                            $query->where(function ($query) {
+                                $query->whereIn('status', ['release-release'])->where('receipt_type', 'unofficial');
+                            })->orWhere(function ($query) {
+                                $query->where('status', 'discharge-discharge');
+                            });
                         },
                         function ($query) use ($users_id, $status) {
                           $query->when(
@@ -476,6 +494,11 @@ class TransactionController extends Controller
 
             "distributed_id",
             "distributed_name",
+              "is_cleared",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ])
           ->when(
             in_array(strtolower($status), ["pending-request", "reverse-receive-approver", "reverse-approve"]),
@@ -574,6 +597,10 @@ class TransactionController extends Controller
 
             "status",
             "state",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ])
           ->where("approver_id", $users_id);
       })
@@ -628,7 +655,13 @@ class TransactionController extends Controller
                       $query->when(
                         strtolower($status) == "pending-clear",
                         function ($query) {
-                          $query->whereIn("status", ["file-file"]);
+                          $query->whereIn("status", [
+                              "release-release",
+                              "file-receive",
+                              "file-file",
+                              "discharge-receive",
+                              "discharge-discharge"
+                          ])->whereNull('is_cleared');
                         },
                         function ($query) use ($status) {
                           $query->when(
@@ -695,9 +728,17 @@ class TransactionController extends Controller
                                                               $query->whereIn("status", ["release-return"]);
                                                             },
                                                             function ($query) use ($status) {
-                                                              $query->where(
-                                                                "status",
-                                                                preg_replace("/\s+/", "", $status)
+                                                              $query->when(
+                                                                  strtolower($status) == "clear-clear",
+                                                                  function ($query) {
+                                                                      $query->where('is_cleared', true);
+                                                                  },
+                                                                  function ($query) use ($status) {
+                                                                      $query->where(
+                                                                          "status",
+                                                                          preg_replace("/\s+/", "", $status)
+                                                                      );
+                                                                  }
                                                               );
                                                             }
                                                           );
@@ -741,7 +782,9 @@ class TransactionController extends Controller
 
             "company_id",
             "company",
+            "department_id",
             "department",
+            "location_id",
             "location",
 
             "document_no",
@@ -754,6 +797,13 @@ class TransactionController extends Controller
 
             "status",
             "state",
+            "voucher_no",
+            "voucher_month",
+              "is_cleared",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ]);
       })
       ->when(in_array($role, $audit_window), function ($query) use ($status) {
@@ -840,6 +890,10 @@ class TransactionController extends Controller
 
             "status",
             "state",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ]);
       })
       ->when(in_array($role, $executive_assistant), function ($query) use ($status) {
@@ -893,6 +947,10 @@ class TransactionController extends Controller
 
             "status",
             "state",
+              "principal",
+              "interest",
+              "gross_amount",
+              "category"
           ]);
       })
         ->when(in_array($role, $gas_window), function ($query) use ($status) {
@@ -909,7 +967,15 @@ class TransactionController extends Controller
                                 $query->whereIn("status", ["tag-tag"])->where('receipt_type', 'official');
                             },
                             function ($query) use ($status) {
-                                $query->where("status", preg_replace("/\s+/", "", $status));
+                                $query->when(
+                                    strtolower($status) == 'pending-discharge',
+                                    function ($query) {
+                                        $query->whereIn("status", ["release-release"])->where('receipt_type', 'official');
+                                    },
+                                    function ($query) use ($status) {
+                                        $query->where("status", preg_replace("/\s+/", "", $status));
+                                    }
+                                );
                             }
                         );
                     }
@@ -946,6 +1012,10 @@ class TransactionController extends Controller
 
                     "status",
                     "state",
+                    "principal",
+                    "interest",
+                    "gross_amount",
+                    "category"
                 ]);
         })
       ->latest("updated_at")
@@ -2812,4 +2882,124 @@ class TransactionController extends Controller
     }
     return $this->resultResponse("not-found", "Requestor Logs", []);
   }
+
+    public function chequeIndex(Request $request)
+    {
+        $status = $request->input("state", "request");
+        $state = $request->input("state", "request");
+
+        $rows = $request->input("rows", 10);
+
+        $search = $request->input("search");
+
+        $suppliers = json_decode($request->input("suppliers")) ?? [];
+
+        $cheque_from = isset($request["cheque_from"]) ? Carbon::createFromFormat("Y-m-d", $request->input("cheque_from"))->format("Y-m-d") : null;
+        $cheque_to = isset($request["cheque_to"]) ? Carbon::createFromFormat("Y-m-d", $request->input("cheque_to"))->format("Y-m-d") : null;
+
+
+        $transactions = Transaction::with([
+            "users" => function ($query) {
+                return $query->select(["users.id", "users.first_name", "users.middle_name", "users.last_name", "users.department", "users.position"]);
+            },
+            "supplier.supplier_type" => function ($query) {
+                return $query->select(["supplier_types.id", "supplier_types.type as name"]);
+            },
+            "cheques.cheques"
+        ])
+
+            // Supplier Filter
+            ->when(count($suppliers), function ($query) use ($suppliers) {
+                return $query->whereIn("supplier_id", $suppliers);
+            })
+
+            // Cheque Date Filter (Will deprecate)
+            ->when($cheque_from && $cheque_to, function ($query) use ($cheque_from, $cheque_to) {
+                return $query->whereHas("cheques.cheques", function ($query) use ($cheque_from, $cheque_to) {
+                    return $query
+                        ->whereDate("cheque_date", ">=", $cheque_from)
+                        ->whereDate("cheque_date", "<=", $cheque_to);
+                });
+            })
+
+            // Search
+            ->where(function ($query) use ($search) {
+                $query
+                    ->where("remarks", "like", "%" . $search . "%")
+                    ->orWhere("payment_type", "like", "%" . $search . "%")
+
+                    ->orWhere("tag_no", "like", "%" . $search . "%")
+
+                    ->orWhere("company", "like", "%" . $search . "%")
+                    ->orWhere("department", "like", "%" . $search . "%")
+                    ->orWhere("location", "like", "%" . $search . "%")
+                    ->orWhere("supplier", "like", "%" . $search . "%")
+
+                    ->orWhere("document_no", "like", "%" . $search . "%")
+                    ->orWhere("referrence_no", "like", "%" . $search . "%");
+            })
+
+
+            ->when($status == "pending", function ($query) {
+                return $query->where("status", "transmit-transmit");
+            })
+            ->when($status == "cheque-receive", function ($query) {
+                return $query->whereIn("status", ["cheque-receive", "cheque-unhold", "cheque-unreturn"]);
+            })
+
+            ->when($status == "return-cheque", function ($query) {
+                return $query->where("status", "audit-return");
+            })
+            ->when($status == "hold-cheque", function ($query) {
+                return $query->where("status", "audit-hold");
+            })
+
+            ->when(!in_array($status, ["pending", "cheque-receive", "return-cheque", "hold-cheque"]), function ($query) use ($status) {
+                return $query->where("status", preg_replace("/\s+/", "", $status));
+            })
+
+            ->select([
+                "id",
+                "users_id",
+                "supplier_id",
+                "transaction_id",
+
+                "tag_no",
+                "document_id",
+                "document_type",
+                "payment_type",
+                "receipt_type",
+                "voucher_no",
+                "voucher_month",
+                "remarks",
+
+                "company_id",
+                "company",
+                "department_id",
+                "department",
+                "location_id",
+                "location",
+
+                "document_no",
+                "document_amount",
+                "referrence_no",
+                "referrence_amount",
+
+                "date_requested",
+
+                "status",
+                "state",
+            ])
+
+            ->latest("updated_at")
+            ->paginate((int) $rows);
+
+        ChequeIndex::collection($transactions);
+
+        if (count($transactions)) {
+            return $this->resultResponse("fetch", "Transaction", $transactions);
+        }
+
+        return $this->resultResponse("not-found", "Transaction", []);
+    }
 }

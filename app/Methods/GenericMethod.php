@@ -17,6 +17,7 @@ use App\Models\Department;
 use App\Models\Executive;
 use App\Models\Filing;
 use App\Models\Gas;
+use App\Models\Issue;
 use App\Models\Location;
 use App\Models\POBatch;
 use App\Models\Reason;
@@ -278,6 +279,8 @@ class GenericMethod
         $field = "";
     } elseif ($process == "gas") {
         $field = "";
+    } elseif($process == "discharge") {
+        $field = "";
     }
 
     $status = $process . "-" . $process;
@@ -336,6 +339,14 @@ class GenericMethod
       ->exists();
 
     if($process == "gas" and $is_gas){
+        return $status;
+    }
+
+    $is_discharged = Gas::where("transaction_id", $transaction->id)
+        ->where("status", "discharge-discharge")
+        ->exists();
+
+    if($process == "discharge" and $is_discharged){
         return $status;
     }
 
@@ -469,7 +480,8 @@ class GenericMethod
     $status,
     $voucher_no,
     $approver,
-    $account_titles
+    $account_titles,
+      $transaction_type
   ) {
     $approver_id = isset($approver["id"])
       ? $approver["id"]
@@ -491,6 +503,7 @@ class GenericMethod
       "date_status" => $date_now,
       "reason_id" => $reason_id,
       "remarks" => $reason_remarks,
+        "transaction_type" => $transaction_type
     ]);
 
     if (isset($account_titles)) {
@@ -623,6 +636,15 @@ class GenericMethod
         "date_audited" => $date_audit,
       ]);
     }
+  }
+
+  public function issue($transaction_id, $status, $reason_id, $remarks) {
+      Issue::create([
+          'transaction_id' => $transaction_id,
+          'status' => $status,
+          'reason_id' => $reason_id,
+          'remarks' => $remarks
+      ]);
   }
 
   public function executiveSign(
@@ -815,13 +837,15 @@ class GenericMethod
     $status,
     $account_titles,
     $subprocess,
-    $date_cleared
+    $date_cleared,
+      $transaction_id
   ) {
     $clear_transaction = $model::Create([
       "tag_id" => $tag_no,
       "status" => $status,
       "date_status" => $date_now,
       "date_cleared" => $date_cleared,
+        "transaction_id" => $transaction_id
     ]);
 
     if ($subprocess == "clear") {
@@ -2519,7 +2543,9 @@ class GenericMethod
     $distributed_name,
     $approver_id,
     $approver_name,
-    $transaction_type = "cheque"
+    $transaction_type = "cheque",
+      $box_no = null,
+      $is_cleared = null
   ) {
     // $voucher_no = isset($voucher_no) ? $voucher_no : null;
     // $voucher_month = isset($voucher_month) ? $voucher_month : null;
@@ -2602,7 +2628,9 @@ class GenericMethod
           $distributed_name,
           $approver_id,
           $approver_name,
-          $transaction_type
+          $transaction_type,
+            $box_no,
+            $is_cleared
         ) {
           $query->update([
             "status" => $status,
@@ -2619,6 +2647,8 @@ class GenericMethod
             "approver_id" => $approver_id,
             "approver_name" => $approver_name,
             "transaction_type" => $transaction_type,
+              'box_no' => $box_no,
+              "is_cleared" => $is_cleared
           ]);
         }
       );
@@ -4627,6 +4657,9 @@ class GenericMethod
         return GenericMethod::result(200, "Transaction has been voided.", []);
         break;
         case "gas":
+            return GenericMethod::result(200, "Transaction has been saved.", []);
+            break;
+        case "discharge":
             return GenericMethod::result(200, "Transaction has been saved.", []);
             break;
       case "tag":
