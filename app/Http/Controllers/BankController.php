@@ -120,16 +120,16 @@ class BankController extends Controller
           'location' => ['required'],
           'account_title_1' => ['required'],
           'account_title_2' => ['required'],
-            'company_id_1' => ['required'],
-            'company_id_2' => ['required'],
-            'business_unit_id_1' => ['required'],
-            'business_unit_id_2' => ['required'],
-            'department_id_1' => ['required'],
-            'department_id_2' => ['required'],
-            'sub_unit_id_1' => ['required'],
-            'sub_unit_id_2' => ['required'],
-            'location_id_1' => ['required'],
-            'location_id_2' => ['required']
+            'company_id_1' => ['nullable'],
+            'company_id_2' => ['nullable'],
+            'business_unit_id_1' => ['nullable'],
+            'business_unit_id_2' => ['nullable'],
+            'department_id_1' => ['nullable'],
+            'department_id_2' => ['nullable'],
+            'sub_unit_id_1' => ['nullable'],
+            'sub_unit_id_2' => ['nullable'],
+            'location_id_1' => ['nullable'],
+            'location_id_2' => ['nullable']
       ]);
 
 
