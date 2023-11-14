@@ -257,6 +257,7 @@ Route::group(["middleware" => "auth:sanctum"], function () {
   //MULTI
     Route::post("transactions/flow/receive", [TransactionFlowController::class, "multipleReceive"]);
     Route::post("transactions/flow/tag", [TransactionFlowController::class, "multipleTag"]);
+    Route::post("transactions/flow/cheque", [TransactionFlowController::class, "multipleCheque"]);
     // CHEQUES
     Route::get("cheques", [TransactionController::class, "chequeIndex"]);
 
