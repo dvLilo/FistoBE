@@ -23,7 +23,8 @@ class Associate extends Model
         'date_status',
         'reason_id',
         'remarks',
-        'transaction_type',
+        'transaction_type_id',
+        'transaction_type_name'
     ];
 
     public function account_title(){
