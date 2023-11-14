@@ -20,13 +20,12 @@ class TransactionTypeController extends Controller
         ->with([
             "accounts" => function ($query) {
                 $query->with([
-                    "company:id,company as name",
-                    "business_unit:id,business_unit as name",
-                    "department:id,department as name",
+                    "company:id,code,company as name",
+                    "department:id,code,department as name",
                     "account_title:id,code,title as name",
-                    "business_unit:id,business_unit as name",
-                    "sub_unit:id,subunit as name",
-                    "location:id,location as name",
+                    "business_unit:id,code,business_unit as name",
+                    "sub_unit:id,code,subunit as name",
+                    "location:id,code,location as name",
                 ]);
             }
             ])
