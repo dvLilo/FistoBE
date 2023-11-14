@@ -784,7 +784,10 @@ class TransactionResource extends JsonResource
         "dates" => $dates,
         "month" => $transaction_voucher_month,
 //        "receipt_type" => $voucher_receipt_type,
-        "transaction_type" => $voucher->transaction_type,
+        "transaction_type" => [
+            'id' => $voucher->transaction_type_id,
+            'name' => $voucher->transaction_type_name
+        ],
         "accounts" => $account_title,
         "approver" => $approver,
         "reason" => $reason,

@@ -191,7 +191,8 @@ class Transaction extends Model
         "status",
         "reason_id",
         "remarks",
-          "transaction_type"
+        "transaction_type_id",
+        "transaction_type_name"
       )
       ->latest();
   }
@@ -251,7 +252,8 @@ class Transaction extends Model
         "status",
         "reason_id",
         "remarks",
-        "transaction_type"
+        "transaction_type_id",
+        "transaction_type_name"
       )
       ->latest()
       ->limit(1);
