@@ -704,6 +704,7 @@ class TransactionResource extends JsonResource
       $account_title = null;
       $transaction_type = null;
       $dates = null;
+      $input_tax = null;
       $model = new Associate();
       $process = "voucher";
       $subprocess = ["transfer", "receive", "voucher"];
@@ -772,6 +773,8 @@ class TransactionResource extends JsonResource
               'id' => $voucher->transaction_type_id,
               'name' => $voucher->transaction_type_name
           ];
+
+          $input_tax = $this->input_tax;
         }
       }
 
@@ -790,6 +793,7 @@ class TransactionResource extends JsonResource
         "month" => $transaction_voucher_month,
 //        "receipt_type" => $voucher_receipt_type,
         "transaction_type" => $transaction_type,
+        "input_tax" => $input_tax,
         "accounts" => $account_title,
         "approver" => $approver,
         "reason" => $reason,

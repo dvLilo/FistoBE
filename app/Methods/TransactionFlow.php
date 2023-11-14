@@ -64,6 +64,7 @@ class TransactionFlow
 
     $typeOfTransactionId = data_get($request,'transaction_type.id') ? data_get($request, 'transaction_type.id') : $transaction->voucher->first()->transaction_type_id ?? null;
     $typeOfTransactionName = data_get($request, 'transaction_type.name') ? data_get($request, 'transaction_type.name') : $transaction->voucher->first()->transaction_type_name ?? null;
+    $inputTax = data_get($request, 'input_tax') ? data_get($request, 'input_tax') : $transaction->input_tax ?? null;
     $receipt_type = isset($request->receipt_type) ? $request->receipt_type : $transaction->receipt_type;
 
     $tag_no = $transaction->tag_no;
@@ -249,7 +250,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
     } elseif ($process == "tag") {
       $model = new Tagging();
@@ -399,7 +401,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
     } elseif ($process == "voucher") {
       $account_titles = $voucher_account_titles;
@@ -557,7 +560,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+        $inputTax,
       );
     } elseif ($process == "approve") {
       $model = new Approver();
@@ -610,8 +614,9 @@ class TransactionFlow
         $distributed_name,
         $approver_id,
 //          $transaction->approver_id,
-        $approver_name
+        $approver_name,
 //          $transaction->approver_name
+          $inputTax
       );
     } elseif ($process == "transmit") {
       $transaction_type = $request["transaction_type"];
@@ -695,6 +700,7 @@ class TransactionFlow
         $approver_name,
 //        $transaction->approver_name,
 //        $transaction_type
+          $inputTax
       );
     } elseif ($process == "cheque") {
       $account_titles = $cheque_account_titles;
@@ -931,7 +937,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+        $inputTax
       );
     } elseif ($process == "audit") {
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
@@ -1064,7 +1071,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+        $inputTax
       );
     } elseif ($process == "inspect") {
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
@@ -1137,7 +1145,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+        $inputTax
       );
     } elseif ($process == "executive") {
       $date_now = Carbon::now("Asia/Manila")->format("Y-m-d H:i:s");
@@ -1204,7 +1213,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+        $inputTax
       );
     } elseif ($process == "release") {
       $model = new Release();
@@ -1250,7 +1260,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
     } elseif ($process == "file") {
       $model = new File();
@@ -1304,6 +1315,7 @@ class TransactionFlow
         $distributed_name,
         $approver_id,
         $approver_name,
+          $inputTax,
           'cheque',
           $request->box_no ?? $transaction->box_no
       );
@@ -1362,7 +1374,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
       return GenericMethod::resultResponse($state, "", "");
     } elseif ($process == "clear") {
@@ -1399,6 +1412,7 @@ class TransactionFlow
         $distributed_name,
         $approver_id,
         $approver_name,
+            $inputTax,
             'cheque',
             $request->box_no ?? $transaction->box_no,
           true
@@ -1523,7 +1537,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
     } elseif ($process == "debit") {
         $account_titles = $accounts;
@@ -1617,7 +1632,8 @@ class TransactionFlow
         $distributed_id,
         $distributed_name,
         $approver_id,
-        $approver_name
+        $approver_name,
+          $inputTax
       );
     } elseif ($process == 'gas') {
         if ($subprocess == 'receive') {
@@ -1656,7 +1672,8 @@ class TransactionFlow
             $distributed_id,
             $distributed_name,
             $approver_id,
-            $approver_name
+            $approver_name,
+            $inputTax
         );
     } elseif ($process == 'discharge') {
         if ($subprocess == 'receive') {
@@ -1694,7 +1711,8 @@ class TransactionFlow
             $distributed_id,
             $distributed_name,
             $approver_id,
-            $approver_name
+            $approver_name,
+            $inputTax
         );
     }
 

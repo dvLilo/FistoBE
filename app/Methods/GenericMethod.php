@@ -2545,6 +2545,7 @@ class GenericMethod
     $distributed_name,
     $approver_id,
     $approver_name,
+    $input_tax,
     $transaction_type = "cheque",
       $box_no = null,
       $is_cleared = null
@@ -2632,7 +2633,8 @@ class GenericMethod
           $approver_name,
           $transaction_type,
             $box_no,
-            $is_cleared
+            $is_cleared,
+            $input_tax
         ) {
           $query->update([
             "status" => $status,
@@ -2650,7 +2652,8 @@ class GenericMethod
             "approver_name" => $approver_name,
             "transaction_type" => $transaction_type,
               'box_no' => $box_no,
-              "is_cleared" => $is_cleared
+              "is_cleared" => $is_cleared,
+              'input_tax' => $input_tax
           ]);
         }
       );

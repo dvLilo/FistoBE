@@ -119,6 +119,7 @@ class Transaction extends Model
       "business_unit",
       "sub_unit_id",
       "sub_unit",
+      "input_tax",
       "box_no",
       "is_cleared"
   ];

@@ -24,6 +24,7 @@ class BankRequest extends FormRequest
      */
     public function rules()
     {
+        $name = request()->get('name');
         return [
             'code' => [
                 'required',
@@ -38,9 +39,16 @@ class BankRequest extends FormRequest
             'branch' => [
                 'required',
                 'string',
-                Rule::unique('banks', 'branch')->ignore($this->route('bank'))
+                Rule::unique('banks', 'branch')->where(function ($query) use ($name){
+                    $query->where('name', $name);
+                })->ignore($this->route('bank'))
             ],
-            'account_no' => 'required',
+            'account_no' => [
+                'required',
+                Rule::unique('banks', 'account_no')->where(function ($query) use ($name) {
+                    $query->where('name', $name);
+                })->ignore($this->route('bank'))
+            ],
             'location' => 'required',
             'account_title_1' => 'required',
             'account_title_2' => 'required',
