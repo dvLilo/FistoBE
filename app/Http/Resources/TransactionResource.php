@@ -702,7 +702,7 @@ class TransactionResource extends JsonResource
       $reason = null;
       $approver = null;
       $account_title = null;
-
+      $transaction_type = null;
       $dates = null;
       $model = new Associate();
       $process = "voucher";
@@ -767,6 +767,11 @@ class TransactionResource extends JsonResource
             "id" => $voucher_approver_id,
             "name" => $voucher_approver_name,
           ];
+
+          $transaction_type = [
+              'id' => $voucher->transaction_type_id,
+              'name' => $voucher->transaction_type_name
+          ];
         }
       }
 
@@ -784,10 +789,7 @@ class TransactionResource extends JsonResource
         "dates" => $dates,
         "month" => $transaction_voucher_month,
 //        "receipt_type" => $voucher_receipt_type,
-        "transaction_type" => [
-            'id' => $voucher->transaction_type_id,
-            'name' => $voucher->transaction_type_name
-        ],
+        "transaction_type" => $transaction_type,
         "accounts" => $account_title,
         "approver" => $approver,
         "reason" => $reason,
