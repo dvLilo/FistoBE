@@ -62,8 +62,9 @@ class TransactionFlow
     $remarks = $transaction->remarks;
     $users_id = $transaction->users_id;
 
+    $typeOfTransactionId = data_get($request,'transaction_type.id') ? data_get($request, 'transaction_type.id') : $transaction->voucher->first()->transaction_type_id ?? null;
+    $typeOfTransactionName = data_get($request, 'transaction_type.name') ? data_get($request, 'transaction_type.name') : $transaction->voucher->first()->transaction_type_name ?? null;
     $receipt_type = isset($request->receipt_type) ? $request->receipt_type : $transaction->receipt_type;
-//    $transact_type = isset($request->transaction_type) ? $request->transaction_type : $transaction->transaction_voucher->first()->transaction_type;
 
     $tag_no = $transaction->tag_no;
     if ($subprocess == "tag") {
@@ -534,7 +535,9 @@ class TransactionFlow
         $voucher_no,
         $approver,
         $account_titles,
-          $request->transaction_type
+//          $request->transaction_type,
+          $typeOfTransactionId,
+          $typeOfTransactionName,
       );
 
         GenericMethod::updateTransactionStatus(
@@ -844,8 +847,23 @@ class TransactionFlow
 
         switch ($transaction->document_id) {
           case 3:
-            if ($transaction->net_amount != $cheque_amount) {
-              return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+//            if ($transaction->net_amount != $cheque_amount) {
+//              return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+//            }
+
+            switch ($transaction->category) {
+
+                case 'rental':
+                    if ($transaction->gross_amount != $cheque_amount) {
+                        return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+                    }
+                    break;
+
+                default:
+
+                    if (floatval((number_format(($transaction->principal + $transaction->interest), 2, '.', ''))) != $cheque_amount) {
+                        return GenericMethod::resultResponse("not-equal", "Document and account title", []);
+                    }
             }
             break;
 
@@ -1410,7 +1428,7 @@ class TransactionFlow
           switch ($transaction->document_id) {
             case 3:
               if ($transaction->net_amount != $cheque_amount) {
-                return GenericMethod::resultResponse("not-equal", "Net amount and account title", []);
+                return GenericMethod::resultResponse("not-equal", "Document amount and account title", []);
               }
               break;
 

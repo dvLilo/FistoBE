@@ -481,7 +481,8 @@ class GenericMethod
     $voucher_no,
     $approver,
     $account_titles,
-      $transaction_type
+      $transaction_type_id,
+      $transaction_type_name
   ) {
     $approver_id = isset($approver["id"])
       ? $approver["id"]
@@ -503,7 +504,8 @@ class GenericMethod
       "date_status" => $date_now,
       "reason_id" => $reason_id,
       "remarks" => $reason_remarks,
-        "transaction_type" => $transaction_type
+        "transaction_type_id" => $transaction_type_id,
+        "transaction_type_name" => $transaction_type_name
     ]);
 
     if (isset($account_titles)) {
