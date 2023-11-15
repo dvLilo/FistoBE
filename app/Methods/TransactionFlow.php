@@ -1507,7 +1507,23 @@ class TransactionFlow
 
 
       if ($subprocess == "issue") {
-          GenericMethod::chequeTransaction(
+
+          $cheques = $request->validate([
+                  'cheques.*.type' => 'nullable',
+                  'cheques.*.bank' => 'nullable',
+                  'cheques.*.bank.*.id' => 'nullable',
+                  'cheques.*.no' => 'nullable',
+                  'cheques.*.bank.*.name' => 'nullable',
+                  'cheques.*.bank.*.branch' => 'nullable',
+                  'cheques.*.bank.*.account_title_one.*.id' => 'nullable',
+                  'cheques.*.bank.*.account_title_one.*.name' => 'nullable',
+                  'cheques.*.bank.*.account_title_two.*.id' => 'nullable',
+                  'cheques.*.bank.*.account_title_two.*.name' => 'nullable',
+                  'cheques.*.date' => 'required',
+                  'cheques.*.amount' => 'required',
+          ]);
+
+         GenericMethod::chequeTransaction(
               $model,
 //        $transaction_id,
               $transaction->id,
