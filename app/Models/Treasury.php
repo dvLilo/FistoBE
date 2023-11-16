@@ -38,6 +38,7 @@ class Treasury extends Model
             'sub_unit_id',
             'sub_unit_code',
             'sub_unit_name',
+            "is_default"
         );
     }
 
