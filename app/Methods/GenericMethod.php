@@ -919,27 +919,53 @@ class GenericMethod
   public static function addCheque($transaction_id, $id, $cheques)
   {
     foreach ($cheques as $specific_cheques) {
-      $entry_type = isset($specific_cheques["transaction_type"])
-        ? $specific_cheques["transaction_type"]
-        : $specific_cheques["type"];
-      $bank_id = $specific_cheques["bank"]["id"];
-      $bank_name = $specific_cheques["bank"]["name"];
-      $cheque_no = $specific_cheques["no"];
-      $cheque_date = $specific_cheques["date"];
-      $cheque_amount = $specific_cheques["amount"];
-      $transaction_type = isset($specific_cheques["transaction_type"]) ? $specific_cheques["transaction_type"] : "new";
+        if (request()->process == 'issue') {
+            foreach ($specific_cheques as $specific_cheque) {
+                $entry_type = isset($specific_cheque["transaction_type"])
+                    ? $specific_cheque["transaction_type"]
+                    : $specific_cheque["type"];
+                $bank_id = $specific_cheque["bank"]["id"];
+                $bank_name = $specific_cheque["bank"]["name"];
+                $cheque_no = $specific_cheque["no"];
+                $cheque_date = $specific_cheque["date"];
+                $cheque_amount = $specific_cheque["amount"];
+                $transaction_type = isset($specific_cheque["transaction_type"]) ? $specific_cheque["transaction_type"] : "new";
 
-      Cheque::Create([
-        "transaction_id" => $transaction_id,
-        "treasury_id" => $id,
-        "entry_type" => $entry_type,
-        "bank_id" => $bank_id,
-        "bank_name" => $bank_name,
-        "cheque_no" => $cheque_no,
-        "cheque_date" => $cheque_date,
-        "cheque_amount" => $cheque_amount,
-        "transaction_type" => $transaction_type,
-      ]);
+                Cheque::Create([
+                    "transaction_id" => $transaction_id,
+                    "treasury_id" => $id,
+                    "entry_type" => $specific_cheque['type'],
+                    "bank_id" => $specific_cheque['bank']['id'],
+                    "bank_name" => $specific_cheque['bank']['name'],
+                    "cheque_no" => $specific_cheque['no'],
+                    "cheque_date" => $specific_cheque['date'],
+                    "cheque_amount" => $specific_cheque['amount'],
+                    "transaction_type" => $specific_cheque['transaction_type'] ?? "new",
+                ]);
+            }
+        } else {
+            $entry_type = isset($specific_cheques["transaction_type"])
+                ? $specific_cheques["transaction_type"]
+                : $specific_cheques["type"];
+            $bank_id = $specific_cheques["bank"]["id"];
+            $bank_name = $specific_cheques["bank"]["name"];
+            $cheque_no = $specific_cheques["no"];
+            $cheque_date = $specific_cheques["date"];
+            $cheque_amount = $specific_cheques["amount"];
+            $transaction_type = isset($specific_cheques["transaction_type"]) ? $specific_cheques["transaction_type"] : "new";
+
+            Cheque::Create([
+                "transaction_id" => $transaction_id,
+                "treasury_id" => $id,
+                "entry_type" => $specific_cheques['type'],
+                "bank_id" => $specific_cheques['bank']['id'],
+                "bank_name" => $specific_cheques['bank']['name'],
+                "cheque_no" => $specific_cheques['no'],
+                "cheque_date" => $specific_cheques['date'],
+                "cheque_amount" => $specific_cheques['amount'],
+                "transaction_type" => $specific_cheques['transaction_type'] ?? "new",
+            ]);
+        }
     }
   }
 
