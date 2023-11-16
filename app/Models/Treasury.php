@@ -21,7 +21,7 @@ class Treasury extends Model
     ];
 
     public function account_title(){
-        return $this->hasMany(VoucherAccountTitle::class,'treasury_id','id')->select('id','treasury_id','entry',
+        return $this->hasMany(VoucherAccountTitle::class,'treasury_id','id')->select('id','treasury_id','entry','account_title_code',
         'account_title_id','account_title_name','amount','remarks','transaction_type',
             'company_id',
             'company_code',
