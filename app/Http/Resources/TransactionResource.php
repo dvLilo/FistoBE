@@ -893,6 +893,31 @@ class TransactionResource extends JsonResource
               "account_title" => [
                 "id" => $item["account_title_id"],
                 "name" => $item["account_title_name"],
+                  "company" => [
+                      "id" => $item["company_id"],
+                      "code" => $item["company_code"],
+                      "name" => $item["company_name"]
+                  ],
+                  "department" => [
+                      "id" => $item["department_id"],
+                      "code" => $item["department_code"],
+                      "name" => $item["department_name"]
+                  ],
+                  "location" => [
+                      "id" => $item["location_id"],
+                      "code" => $item["location_code"],
+                      "name" => $item["location_name"]
+                  ],
+                  "business_unit" => [
+                      "id" => $item["business_unit_id"],
+                      "code" => $item["business_unit_code"],
+                      "name" => $item["business_unit_name"]
+                  ],
+                  "sub_unit" => [
+                      "id" => $item["sub_unit_id"],
+                      "code" => $item["sub_unit_code"],
+                      "name" => $item["sub_unit_name"]
+                  ]
               ],
               "amount" => $item["amount"],
               "remarks" => $item["remarks"],
