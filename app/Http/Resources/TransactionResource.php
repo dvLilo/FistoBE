@@ -892,6 +892,7 @@ class TransactionResource extends JsonResource
               "entry" => $item["entry"],
               "account_title" => [
                 "id" => $item["account_title_id"],
+                "code" => $item["account_title_code"],
                 "name" => $item["account_title_name"],
               ],
                 "company" => [
